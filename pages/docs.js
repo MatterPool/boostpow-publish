@@ -1,7 +1,7 @@
 import ReactMarkdown from 'react-markdown';
 
 const content = `
-## Boost POW Publisher
+## Publish Widget
 
 Boost POW Publisher is a simple way to Boost content on your website. It is a reference publisher implementation to Boost content.
 
@@ -58,9 +58,14 @@ Additional propeties passed into relayx
 const Docs = () => {
 	return (
 		<div style={{ width: '100vw' }}>
+
 			<div style={{ maxWidth: '100%', margin: '0 auto', width: '600px' }}>
+				<a href="https://boostpow.com">
+					<img src="/logo.svg" style={{ marginTop: '1em' }}/>
+				</a>
 				<ReactMarkdown source={content} />
 			</div>
+
 			<style jsx global>{`
 				html,
 				body {

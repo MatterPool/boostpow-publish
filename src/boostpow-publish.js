@@ -4,11 +4,11 @@ function sleep(ms) {
 	return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-class BoostPublisher {
+class BoostPublish {
 	async init() {
 		var style = document.createElement('style');
 		style.type = 'text/css';
-		style.innerHTML = `.boostPublisherFrame {
+		style.innerHTML = `.boostPublishFrame {
 			border: none;
 			overflow: hidden;
 			width: 0px;
@@ -20,8 +20,8 @@ class BoostPublisher {
 		document.getElementsByTagName('head')[0].appendChild(style);
 		this.child = await new Postmate({
 			container: document.body,
-			url: 'https://pay.twetch.com',
-			classListArray: ['boostPublisherFrame']
+			url: 'https://publish.boostpow.com',
+			classListArray: ['boostPublishFrame']
 		});
 		this.iframe = this.child.frame;
 
@@ -39,10 +39,10 @@ class BoostPublisher {
 		this.iframe.style.height = '0px';
 	}
 
-	async pay(props) {
+	async open(props) {
 		if (!this.didInit) {
 			await sleep(200);
-			this.pay(props);
+			this.open(props);
 			return;
 		}
 
@@ -65,7 +65,7 @@ class BoostPublisher {
 			delete props.onError;
 		}
 
-		this.child.call('pay', { props });
+		this.child.call('open', { props });
 		this.displayIframe();
 		const self = this;
 
@@ -92,5 +92,5 @@ class BoostPublisher {
 	}
 }
 
-const boostPublisher = new TwetchPay();
-module.exports = boostPublisher;
+const boostPublish = new BoostPublish();
+module.exports = boostPublish;

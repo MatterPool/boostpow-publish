@@ -1,5 +1,5 @@
-const boostPublisher = require('./boostpow-publish');
+const boostPublish = require('./boostpow-publish');
 window.addEventListener('load', function() {
-	boostPublisher.init();
+	boostPublish.init();
 });
-window.boostPublisher = boostPublisher;
+window.boostPublish = boostPublish;

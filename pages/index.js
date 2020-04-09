@@ -12,7 +12,7 @@ const Home = () => {
 	const listenForPay = async () => {
 		try {
 			const p = await new Postmate.Model({
-				pay: ({ props }) => {
+				open: ({ props }) => {
 					setPaymentProps({ ...paymentProps, ...props });
 				}
 			});
@@ -20,7 +20,7 @@ const Home = () => {
 			setParent(p);
 		} catch (e) {
 			const p = await new Postmate.Model({
-				pay: ({ props }) => {
+				open: ({ props }) => {
 					setPaymentProps({ ...paymentProps, ...props });
 				}
 			});

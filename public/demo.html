@@ -9,8 +9,8 @@
 	</body>
 	<script>
 		async function showBoostPublisher() {
-			const response = await boostPublisher.pay({
-				outputs: [],
+			const response = await boostPublish.open({
+				outputs: [], // Optionally apply other outputs
 				onPayment: (payment, boostJob) => {
 					console.log({ payment, boostJob});
 				}

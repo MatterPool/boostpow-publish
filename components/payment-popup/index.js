@@ -57,7 +57,7 @@ const PaymentPopup = props => {
 			console.log('ex', ex);
 			throw ex;
 		}
-		console.log('o', o);
+		console.log('o', o, props);
 		return o;
 	}
 
