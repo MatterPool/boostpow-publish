@@ -1,0 +1,22 @@
+<html>
+	<head>
+		<title>Boost POW Publish Demo</title>
+		<script src="/boostpow-publish.js"></script>
+	</head>
+	<body>
+		Boost POW Publish Demo
+		<button id="button" onclick="showBoostPublisher()">Click Me</button>
+	</body>
+	<script>
+		async function showBoostPublisher() {
+			const response = await boostPublisher.pay({
+				outputs: [],
+				onPayment: (payment, boostJob) => {
+					console.log({ payment, boostJob});
+				}
+			});
+
+			console.log({ response });
+		}
+	</script>
+</html>

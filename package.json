@@ -1,0 +1,58 @@
+{
+  "name": "boostpow-publish",
+  "version": "1.0.0",
+  "private": false,
+  "scripts": {
+    "build": "next build",
+    "export": "next export",
+    "build-browser": "node_modules/browserify/bin/cmd.js src/boostpow-publish.js -o public/boostpow-publish.js && node_modules/terser/bin/terser -o public/boostpow-publish.js --module --compress --mangle -- public/boostpow-publish.js && rm -f public/boostpow-publish.js.tmp-* || true",
+    "deploy": "now deploy --prod",
+    "dev": "next dev -p 4000",
+    "start": "next start",
+    "lint": "./node_modules/.bin/eslint --fix ."
+  },
+  "dependencies": {
+    "@material-ui/core": "4.9.4",
+    "@moneybutton/react-money-button": "0.33.0",
+    "boostpow-js": "^1.2.16",
+    "bsv": "1.3.0",
+    "copy-to-clipboard": "3.3.1",
+    "jquery": "^3.4.1",
+    "next": "9.2.2",
+    "postmate": "1.5.2",
+    "proxypay": "0.0.6",
+    "qrcode.react": "1.0.0",
+    "rangeslider.js": "^2.3.3",
+    "react": "16.12.0",
+    "react-dom": "16.12.0",
+    "react-load-script": "0.0.6",
+    "react-markdown": "4.3.1"
+  },
+  "devDependencies": {
+    "babel-eslint": "10.0.3",
+    "browserify": "16.5.0",
+    "eslint": "6.8.0",
+    "eslint-config-prettier": "6.9.0",
+    "eslint-plugin-class-property": "1.1.0",
+    "eslint-plugin-prettier": "3.1.2",
+    "eslint-plugin-react": "7.18.0",
+    "eslint-plugin-react-hooks": "2.3.0",
+    "husky": "4.2.3",
+    "lint-staged": "10.0.8",
+    "nodemon": "2.0.2",
+    "prettier": "1.19.1",
+    "terser": "4.6.4"
+  },
+  "lint-staged": {
+    "**/*.js": [
+      "prettier --write",
+      "./node_modules/.bin/eslint --fix",
+      "npm run build-browser"
+    ]
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  }
+}
