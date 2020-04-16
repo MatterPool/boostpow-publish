@@ -13,6 +13,10 @@ const RelayX = props => {
 			...each
 		}));
 
+		if (!outputs || !outputs.length) {
+			return (<div>no out</div>);
+		}
+
 		const walletProps = {
 			...props,
 			...props.relayxProps,

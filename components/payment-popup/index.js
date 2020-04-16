@@ -28,10 +28,12 @@ const wallets = {
 const outputs = [
 ];
 
+
 const PaymentPopup = props => {
 	const [wallet, setWallet] = useState('moneybutton');
 	const [paid, setPaid] = useState(false);
-	const [content, setContent] = useState('content');
+	const [content, setContent] = useState(props.content);
+	const [tag, setTag] = useState(props.tag);
 	const [difficulty, setDifficulty] = useState(1);
 
 	const allOutputs = () => {
@@ -39,12 +41,15 @@ const PaymentPopup = props => {
 		outputs.forEach((out) => {
 			o.push(out);
 		});
+
 		try {
 			const boostJob = boost.BoostPowJob.fromObject({
-				content: content,
+				content: content ? content : props.content,
+				tag: tag ? Buffer.from(tag, 'utf8').toString('hex') : undefined,
 				category: Buffer.from('B', 'utf8').toString('hex'),
 				diff: difficulty,
 			});
+
 			const latestOutputState = {
 				script: boostJob.toASM(),
 				amount: Math.max(boostJob.getDiff() * 0.00002, 0.00000546),
@@ -55,9 +60,8 @@ const PaymentPopup = props => {
 			}
 		} catch (ex) {
 			console.log('ex', ex);
-			throw ex;
+			return [];
 		}
-		console.log('o', o, props);
 		return o;
 	}
 
@@ -66,10 +70,11 @@ const PaymentPopup = props => {
 	};
 
 	const handleContentChange = (evt, value) => {
-		if (!evt.target.value || evt.target.value.length !== 64) {
-			return;
-		}
 		setContent(evt.target.value);
+	};
+
+	const handleTagChange = (evt, value) => {
+		setTag(evt.target.value);
 	};
 
 	const handleChange = (evt, value) => {
@@ -97,35 +102,41 @@ const PaymentPopup = props => {
 		}
 	};
 
-	const walletProps = {
-		outputs: allOutputs(),
-		...props,
-		moneybuttonProps: {
-			...props.moneybuttonProps,
-			onCryptoOperations: cryptoOperations => {
-				if (props.parent){
-					props.parent.emit('cryptoOperations', { cryptoOperations });
+	const getWalletProps = () => {
+		const walletProps = {
+			...props,
+			outputs: allOutputs(),
+			moneybuttonProps: {
+				...props.moneybuttonProps,
+				onCryptoOperations: cryptoOperations => {
+					console.log('onCryptoOperations', cryptoOperations);
+					if (props.parent){
+						props.parent.emit('cryptoOperations', { cryptoOperations });
+					}
 				}
+			},
+			onError: error => {
+				if (props.parent){
+					props.parent.emit('error', { error });
+				}
+				console.log('onError', error);
+			},
+			onPayment: async(payment) => {
+				console.log('onPayment', payment);
+				const boostJobStatus = await boost.Graph().submitBoostJob(payment.rawtx);
+				console.log('boostJobStatus', boostJobStatus);
+				if (props.parent){
+					console.log('notify parent');
+					props.parent.emit('payment', { payment, boostJobStatus });
+				}
+				setPaid(true);
+				setTimeout(() => {
+					setPaid(false);
+					handleClose();
+				}, 1000);
 			}
-		},
-		onError: error => {
-			if (props.parent){
-				props.parent.emit('error', { error });
-			}
-			console.log('onError', error);
-		},
-		onPayment: async(payment) => {
-			if (props.parent){
-				props.parent.emit('payment', { payment });
-			}
-			const boostJobStatus = await boost.Graph().submitBoostJob(payment.rawtx);
-			console.log('onPayment', payment, boostJobStatus);
-			setPaid(true);
-			setTimeout(() => {
-				setPaid(false);
-				handleClose();
-			}, 5000);
-		}
+		};
+		return walletProps;
 	};
 
 	return (
@@ -148,37 +159,49 @@ const PaymentPopup = props => {
 					</div>
 					{props.wallets.length > 1 && !paid && (
 						<div className="boost-publisher-body">
-							<p className="lead">
-								What would you like to Boost? <a href="https://boostpow.com" className="pow-help-text" target="_blank">What's Boost?</a>
-							</p>
-							<div className="input-content-container">
-								<input onChange={handleContentChange} type="text" className="input-content" placeholder="Transaction ID, Bitcoin File, Text, Hash, etc.."></input>
-							</div>
-							<div className="input-diff-container">
-								<label className="label">Energy: </label>
-								<select className="input-diff" onChange={handleDiffChange}>
-									<option value="1">1</option>
-									<option value="2">2</option>
-									<option value="3">3</option>
-									<option value="4">4</option>
-									<option value="5">5</option>
-									<option value="6">6</option>
-									<option value="7">7</option>
-									<option value="8">8</option>
-									<option value="9">9</option>
-									<option value="10">10</option>
-									<option value="11">11</option>
-									<option value="12">12</option>
-									<option value="13">13</option>
-									<option value="14">14</option>
-									<option value="15">15</option>
-									<option value="16">16</option>
-									<option value="17">17</option>
-									<option value="18">18</option>
-									<option value="19">19</option>
-									<option value="20">20</option>
-								</select>
-							</div>
+							<form>
+								<div class="form-group">
+									<p className="lead">
+										What would you like to Boost? <a href="https://boostpow.com" className="pow-help-text" target="_blank">What's Boost?</a>
+									</p>
+									<input onChange={handleContentChange} value={content || props.content} type="text" className="input-content" placeholder="Transaction ID, Bitcoin File, Text, Hash, etc.."></input>
+								</div>
+								<div class="form-group">
+									<p className="lead">
+										Tag (optional)
+									</p>
+									<input onChange={handleTagChange} value={tag || props.tag} type="text" className="input-content" placeholder="ex: photos, programming, bitcoin..."></input>
+								</div>
+								<div class="form-group input-diff-container">
+
+									<label className="label">Energy </label>
+									<select className="input-diff" onChange={handleDiffChange}>
+										<option value="1">1</option>
+										<option value="2">2</option>
+										<option value="3">3</option>
+										<option value="4">4</option>
+										<option value="5">5</option>
+										<option value="6">6</option>
+										<option value="7">7</option>
+										<option value="8">8</option>
+										<option value="9">9</option>
+										<option value="10">10</option>
+										<option value="11">11</option>
+										<option value="12">12</option>
+										<option value="13">13</option>
+										<option value="14">14</option>
+										<option value="15">15</option>
+										<option value="16">16</option>
+										<option value="17">17</option>
+										<option value="18">18</option>
+										<option value="19">19</option>
+										<option value="20">20</option>
+									</select>
+
+								</div>
+							</form>
+
+
 
 							<FormControl variant="outlined" margin="dense" className="boost-publisher-form-control">
 								<Select
@@ -212,7 +235,7 @@ const PaymentPopup = props => {
 						</div>
 					)}
 					<div className="boost-publisher-body">
-						{!paid && <Wallet {...walletProps} />}
+						{!paid && !!allOutputs() && !!allOutputs().length && <Wallet {...getWalletProps()} />}
 						{paid && (
 							<div className="payment-completed-section">
 								<img

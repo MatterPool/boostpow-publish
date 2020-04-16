@@ -1,11 +1,13 @@
 {
   "name": "boostpow-publish",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": false,
   "scripts": {
     "build": "next build",
     "export": "next export",
-    "build-browser": "node_modules/browserify/bin/cmd.js src/boostpow-publish.js -o public/boostpow-publish.js && node_modules/terser/bin/terser -o public/boostpow-publish.js --module --compress --mangle -- public/boostpow-publish.js && rm -f public/boostpow-publish.js.tmp-* || true",
+    "build-browser-partial": "node_modules/browserify/bin/cmd.js src/boostpow-publish.js -o public/boostpow-publish.js && node_modules/terser/bin/terser -o public/boostpow-publish.js --module --compress --mangle -- public/boostpow-publish.js && rm -f public/boostpow-publish.js.tmp-* || true",
+    "build-browser-full": "node_modules/browserify/bin/cmd.js src/publish.js -o public/publish.js && node_modules/terser/bin/terser -o public/publish.js --module --compress --mangle -- public/publish.js && rm -f public/publish.js.tmp-* || true",
+
     "deploy": "now deploy --prod",
     "dev": "next dev -p 4000",
     "start": "next start",

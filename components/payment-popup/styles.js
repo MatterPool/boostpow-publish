@@ -38,6 +38,7 @@ const Styles = () => (
 			padding-bottom: 1em;
 		}
 		.input-diff-container {
+			padding-top: 1em;
 			padding-bottom: 1em;
 		}
 

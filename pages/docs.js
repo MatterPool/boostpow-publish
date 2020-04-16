@@ -3,32 +3,42 @@ import ReactMarkdown from 'react-markdown';
 const content = `
 ## Publish Widget
 
-Boost POW Publisher is a simple way to Boost content on your website. It is a reference publisher implementation to Boost content.
+Boost POW Publish is a simple way to Boost content on your website. It is a reference publisher implementation to Boost content.
 
 Currently supported wallets are Money Button and RelayX.
 
-The simplest Boost POW Publisher usage looks like this:
+The simplest Boost POW Publish usage looks like this:
 \`\`\`
 // in HTML
-<script src="https://publish.boostpow.com/boostpow-publish.js"></script>
+<script src="https://publish.boostpow.com/publish.js"></script>
 
 // in javascript
-boostPublisher.open({
-  outputs: [],
+boostPublish.open({
+  content: 'optional content to initialize',
+  tag: 'optional tag to initialize',
+  outputs: [], // Additional outputs can be added optionally
   onPayment: function(payment, boostJobStatus) {
 	console.log(payment, boostJobStatus);
   }
 });
 \`\`\`
 
-## The boostPublisher object
+## The boostPublish object
 
-Including the Boost POW Publisher embed on your makes \`boostPublisher\` available on the browser's \`window\` object.
+Including the Boost POW Publisher embed on your makes \`boostPublish\` available on the browser's \`window\` object.
 It has one asynchronous method, \`open\` that resolves with
 a payment object upon a successful payment and throws if there was an error.
 \`open\` returns \`undefined\` if the payment was canceled.
 
 ## Available options:
+
+### content
+
+Optional content to initialize with. Leave empty to allow user to set it.
+
+### tag
+
+Optional tag to initialize with. Leave empty to allow user to set it.
 
 ### outputs
 
