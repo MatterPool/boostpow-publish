@@ -1,6 +1,6 @@
 {
   "name": "boostpow-publish",
-  "version": "1.0.2",
+  "version": "1.0.4",
   "private": false,
   "scripts": {
     "build": "next build",

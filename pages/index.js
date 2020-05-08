@@ -15,6 +15,8 @@ const Home = () => {
 		tag: 'bitcoin',
 		category: 'B' // defaults to 'B' underneath.
 		*/
+		// content: '4d0295d207f3a00d73f069fc4aa5e06d3fe98d565af9f38983c0d486d6166a09',
+		// tag: '$osg',
 	});
 	const [parent, setParent] = useState();
 	const listenForPay = async () => {

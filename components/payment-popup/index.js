@@ -35,6 +35,10 @@ const PaymentPopup = props => {
 	const allOutputs = () => {
 		const o = [];
 		let category = Buffer.from('B', 'utf8').toString('hex');
+		let defaultTag = null;
+		if (props.tag) {
+			defaultTag = Buffer.from(props.tag, 'utf8').toString('hex')
+		}
 		if (props.category) {
 			category = Buffer.from(props.category, 'utf8').toString('hex')
 		}
@@ -46,7 +50,7 @@ const PaymentPopup = props => {
 		try {
 			const boostJob = boost.BoostPowJob.fromObject({
 				content: content ? content : props.content,
-				tag: tag ? Buffer.from(tag, 'utf8').toString('hex') : undefined,
+				tag: tag ? Buffer.from(tag, 'utf8').toString('hex') : defaultTag,
 				category: category,
 				diff: difficulty,
 			});
