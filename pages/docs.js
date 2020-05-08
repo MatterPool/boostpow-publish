@@ -14,12 +14,18 @@ The simplest Boost POW Publish usage looks like this:
 
 // in javascript
 boostPublish.open({
-  content: 'optional content to initialize',
-  tag: 'optional tag to initialize',
-  outputs: [], // Additional outputs can be added optionally
-  onPayment: function(payment, boostJobStatus) {
-	console.log(payment, boostJobStatus);
-  }
+	// content: 'optional content to initialize',
+	// content: '4d0295d207f3a00d73f069fc4aa5e06d3fe98d565af9f38983c0d486d6166a09', // txid
+	/* outputs: [
+		{
+			to: "18YCy8VDYcXGnekHC4g3vphnJveTskhCLf", amount: 0.0004, currency: 'BSV'
+		}
+	],*/
+	// tag: 'bitcoin',
+	// category: 'B',  // defaults to 'B' underneath.
+	onPayment: function(payment, boostJobStatus) {
+		console.log(payment, boostJobStatus);
+	}
 });
 \`\`\`
 
@@ -47,6 +53,10 @@ An array containing a list of output ojects. Each output object may have the fol
 - \`to\`: (string) - bitcoin address
 - \`amount\`: (number) - amount of bitcoin (BSV)
 - \`script\`: (string) - valid bitcoin script using ASM format
+
+### Category
+
+Optional category to initialize with. Leave empty to default to 'B'
 
 ### onPayment
 

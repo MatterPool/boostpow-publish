@@ -40,6 +40,7 @@ class BoostPublish {
 	}
 
 	async open(props) {
+		console.log('boostpow-publish open', props);
 		if (!this.didInit) {
 			await sleep(200);
 			this.open(props);

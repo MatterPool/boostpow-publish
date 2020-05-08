@@ -25,10 +25,6 @@ const wallets = {
 	}
 };
 
-const outputs = [
-];
-
-
 const PaymentPopup = props => {
 	const [wallet, setWallet] = useState('moneybutton');
 	const [paid, setPaid] = useState(false);
@@ -38,15 +34,20 @@ const PaymentPopup = props => {
 
 	const allOutputs = () => {
 		const o = [];
-		outputs.forEach((out) => {
-			o.push(out);
-		});
-
+		let category = Buffer.from('B', 'utf8').toString('hex');
+		if (props.category) {
+			category = Buffer.from(props.category, 'utf8').toString('hex')
+		}
+		if (props.outputs && props.outputs.length) {
+			props.outputs.forEach((out) => {
+				o.push(out);
+			});
+		}
 		try {
 			const boostJob = boost.BoostPowJob.fromObject({
 				content: content ? content : props.content,
 				tag: tag ? Buffer.from(tag, 'utf8').toString('hex') : undefined,
-				category: Buffer.from('B', 'utf8').toString('hex'),
+				category: category,
 				diff: difficulty,
 			});
 
@@ -125,9 +126,9 @@ const PaymentPopup = props => {
 				console.log('onPayment', payment);
 				const boostJobStatus = await boost.Graph().submitBoostJob(payment.rawtx);
 				console.log('boostJobStatus', boostJobStatus);
+				const mergedPayment = Object.assign({}, payment, { boostJobStatus: boostJobStatus.result } );
 				if (props.parent){
-					console.log('notify parent');
-					props.parent.emit('payment', { payment, boostJobStatus });
+					props.parent.emit('payment', { payment: mergedPayment});
 				}
 				setPaid(true);
 				setTimeout(() => {
@@ -196,13 +197,29 @@ const PaymentPopup = props => {
 										<option value="18">18</option>
 										<option value="19">19</option>
 										<option value="20">20</option>
+										<option value="21">21</option>
+										<option value="22">22</option>
+										<option value="23">23</option>
+										<option value="24">24</option>
+										<option value="25">25</option>
+										<option value="26">26</option>
+										<option value="27">27</option>
+										<option value="28">28</option>
+										<option value="29">29</option>
+										<option value="30">30</option>
+										<option value="31">31</option>
+										<option value="32">32</option>
+										<option value="33">33</option>
+										<option value="34">34</option>
+										<option value="35">35</option>
+										<option value="36">36</option>
+										<option value="37">37</option>
+										<option value="38">36</option>
+										<option value="39">39</option>
+										<option value="40">40</option>
 									</select>
-
 								</div>
 							</form>
-
-
-
 							<FormControl variant="outlined" margin="dense" className="boost-publisher-form-control">
 								<Select
 									value={wallet}
