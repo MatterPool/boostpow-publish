@@ -16,7 +16,11 @@ const Home = () => {
 		category: 'B' // defaults to 'B' underneath.
 		*/
 		// content: '4d0295d207f3a00d73f069fc4aa5e06d3fe98d565af9f38983c0d486d6166a09',
-		// tag: '$osg',
+		// tag: '$',
+		// showTagField: false, // defaults to true
+		// showCategoryField: false, // defaults to false
+		// diffMultiplier: 0.00002, // defaults to 0.00002
+		// displayMessage: 'hello world',
 	});
 	const [parent, setParent] = useState();
 	const listenForPay = async () => {

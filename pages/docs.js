@@ -23,6 +23,10 @@ boostPublish.open({
 	],*/
 	// tag: 'bitcoin',
 	// category: 'B',  // defaults to 'B' underneath.
+	// showTagField: true, // defaults to true
+	// showCategoryField: false, // defaults to false
+	// diffMultiplier: 0.00002, // defaults to 0.00002
+	// displayMessage: 'Boost this', // set to empty string to disable
 	onPayment: function(payment, boostJobStatus) {
 		console.log(payment, boostJobStatus);
 	}
@@ -57,6 +61,22 @@ An array containing a list of output ojects. Each output object may have the fol
 ### Category
 
 Optional category to initialize with. Leave empty to default to 'B'
+
+### showCategoryField
+
+Optional showCategoryField whether to show category field or not.
+
+### showTagField
+
+Optional showTagField whether to show tag field or not.
+
+### diffMultiplier
+
+Optional diffMultiplier to set how much to charge per difficulty unit. Default: 0.00002
+
+### displayMessage
+
+Optional displayMessage to show user. Defaults to 'What's Boost?' text if not set.
 
 ### onPayment
 

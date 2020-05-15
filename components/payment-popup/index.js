@@ -30,18 +30,25 @@ const PaymentPopup = props => {
 	const [paid, setPaid] = useState(false);
 	const [content, setContent] = useState(props.content);
 	const [tag, setTag] = useState(props.tag);
+	const [category, setCategory] = useState(props.category);
 	const [difficulty, setDifficulty] = useState(1);
 
 	const allOutputs = () => {
 		const o = [];
-		let category = Buffer.from('B', 'utf8').toString('hex');
-		let defaultTag = null;
+		let defaultFeeMultiplier = 0.00002;
+		let defaultTag = undefined;
+		let defaultCategory = Buffer.from('B', 'utf8').toString('hex');
+
+		if (props.diffMultiplier) {
+			defaultFeeMultiplier = props.diffMultiplier
+		}
 		if (props.tag) {
 			defaultTag = Buffer.from(props.tag, 'utf8').toString('hex')
 		}
 		if (props.category) {
-			category = Buffer.from(props.category, 'utf8').toString('hex')
+			defaultCategory = Buffer.from(props.category, 'utf8').toString('hex')
 		}
+
 		if (props.outputs && props.outputs.length) {
 			props.outputs.forEach((out) => {
 				o.push(out);
@@ -51,13 +58,13 @@ const PaymentPopup = props => {
 			const boostJob = boost.BoostPowJob.fromObject({
 				content: content ? content : props.content,
 				tag: tag ? Buffer.from(tag, 'utf8').toString('hex') : defaultTag,
-				category: category,
+				category: category ? Buffer.from(category, 'utf8').toString('hex') : defaultCategory,
 				diff: difficulty,
 			});
 
 			const latestOutputState = {
 				script: boostJob.toASM(),
-				amount: Math.max(boostJob.getDiff() * 0.00002, 0.00000546),
+				amount: Math.max(boostJob.getDiff() * defaultFeeMultiplier, 0.00000546),
 				currency: "BSV"
 			}
 			if (latestOutputState) {
@@ -80,6 +87,10 @@ const PaymentPopup = props => {
 
 	const handleTagChange = (evt, value) => {
 		setTag(evt.target.value);
+	};
+
+	const handleCategoryChange = (evt, value) => {
+		setCategory(evt.target.value);
 	};
 
 	const handleChange = (evt, value) => {
@@ -166,17 +177,34 @@ const PaymentPopup = props => {
 						<div className="boost-publisher-body">
 							<form>
 								<div class="form-group">
-									<p className="lead">
-										What would you like to Boost? <a href="https://boostpow.com" className="pow-help-text" target="_blank">What's Boost?</a>
-									</p>
+									{!props.displayMessage && (
+										<p className="lead">
+											What would you like to Boost? <a href="https://boostpow.com" className="pow-help-text" target="_blank">What's Boost?</a>
+										</p>
+									)}
+									{props.displayMessage && (
+										<p className="lead">
+											{props.displayMessage}
+										</p>
+									)}
 									<input onChange={handleContentChange} value={content || props.content} type="text" className="input-content" placeholder="Transaction ID, Bitcoin File, Text, Hash, etc.."></input>
 								</div>
-								<div class="form-group">
-									<p className="lead">
-										Tag (optional)
-									</p>
-									<input onChange={handleTagChange} value={tag || props.tag} type="text" className="input-content" placeholder="ex: photos, programming, bitcoin..."></input>
-								</div>
+								{props.showTagField && (
+									<div class="form-group">
+										<p className="lead">
+											Tag (optional)
+										</p>
+										<input maxlength="20" onChange={handleTagChange} value={tag || props.tag} type="text" className="input-content" placeholder="ex: photos, programming, bitcoin..."></input>
+									</div>
+								)}
+								{props.showCategoryField === true && (
+									<div class="form-group">
+										<p className="lead">
+											Category (optional)
+										</p>
+										<input maxlength="4" onChange={handleCategoryChange} value={category || props.category} type="text" className="input-content" placeholder=""></input>
+									</div>
+								)}
 								<div class="form-group input-diff-container">
 
 									<label className="label">Energy </label>
