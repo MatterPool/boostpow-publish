@@ -176,7 +176,7 @@ const PaymentPopup = props => {
 					{props.wallets.length > 1 && !paid && (
 						<div className="boost-publisher-body">
 							<form>
-								<div class="form-group">
+								<div className="form-group">
 									{!props.displayMessage && (
 										<p className="lead">
 											What would you like to Boost? <a href="https://boostpow.com" className="pow-help-text" target="_blank">What's Boost?</a>
@@ -190,7 +190,7 @@ const PaymentPopup = props => {
 									<input onChange={handleContentChange} value={content || props.content} type="text" className="input-content" placeholder="Transaction ID, Bitcoin File, Text, Hash, etc.."></input>
 								</div>
 								{props.showTagField && (
-									<div class="form-group">
+									<div className="form-group">
 										<p className="lead">
 											Tag (optional)
 										</p>
@@ -198,17 +198,17 @@ const PaymentPopup = props => {
 									</div>
 								)}
 								{props.showCategoryField === true && (
-									<div class="form-group">
+									<div className="form-group">
 										<p className="lead">
 											Category (optional)
 										</p>
 										<input maxlength="4" onChange={handleCategoryChange} value={category || props.category} type="text" className="input-content" placeholder=""></input>
 									</div>
 								)}
-								<div class="form-group input-diff-container">
+								<div className="form-group input-diff-container">
 
 									<label className="label">Energy </label>
-									<select className="input-diff" onChange={handleDiffChange}>
+									<select defaultValue={difficulty} className="input-diff" onChange={handleDiffChange}>
 										<option value="1">1</option>
 										<option value="2">2</option>
 										<option value="3">3</option>
