@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import Styles from './styles';
+import snarkdown from 'snarkdown';
 
 import FormControl from '@material-ui/core/FormControl';
 import MenuItem from '@material-ui/core/MenuItem';
@@ -25,13 +26,27 @@ const wallets = {
 	}
 };
 
+/*
+
+Example Files
+{
+  "imageContent": "1cbf1cb5b6c1b72600da298a9c116cb262649ae53db380853508ca2d0bc94b64",
+  "videoContent": "1e1c7c06786d4e7979aaaa0f6c9204910cba288741bfa8b95b43027d698e2f90",
+  "pdfContent": "4a01a98748fa64db82ff45ce58d55a0c9511fa417110aebe3c33d6221c3b07c0",
+  "markdownContent": "a1ef1e13a09b1f58c5ce7e42f7e24c02c529baa4608652b9895d10b25bb30f5a",
+  "textContent": "2829b4df5152fb867128f0ea2cffdfe3b7134a98b356eb1a1813b68fd3b83519"
+}
+*/
+
 const PaymentPopup = props => {
 	const [wallet, setWallet] = useState('moneybutton');
 	const [paid, setPaid] = useState(false);
-	const [content, setContent] = useState(props.content);
 	const [tag, setTag] = useState(props.tag);
 	const [category, setCategory] = useState(props.category);
 	const [difficulty, setDifficulty] = useState(1);
+  const [content, setContent] = useState(props.content || '');
+  const [contentType, setContentType] = useState(null);
+  const [contentPreview, setContentPreview] = useState();
 
 	const allOutputs = () => {
 		const o = [];
@@ -81,8 +96,35 @@ const PaymentPopup = props => {
 		setDifficulty(parseFloat(evt.target.value));
 	};
 
-	const handleContentChange = (evt, value) => {
-		setContent(evt.target.value);
+	const handleContentChange = async (evt, value) => {
+
+    let content = evt.target.value;
+
+		setContent(content);
+
+    let resp = await fetch(`https://media.bitcoinfiles.org/${content}`, { method: "HEAD" })
+
+    let contentType = resp.headers.get('Content-Type');
+
+    setContentType(contentType);
+
+    if (contentType.match(/^text/)) {
+
+      resp = await fetch(`https://media.bitcoinfiles.org/${content}`);
+
+      let text = await resp.text();
+
+      if (contentType === 'text/markdown; charset=utf-8') {
+
+        setContentPreview(snarkdown(text));
+
+      } else {
+
+       setContentPreview(text);
+
+      }
+
+    }
 	};
 
 	const handleTagChange = (evt, value) => {
@@ -173,7 +215,7 @@ const PaymentPopup = props => {
 							Close
 						</p>
 					</div>
-					{props.wallets.length > 1 && !paid && (
+					{props.wallets.length > 1 && !paid &&
 						<div className="boost-publisher-body">
 							<form>
 								<div className="form-group">
@@ -187,7 +229,44 @@ const PaymentPopup = props => {
 											{props.displayMessage}
 										</p>
 									)}
-									<input onChange={handleContentChange} value={content || props.content} type="text" className="input-content" placeholder="Transaction ID, Bitcoin File, Text, Hash, etc.."></input>
+									<input onChange={handleContentChange} defaultValue='' value={content || ''} type="text" className="input-content" placeholder="Transaction ID, Bitcoin File, Text, Hash, etc.."></input>
+                  {content &&
+                    <div className='contentPreview'>
+                      {contentType === 'video/mp4' &&
+                        <video width="320" height="240" controls playsinline autoplay muted loop>
+                          <source
+                            src={`https://media.bitcoinfiles.org/${content}`}
+                            type="video/mp4"/>
+                        </video>
+                      }
+                      {contentType && contentType.match(/^audio/) &&
+                        <audio controls>
+                          <source
+                            src={`https://media.bitcoinfiles.org/${content}`}/>
+                        </audio>
+                      }  
+                      {contentType === 'video/ogg' &&
+                        <video width="320" height="240" controls playsinline autoplay muted loop>
+                          <source
+                            src={`https://media.bitcoinfiles.org/${content}`}
+                            type="video/ogg"/>
+                        </video>
+                      }  
+                      {(contentType && contentType.match(/^image/)) &&
+                        <img src={`https://media.bitcoinfiles.org/${content}`}/>
+                      }
+                      {(contentType && contentType.match(/^text/) && !contentType.match(/^text\/markdown/)) &&
+                        <textarea rows="10" readOnly value={contentPreview}>
+                        </textarea>
+                      }
+                      {(contentType && contentType.match(/^text\/markdown/)) &&
+                        <div className='markdownPreview' dangerouslySetInnerHTML={{__html: contentPreview}}></div>
+                      }
+                      {contentType === 'application/pdf' &&
+                        <embed src={`https://drive.google.com/viewerng/viewer?embedded=true&url=https://media.bitcoinfiles.org/${content}`}/>
+                      }
+                    </div>
+                  }
 								</div>
 								{props.showTagField && (
 									<div className="form-group">
@@ -282,7 +361,7 @@ const PaymentPopup = props => {
 								</Select>
 							</FormControl>
 						</div>
-					)}
+					}
 					<div className="boost-publisher-body">
 						{!paid && !!allOutputs() && !!allOutputs().length && <Wallet {...getWalletProps()} />}
 						{paid && (
