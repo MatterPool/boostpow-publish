@@ -47,6 +47,7 @@ const PaymentPopup = props => {
   const [content, setContent] = useState(props.content || '');
   const [contentType, setContentType] = useState(null);
   const [contentPreview, setContentPreview] = useState();
+  const [showContentPreview] = useState(props.showContentPreview === false ? false : true);
 
 	const allOutputs = () => {
 		const o = [];
@@ -230,7 +231,7 @@ const PaymentPopup = props => {
 										</p>
 									)}
 									<input onChange={handleContentChange} defaultValue='' value={content || ''} type="text" className="input-content" placeholder="Transaction ID, Bitcoin File, Text, Hash, etc.."></input>
-                  {content &&
+                  {(showContentPreview && content) &&
                     <div className='contentPreview'>
                       {contentType === 'video/mp4' &&
                         <video width="320" height="240" controls playsinline autoplay muted loop>
