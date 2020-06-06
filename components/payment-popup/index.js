@@ -105,6 +105,13 @@ const PaymentPopup = props => {
 
     let resp = await fetch(`https://media.bitcoinfiles.org/${content}`, { method: "HEAD" })
 
+    if (resp.status === 404) {
+
+      setContentType(null);
+
+      return;
+    }
+
     let contentType = resp.headers.get('Content-Type');
 
     setContentType(contentType);
@@ -230,7 +237,7 @@ const PaymentPopup = props => {
 											{props.displayMessage}
 										</p>
 									)}
-									<input onChange={handleContentChange} defaultValue='' value={content || ''} type="text" className="input-content" placeholder="Transaction ID, Bitcoin File, Text, Hash, etc.."></input>
+									<input onChange={handleContentChange} value={content || ''} type="text" className="input-content" placeholder="Transaction ID, Bitcoin File, Text, Hash, etc.."></input>
                   {(showContentPreview && content) &&
                     <div className='contentPreview'>
                       {contentType === 'video/mp4' &&
@@ -264,7 +271,7 @@ const PaymentPopup = props => {
                         <div className='markdownPreview' dangerouslySetInnerHTML={{__html: contentPreview}}></div>
                       }
                       {contentType === 'application/pdf' &&
-                        <embed src={`https://drive.google.com/viewerng/viewer?embedded=true&url=https://media.bitcoinfiles.org/${content}`}/>
+                        <embed className='pdfPreview' style={{width:300}} src={`https://drive.google.com/viewerng/viewer?embedded=true&url=https://media.bitcoinfiles.org/${content}`}/>
                       }
                     </div>
                   }

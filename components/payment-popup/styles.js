@@ -166,7 +166,28 @@ const Styles = () => (
       border-radius: 0.5em;
       overflow-y:scroll;
     }
+    media only screen and (min-width: 600px) {
+
+      .contentPreview img {
+        max-height:200px;
+        width: auto;
+        margin: 0 auto;;
+      }
+
+      .contentPreview video {
+        max-height:200px;
+        width: auto;
+        margin: 0 auto;;
+      }
+
+
+
+    }
     @media only screen and (max-width: 600px) {
+      .pdfPreview {
+        height: 400;
+        width: 300;
+      }
 
       .contentPreview {
         padding: 1em;
