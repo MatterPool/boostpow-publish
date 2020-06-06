@@ -27,6 +27,7 @@ boostPublish.open({
 	// showCategoryField: false, // defaults to false
 	// diffMultiplier: 0.00002, // defaults to 0.00002
 	// displayMessage: 'Boost this', // set to empty string to disable
+	// showContentPreview: true, // Whether to show content preview or not
 	onPayment: function(payment, boostJobStatus) {
 		console.log(payment, boostJobStatus);
 	}
@@ -61,6 +62,10 @@ An array containing a list of output ojects. Each output object may have the fol
 ### Category
 
 Optional category to initialize with. Leave empty to default to 'B'
+
+### showContentPreview
+
+Whether to attempt to resolve txid to a B file (image, video, pdf, etc)
 
 ### showCategoryField
 
