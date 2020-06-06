@@ -7,7 +7,6 @@
     "export": "next export",
     "build-browser-partial": "node_modules/browserify/bin/cmd.js src/boostpow-publish.js -o public/boostpow-publish.js && node_modules/terser/bin/terser -o public/boostpow-publish.js --module --compress --mangle -- public/boostpow-publish.js && rm -f public/boostpow-publish.js.tmp-* || true",
     "build-browser-full": "node_modules/browserify/bin/cmd.js src/publish.js -o public/publish.js && node_modules/terser/bin/terser -o public/publish.js --module --compress --mangle -- public/publish.js && rm -f public/publish.js.tmp-* || true",
-
     "deploy": "now deploy --prod",
     "dev": "next dev -p 4000",
     "start": "next start",
@@ -28,7 +27,8 @@
     "react": "16.12.0",
     "react-dom": "16.12.0",
     "react-load-script": "0.0.6",
-    "react-markdown": "4.3.1"
+    "react-markdown": "4.3.1",
+    "snarkdown": "^1.2.2"
   },
   "devDependencies": {
     "babel-eslint": "10.0.3",

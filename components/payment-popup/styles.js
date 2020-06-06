@@ -132,6 +132,109 @@ const Styles = () => (
 			border-color: #f2f2f2 !important;
 			border-width: 1px !important;
 		}
+    .contentPreview {
+      padding: 1em;
+      text-align:center;
+    }
+
+    .contentPreview img {
+      width: 320px;
+      margin: 0 auto;;
+    }
+
+    .contentPreview textarea {
+      width: 100%;
+      max-height: 300px;
+      overflow-y: scroll;
+      padding: 1em;
+      margin: 0 auto;
+    }
+
+    .contentPreview embed {
+      width: 100%;
+      padding: 1em;
+      margin: 0 auto;
+    }
+
+    .markdownPreview  {
+      width: 100%;
+      padding: 1em;
+      margin: 0 auto;
+      max-height:300px;
+      height:300px;
+      border: 1px solid #ccc;
+      border-radius: 0.5em;
+      overflow-y:scroll;
+    }
+    media only screen and (min-width: 600px) {
+
+      .contentPreview img {
+        max-height:200px;
+        width: auto;
+        margin: 0 auto;;
+      }
+
+      .contentPreview video {
+        max-height:200px;
+        width: auto;
+        margin: 0 auto;;
+      }
+
+
+
+    }
+    @media only screen and (max-width: 600px) {
+      .pdfPreview {
+        height: 400;
+        width: 300;
+      }
+
+      .contentPreview {
+        padding: 1em;
+        text-align:center;
+      }
+
+      .contentPreview img {
+        max-height:100px;
+        width: auto;
+        margin: 0 auto;;
+      }
+
+      .contentPreview video {
+        height:100px;
+        width: 300px;
+        margin: 0 auto;;
+      }
+
+      .contentPreview textarea {
+        width: 100%;
+        max-height: 100px;
+        overflow-y: scroll;
+        padding: 1em;
+        margin: 0 auto;
+      }
+
+      .contentPreview embed {
+        width: 100%;
+        height: 100px;
+        padding: 1em;
+        margin: 0 auto;
+      }
+
+      .markdownPreview  {
+        width: 100%;
+        padding: 1em;
+        margin: 0 auto;
+        max-height:100px;
+        height:100px;
+        border: 1px solid #ccc;
+        border-radius: 0.5em;
+        overflow-y:scroll;
+      }
+    }
+
+
+
 	`}</style>
 );
 
