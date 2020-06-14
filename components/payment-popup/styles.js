@@ -133,7 +133,6 @@ const Styles = () => (
 			border-width: 1px !important;
 		}
     .contentPreview {
-      padding: 1em;
       text-align:center;
     }
 
