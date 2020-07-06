@@ -1,6 +1,6 @@
 {
   "name": "boostpow-publish",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "private": false,
   "scripts": {
     "build": "next build",
@@ -19,7 +19,7 @@
     "bsv": "1.3.0",
     "copy-to-clipboard": "3.3.1",
     "jquery": "^3.4.1",
-    "next": "9.2.2",
+    "next": "^9.2.2",
     "postmate": "1.5.2",
     "proxypay": "0.0.6",
     "qrcode.react": "1.0.0",
