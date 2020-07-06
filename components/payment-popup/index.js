@@ -241,7 +241,7 @@ const PaymentPopup = props => {
 	};
 
 	const renderOption = (value, label) => {
-		return <option value={value}>{label || value}</option>;
+		return <option key={value} value={value}>{label || value}</option>;
 	};
 
 	const renderDiffOptions = () => {
