@@ -22,7 +22,9 @@ const Home = () => {
 		// showCategoryField: false, // defaults to false
 		// showInputDiff: false, // defaults to true
 		// lockDiff: true, // defaults to false
-		// initialDiff: 1, // defaults to 1
+		// minDiff: 1, // defaults to 1
+		// maxDiff: 40, // defaults to 40
+		// initialDiff: 1, // defaults to the minimal difficulty or 1
 		// diffMultiplier: 0.00002, // defaults to 0.00002
 		// displayMessage: 'hello world',
 	});

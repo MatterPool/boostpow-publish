@@ -44,6 +44,8 @@ const PaymentPopup = props => {
 	const [paid, setPaid] = useState(false);
 	const [tag, setTag] = useState(props.tag);
 	const [category, setCategory] = useState(props.category);
+	const [minDiff] = useState(props.minDiff > 0 ? parseFloat(props.minDiff) : 1);
+	const [maxDiff] = useState(props.maxDiff > minDiff ? parseFloat(props.maxDiff) : 40);
 
 	const [content, setContent] = useState(props.content || '');
 	const [contentType, setContentType] = useState(null);
@@ -72,8 +74,7 @@ const PaymentPopup = props => {
 
 	const [showInputDiff] = useState(props.showInputDiff === false ? false : true);
 	const [lockDiff] = useState(props.lockDiff === true ? true : false);
-	const [minDiff] = useState(1); // Can become configurable?
-	const [maxDiff] = useState(40); // Can become configurable?
+	
 	// Return the difficulty value safely between min and max difficulty
 	const safeDiffValue = diffValue => {
 		if (diffValue < minDiff) return minDiff;
