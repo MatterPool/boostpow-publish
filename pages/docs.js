@@ -27,6 +27,8 @@ boostPublish.open({
 	// showCategoryField: false, // defaults to false
 	// showInputDiff: true, // defaults to true
 	// lockDiff: true, // defaults to false
+	// minDiff: 1, // defaults to 1
+	// maxDiff: 40, // defaults to 40
 	// initialDiff: 1, // defaults to 1
 	// diffMultiplier: 0.00002, // defaults to 0.00002
 	// displayMessage: 'Boost this', // set to empty string to disable
@@ -85,6 +87,14 @@ Optional showInputDiff whether to show difficulty input field or not.
 ### lockDiff
 
 Optional lockDiff whether to disable changing the difficulty field.
+
+### minDiff
+
+Optional minDiff to set the minimal difficulty value. Default: 1
+
+### maxDiff
+
+Optional maxDiff to set the maximal difficulty value. Default: 40
 
 ### initialDiff
 
