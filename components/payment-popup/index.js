@@ -43,15 +43,26 @@ const PaymentPopup = props => {
 	const [paid, setPaid] = useState(false);
 	const [tag, setTag] = useState(props.tag);
 	const [category, setCategory] = useState(props.category);
-	const [difficulty, setDifficulty] = useState(1);
+	const [minDiff] = useState(1); // To be configurable?
+	const [maxDiff] = useState(40); // To be configurable?
+
+	// Return the difficulty value safely between min and max difficulty
+	const safeDiffValue = diffValue => {
+		if (diffValue < minDiff) return minDiff;
+		if (diffValue > maxDiff) return maxDiff;
+		return diffValue;
+	};
+	const [initialDiff] = useState(props.initialDiff > 0 ? parseFloat(props.initialDiff) : 1);
+	const [difficulty, setDifficulty] = useState(safeDiffValue(initialDiff));
   const [content, setContent] = useState(props.content || '');
   const [contentType, setContentType] = useState(null);
   const [contentPreview, setContentPreview] = useState();
   const [showContentPreview] = useState(props.showContentPreview === false ? false : true);
   const [showInputDiff] = useState(props.showInputDiff === false ? false : true);
   const [lockDiff] = useState(props.lockDiff === true ? true : false);
-  const [minDiff] = useState(1); // Can become configurable?
-  const [maxDiff] = useState(40); // Can become configurable?
+  
+
+	
 
 	const allOutputs = () => {
 		const o = [];
@@ -210,7 +221,7 @@ const PaymentPopup = props => {
 	};
 
 	const renderOption = (value, label) => {
-		return <option value="{value}">{label || value}</option>;
+		return <option value={value}>{label || value}</option>;
 	};
 
 	const renderDiffOptions = () => {
