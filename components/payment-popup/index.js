@@ -49,6 +49,7 @@ const PaymentPopup = props => {
   const [contentPreview, setContentPreview] = useState();
   const [showContentPreview] = useState(props.showContentPreview === false ? false : true);
   const [showInputDiff] = useState(props.showInputDiff === false ? false : true);
+  const [lockDiff] = useState(props.lockDiff === true ? true : false);
   const [minDiff] = useState(1); // Can become configurable?
   const [maxDiff] = useState(40); // Can become configurable?
 
@@ -312,7 +313,7 @@ const PaymentPopup = props => {
 									{showInputDiff && (
 										<div>
 										<label className="label">Energy </label>
-										<select defaultValue={difficulty} className="input-diff" onChange={handleDiffChange}>
+										<select defaultValue={difficulty} className="input-diff" onChange={handleDiffChange} disabled={lockDiff}>
 											{renderDiffOptions()}
 										</select>
 										</div>
