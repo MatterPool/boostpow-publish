@@ -5,7 +5,7 @@ import Postmate from 'postmate';
 
 const Home = () => {
 	const [paymentProps, setPaymentProps] = useState({
-		wallets: ['moneybutton', 'relayx']
+		wallets: ['moneybutton', 'relayx'],
 		/*outputs: [
 			{
 				to: "18YCy8VDYcXGnekHC4g3vphnJveTskhCLf", amount: 0.0004, currency: 'BSV'
@@ -20,6 +20,7 @@ const Home = () => {
 		// tag: '$',
 		// showTagField: false, // defaults to true
 		// showCategoryField: false, // defaults to false
+		// showInputDiff: false, // defaults to true
 		// diffMultiplier: 0.00002, // defaults to 0.00002
 		// displayMessage: 'hello world',
 	});
