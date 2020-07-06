@@ -21,6 +21,7 @@ const Home = () => {
 		// showTagField: false, // defaults to true
 		// showCategoryField: false, // defaults to false
 		// showInputDiff: false, // defaults to true
+		// lockDiff: true, // defaults to false
 		// diffMultiplier: 0.00002, // defaults to 0.00002
 		// displayMessage: 'hello world',
 	});

@@ -26,6 +26,7 @@ boostPublish.open({
 	// showTagField: true, // defaults to true
 	// showCategoryField: false, // defaults to false
 	// showInputDiff: true, // defaults to true
+	// lockDiff: true, // defaults to false
 	// diffMultiplier: 0.00002, // defaults to 0.00002
 	// displayMessage: 'Boost this', // set to empty string to disable
 	// showContentPreview: true, // Whether to show content preview or not
@@ -79,6 +80,10 @@ Optional showTagField whether to show tag field or not.
 ### showInputDiff
 
 Optional showInputDiff whether to show difficulty input field or not.
+
+### lockDiff
+
+Optional lockDiff whether to disable changing the difficulty field.
 
 ### diffMultiplier
 
