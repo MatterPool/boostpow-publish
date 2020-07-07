@@ -11,7 +11,7 @@ const Home = () => {
 				to: "18YCy8VDYcXGnekHC4g3vphnJveTskhCLf", amount: 0.0004, currency: 'BSV'
 			}
 		],
-    showContentPreview: true,
+    	showContentPreview: true,
 		content: '4d0295d207f3a00d73f069fc4aa5e06d3fe98d565af9f38983c0d486d6166a09',
 		tag: 'bitcoin',
 		category: 'B' // defaults to 'B' underneath.
@@ -20,14 +20,18 @@ const Home = () => {
 		// tag: '$',
 		// showTagField: false, // defaults to true
 		// showCategoryField: false, // defaults to false
-		// showInputDiff: false, // defaults to true
-		// lockDiff: true, // defaults to false
-		// minDiff: 1, // defaults to 1
+		// minDiff: 10, // defaults to 1
 		// maxDiff: 40, // defaults to 40
-		// initialDiff: 1, // defaults to the minimal difficulty or 1
 		// diffMultiplier: 0.00002, // defaults to 0.00002
+		// initialDiff: 1, // defaults to the minimal difficulty or 1
+		// lockDiff: true, // defaults to false
+		// showInputDiff: false, // defaults to false
+		// showSliderDiff: true, // defaults to true
+		// sliderDiffStep: 1, // defaults to 1
+		// sliderDiffMarkerStep: 10, // defaults to 10, use 0 to disable markers
 		// displayMessage: 'hello world',
 	});
+
 	const [parent, setParent] = useState();
 	const listenForPay = async () => {
 
