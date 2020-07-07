@@ -20,11 +20,11 @@ const Home = () => {
 		// tag: '$',
 		// showTagField: false, // defaults to true
 		// showCategoryField: false, // defaults to false
-		// minDiff: 10, // defaults to 1
+		// minDiff: 1, // defaults to 1
 		// maxDiff: 40, // defaults to 40
 		// diffMultiplier: 0.00002, // defaults to 0.00002
 		// initialDiff: 1, // defaults to the minimal difficulty or 1
-		// lockDiff: true, // defaults to false
+		// lockDiff: false, // defaults to false
 		// showInputDiff: false, // defaults to false
 		// showSliderDiff: true, // defaults to true
 		// sliderDiffStep: 1, // defaults to 1

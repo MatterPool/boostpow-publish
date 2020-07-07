@@ -134,7 +134,9 @@ const PaymentPopup = props => {
 		// unifies the value when comming from slider or from input field
 		const val = value > 0 ? parseFloat(value) : parseFloat(evt.target.value);
 		if (val === difficulty) return;
-		// Controls a minimum time between changes to money button  multiple renders
+		// This timeout controls a minimum time between changes to avoid money button multiple renders
+		// I think it would be better to put this timeout on the money button render function itself
+		// because this timeout causes a little lag when dragging the slider marker
 		clearTimeout(diffTimeout);
 		diffTimeout = setTimeout(() => {
 			// ensure minimun difficulty
@@ -354,8 +356,8 @@ const PaymentPopup = props => {
 									{showInputDiff && (
 										<div>
 											<label className="label">Difficulty</label>
-											<select defaultValue={minDiff} value={difficulty} className="input-diff" onChange={handleDiffChange} disabled={lockDiff}>
-												{renderDiffOptions()}
+											<select value={difficulty} className="input-diff" onChange={handleDiffChange} disabled={lockDiff}>
+												{renderDiffOptions(minDiff, maxDiff, sliderDiffStep)}
 											</select>
 										</div>
 									)}
