@@ -5,6 +5,7 @@ import snarkdown from 'snarkdown';
 import FormControl from '@material-ui/core/FormControl';
 import MenuItem from '@material-ui/core/MenuItem';
 import Select from '@material-ui/core/Select';
+import { DiffSlider, safeDiffValue, calculateSliderMarks, renderDiffOptions } from './difficulty';
 
 import MoneyButton from '../moneybutton';
 import RelayX from '../relayx';
@@ -44,15 +45,26 @@ const PaymentPopup = props => {
 	const [paid, setPaid] = useState(false);
 	const [tag, setTag] = useState(props.tag);
 	const [category, setCategory] = useState(props.category);
-	const [minDiff] = useState(props.minDiff > 0 ? parseFloat(props.minDiff) : 1);
-	const [maxDiff] = useState(props.maxDiff > minDiff ? parseFloat(props.maxDiff) : 40);
-
+	
+	// Content
 	const [content, setContent] = useState(props.content || '');
 	const [contentType, setContentType] = useState(null);
 	const [contentPreview, setContentPreview] = useState();
-
 	const [showContentPreview, setShowContentPreview] = useState(
 		props.showContentPreview === false ? false : true
+	);
+
+	// Difficulty
+	const [showInputDiff] = useState(props.showInputDiff === true ? true : false);
+	const [lockDiff] = useState(props.lockDiff === true ? true : false);
+	const [minDiff] = useState(props.minDiff > 0 ? parseFloat(props.minDiff) : 1);
+	const [maxDiff] = useState(props.maxDiff > minDiff ? parseFloat(props.maxDiff) : 40);
+	const [initialDiff] = useState(props.initialDiff > 0 ? safeDiffValue(parseFloat(props.initialDiff), minDiff, maxDiff) : 1);
+	const [difficulty, setDifficulty] = useState(initialDiff);
+	const [showSliderDiff] = useState(props.showSliderDiff === false ? false : true);
+	const [sliderDiffStep] = useState(props.sliderDiffStep > 0 ? parseInt(props.sliderDiffStep, 10) : 1);
+	const [sliderDiffMarkerStep] = useState(
+		props.sliderDiffMarkerStep == 0 || props.sliderDiffMarkerStep == false ? 0 : parseInt(props.sliderDiffMarkerStep, 10) || 10 
 	);
 
 	useEffect(() => {
@@ -71,18 +83,6 @@ const PaymentPopup = props => {
 			);
 		}
 	});
-
-	const [showInputDiff] = useState(props.showInputDiff === false ? false : true);
-	const [lockDiff] = useState(props.lockDiff === true ? true : false);
-	
-	// Return the difficulty value safely between min and max difficulty
-	const safeDiffValue = diffValue => {
-		if (diffValue < minDiff) return minDiff;
-		if (diffValue > maxDiff) return maxDiff;
-		return diffValue;
-	};
-	const [initialDiff] = useState(props.initialDiff > 0 ? parseFloat(props.initialDiff) : 1);
-	const [difficulty, setDifficulty] = useState(safeDiffValue(initialDiff));
 
 	const allOutputs = () => {
 		const o = [];
@@ -128,46 +128,51 @@ const PaymentPopup = props => {
 		return o;
 	}
 
+	//
+	let diffTimeout = null;
 	const handleDiffChange = (evt, value) => {
-		setDifficulty(parseFloat(evt.target.value));
+		// unifies the value when comming from slider or from input field
+		const val = value > 0 ? parseFloat(value) : parseFloat(evt.target.value);
+		if (val === difficulty) return;
+		// Controls a minimum time between changes to money button  multiple renders
+		clearTimeout(diffTimeout);
+		diffTimeout = setTimeout(() => {
+			// ensure minimun difficulty
+			if (val <= minDiff) setDifficulty(minDiff);
+			// ensure maximum difficulty
+			else if (val >= maxDiff) setDifficulty(maxDiff);
+			// if using sliders and having larger steps, ensure the slider value will be set to a mod zero value
+			else if (showSliderDiff && sliderDiffStep > 1) {
+				setDifficulty(val % sliderDiffStep === 0 ? val : val-(val % sliderDiffStep));
+			} 
+			// 
+			else setDifficulty(val);
+		}, 100);
 	};
 
+
 	const handleContentChange = async (evt, value) => {
-
-    let content = evt.target.value;
-
+		let content = evt.target.value;
 		setContent(content);
 
-    let resp = await fetch(`https://media.bitcoinfiles.org/${content}`, { method: "HEAD" })
+		let resp = await fetch(`https://media.bitcoinfiles.org/${content}`, { method: 'HEAD' });
+		if (resp.status === 404) {
+			setContentType(null);
+			return;
+		}
 
-    if (resp.status === 404) {
+		let contentType = resp.headers.get('Content-Type');
+		setContentType(contentType);
 
-      setContentType(null);
-
-      return;
-    }
-
-    let contentType = resp.headers.get('Content-Type');
-
-    setContentType(contentType);
-
-    if (contentType.match(/^text/)) {
-
-      resp = await fetch(`https://media.bitcoinfiles.org/${content}`);
-
-      let text = await resp.text();
-
-      if (contentType === 'text/markdown; charset=utf-8') {
-
-        setContentPreview(snarkdown(text));
-
-      } else {
-
-       setContentPreview(text);
-
-      }
-
-    }
+		if (contentType.match(/^text/)) {
+			resp = await fetch(`https://media.bitcoinfiles.org/${content}`);
+			let text = await resp.text();
+			if (contentType === 'text/markdown; charset=utf-8') {
+				setContentPreview(snarkdown(text));
+			} else {
+				setContentPreview(text);
+			}
+		}
 	};
 
 	const handleTagChange = (evt, value) => {
@@ -238,18 +243,6 @@ const PaymentPopup = props => {
 			}
 		};
 		return walletProps;
-	};
-
-	const renderOption = (value, label) => {
-		return <option key={value} value={value}>{label || value}</option>;
-	};
-
-	const renderDiffOptions = () => {
-		let rows = [];
-		for (let i = minDiff; i <= maxDiff; i++){
-			rows.push(renderOption(i));
-		}
-		return rows;
 	};
 
 	return (
@@ -341,12 +334,29 @@ const PaymentPopup = props => {
 								)}
 
 								<div className="form-group input-diff-container">
+									{showSliderDiff && (
+										<div>
+											<label className="label">Difficulty</label>
+											<DiffSlider
+												min={minDiff}
+												max={maxDiff}
+												defaultValue={minDiff}
+												value={difficulty}
+												aria-labelledby="discrete-slider-custom"
+												step={sliderDiffStep}
+												valueLabelDisplay="on"
+												marks={calculateSliderMarks(minDiff, maxDiff, sliderDiffMarkerStep)}
+												onChange={handleDiffChange}
+												disabled={lockDiff}
+											/>
+										</div>
+									)}
 									{showInputDiff && (
 										<div>
-										<label className="label">Energy </label>
-										<select defaultValue={difficulty} className="input-diff" onChange={handleDiffChange} disabled={lockDiff}>
-											{renderDiffOptions()}
-										</select>
+											<label className="label">Difficulty</label>
+											<select defaultValue={minDiff} value={difficulty} className="input-diff" onChange={handleDiffChange} disabled={lockDiff}>
+												{renderDiffOptions()}
+											</select>
 										</div>
 									)}
 								</div>
@@ -399,7 +409,7 @@ const PaymentPopup = props => {
 				</div>
 				<div className="boost-publisher-grow" />
 			</div>
-			<Styles />
+			<Styles />			
 		</div>
 	);
 };
