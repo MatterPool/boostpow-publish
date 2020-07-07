@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Styles from './styles';
 import snarkdown from 'snarkdown';
 
@@ -40,16 +40,17 @@ Example Files
 */
 
 const PaymentPopup = props => {
+
 	const [wallet, setWallet] = useState('moneybutton');
 	const [paid, setPaid] = useState(false);
 	const [tag, setTag] = useState(props.tag);
 	const [category, setCategory] = useState(props.category);
-	
+
 	// Content
 	const [content, setContent] = useState(props.content || '');
 	const [contentType, setContentType] = useState(null);
 	const [contentPreview, setContentPreview] = useState();
-	const [showContentPreview] = useState(props.showContentPreview === false ? false : true);
+	const [showContentPreview, setShowContentPreview] = useState(props.showContentPreview === false ? false : true);
 
 	// Difficulty
 	const [showInputDiff] = useState(props.showInputDiff === true ? true : false);
@@ -63,6 +64,23 @@ const PaymentPopup = props => {
 	const [sliderDiffMarkerStep] = useState(
 		props.sliderDiffMarkerStep == 0 || props.sliderDiffMarkerStep == false ? 0 : parseInt(props.sliderDiffMarkerStep, 10) || 10 
 	);
+
+	useEffect(() => {
+		if (props.showContentPreview === false) {
+			setShowContentPreview(false);
+		}
+
+		if (props.content) {
+			handleContentChange(
+				{
+					target: {
+						value: props.content
+					}
+				},
+				null
+			);
+		}
+	});
 
 	//
 	const allOutputs = () => {
@@ -262,7 +280,7 @@ const PaymentPopup = props => {
                   {(showContentPreview && content) &&
                     <div className='contentPreview'>
                       {contentType === 'video/mp4' &&
-                        <video width="320" height="240" controls playsinline autoplay muted loop>
+                        <video width="320" height="240" controls playsInline autoPlay muted loop>
                           <source
                             src={`https://media.bitcoinfiles.org/${content}`}
                             type="video/mp4"/>

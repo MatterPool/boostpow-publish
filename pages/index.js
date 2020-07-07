@@ -38,6 +38,7 @@ const Home = () => {
 		try {
 			const p = await new Postmate.Model({
 				open: ({ props }) => {
+
 					setPaymentProps({ ...paymentProps, ...props });
 				}
 			});
