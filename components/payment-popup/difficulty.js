@@ -1,6 +1,7 @@
 // Defines the custom CSS for the difficulty slider component
 import { withStyles } from '@material-ui/core/styles';
 import Slider from '@material-ui/core/Slider';
+import ValueLabel from '@material-ui/core/Slider/ValueLabel';
 
 // Custom styles configuration for the Difficulty Slider component
 export const DiffSlider = withStyles({
@@ -14,20 +15,33 @@ export const DiffSlider = withStyles({
 		backgroundColor: '#ddd',
 		border: '0px solid currentColor',
 		marginTop: -7,
-		marginLeft: -6,
+		marginLeft: -10,
 		'&:focus, &:hover, &$active': {
 			boxShadow: 'inherit'
 		}
 	},
 	active: {},
 	valueLabel: {
-		left: 'calc(-50% + 4px)'
+		left: 'calc(-50% + 4px)',
 	},
 	track: {
 		height: 6,
 		borderRadius: 4
 	}
 })(Slider);
+
+// Custom styles for the Difficulty ValueLabel component
+export const DiffValueLabel = withStyles({
+	offset: {
+		top: -22,
+		left: -2
+	},
+	circle: {
+		height: 24,
+		width: 24
+	},
+	// label: {}
+})(ValueLabel);
 
 // Return the difficulty value safely between min and max difficulty
 export const safeDiffValue = (diffValue, minDiff, maxDiff) => {

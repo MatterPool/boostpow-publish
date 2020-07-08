@@ -3,30 +3,11 @@ import Styles from './styles';
 import snarkdown from 'snarkdown';
 
 import FormControl from '@material-ui/core/FormControl';
-import MenuItem from '@material-ui/core/MenuItem';
 import Select from '@material-ui/core/Select';
-import { DiffSlider, safeDiffValue, calculateSliderMarks, renderDiffOptions } from './difficulty';
+import * as Difficulty from './difficulty';
+import * as Wallets from './wallets';
 
-import MoneyButton from '../moneybutton';
-import RelayX from '../relayx';
-import ProxyPay from '../proxypay';
 import * as boost from 'boostpow-js';
-
-const wallets = {
-	moneybutton: {
-		name: 'Money Button',
-		Element: MoneyButton
-	},
-	relayx: {
-		name: 'RelayX',
-		Element: RelayX
-	},
-	proxypay: {
-		name: 'Scan QR',
-		Element: ProxyPay
-	}
-};
-
 /*
 
 Example Files
@@ -59,7 +40,7 @@ const PaymentPopup = props => {
 	const [lockDiff] = useState(props.lockDiff === true ? true : false);
 	const [minDiff] = useState(props.minDiff > 0 ? parseFloat(props.minDiff) : 1);
 	const [maxDiff] = useState(props.maxDiff > minDiff ? parseFloat(props.maxDiff) : 40);
-	const [initialDiff] = useState(props.initialDiff > 0 ? safeDiffValue(parseFloat(props.initialDiff), minDiff, maxDiff) : 1);
+	const [initialDiff] = useState(props.initialDiff > 0 ? Difficulty.safeDiffValue(parseFloat(props.initialDiff), minDiff, maxDiff) : 1);
 	const [difficulty, setDifficulty] = useState(initialDiff);
 	const [showSliderDiff] = useState(props.showSliderDiff === false ? false : true);
 	const [sliderDiffStep] = useState(props.sliderDiffStep > 0 ? parseInt(props.sliderDiffStep, 10) : 1);
@@ -128,13 +109,12 @@ const PaymentPopup = props => {
 		return o;
 	}
 
-	//
+	// This timeout controls a minimum time between changes to avoid money button multiple renders
 	let diffTimeout = null;
 	const handleDiffChange = (evt, value) => {
 		// unifies the value when comming from slider or from input field
 		const val = value > 0 ? parseFloat(value) : parseFloat(evt.target.value);
 		if (val === difficulty) return;
-		// This timeout controls a minimum time between changes to avoid money button multiple renders
 		// I think it would be better to put this timeout on the money button render function itself
 		// because this timeout causes a little lag when dragging the slider marker
 		clearTimeout(diffTimeout);
@@ -146,8 +126,7 @@ const PaymentPopup = props => {
 			// if using sliders and having larger steps, ensure the slider value will be set to a mod zero value
 			else if (showSliderDiff && sliderDiffStep > 1) {
 				setDifficulty(val % sliderDiffStep === 0 ? val : val-(val % sliderDiffStep));
-			} 
-			// 
+			}
 			else setDifficulty(val);
 		}, 100);
 	};
@@ -185,24 +164,12 @@ const PaymentPopup = props => {
 		setCategory(evt.target.value);
 	};
 
-	const handleChange = (evt, value) => {
+	const handleChangeWallet = (evt, value) => {
 		setPaid(false);
 		setWallet(evt.target.value);
 	};
 
-	const Wallet = wallets[wallet].Element;
-	const renderWallet = each => (
-		<MenuItem
-			classes={{
-				root: 'boost-publisher-menu-item',
-				selected: 'boost-publisher-menu-item-selected'
-			}}
-			value={each}
-			key={each}
-		>
-			{wallets[each].name}
-		</MenuItem>
-	);
+	const Wallet = Wallets.getWalletElem(wallet);
 
 	const handleClose = () => {
 		if (props.parent) {
@@ -224,15 +191,15 @@ const PaymentPopup = props => {
 				}
 			},
 			onError: error => {
+				// console.log('onError', error);
 				if (props.parent){
 					props.parent.emit('error', { error });
 				}
-				console.log('onError', error);
 			},
 			onPayment: async(payment) => {
-				console.log('onPayment', payment);
+				// console.log('onPayment', payment);
 				const boostJobStatus = await boost.Graph().submitBoostJob(payment.rawtx);
-				console.log('boostJobStatus', boostJobStatus);
+				// console.log('boostJobStatus', boostJobStatus);
 				const mergedPayment = Object.assign({}, payment, { boostJobStatus: boostJobStatus.result } );
 				if (props.parent){
 					props.parent.emit('payment', { payment: mergedPayment});
@@ -339,7 +306,7 @@ const PaymentPopup = props => {
 									{showSliderDiff && (
 										<div>
 											<label className="label">Difficulty</label>
-											<DiffSlider
+											<Difficulty.DiffSlider
 												min={minDiff}
 												max={maxDiff}
 												defaultValue={minDiff}
@@ -347,7 +314,8 @@ const PaymentPopup = props => {
 												aria-labelledby="discrete-slider-custom"
 												step={sliderDiffStep}
 												valueLabelDisplay="on"
-												marks={calculateSliderMarks(minDiff, maxDiff, sliderDiffMarkerStep)}
+												ValueLabelComponent={Difficulty.DiffValueLabel}
+												marks={Difficulty.calculateSliderMarks(minDiff, maxDiff, sliderDiffMarkerStep)}
 												onChange={handleDiffChange}
 												disabled={lockDiff}
 											/>
@@ -357,7 +325,7 @@ const PaymentPopup = props => {
 										<div>
 											<label className="label">Difficulty</label>
 											<select value={difficulty} className="input-diff" onChange={handleDiffChange} disabled={lockDiff}>
-												{renderDiffOptions(minDiff, maxDiff, sliderDiffStep)}
+												{Difficulty.renderDiffOptions(minDiff, maxDiff, sliderDiffStep)}
 											</select>
 										</div>
 									)}
@@ -367,7 +335,7 @@ const PaymentPopup = props => {
 							<FormControl variant="outlined" margin="dense" className="boost-publisher-form-control">
 								<Select
 									value={wallet}
-									onChange={handleChange}
+									onChange={handleChangeWallet}
 									className="boost-publisher-select"
 									MenuProps={{
 										MenuListProps: {
@@ -384,13 +352,11 @@ const PaymentPopup = props => {
 											horizontal: 'left'
 										}
 									}}
-									classes={{
+									classes={{ 
 										outlined: 'boost-publisher-select-outlined'
 									}}
 								>
-									{Object.keys(wallets)
-										.filter(e => props.wallets.find(w => w === e))
-										.map(e => renderWallet(e))}
+									{Wallets.renderWalletMenuItems(props.wallets)}
 								</Select>
 							</FormControl>
 						</div>
