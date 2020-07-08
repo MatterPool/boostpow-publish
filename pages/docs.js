@@ -21,6 +21,7 @@ boostPublish.open({
 			to: "18YCy8VDYcXGnekHC4g3vphnJveTskhCLf", amount: 0.0004, currency: 'BSV'
 		}
 	],*/
+	// initialWallet: 'moneybutton', // Possible wallets: moneybutton or relayx
 	// tag: 'bitcoin',
 	// category: 'B',  // defaults to 'B' underneath.
 	// showTagField: true, // defaults to true
@@ -54,6 +55,10 @@ a payment object upon a successful payment and throws if there was an error.
 ### content
 
 Optional content to initialize with. Leave empty to allow user to set it.
+
+### initialWallet
+
+Optional initial wallet id to initialize with. Leave empty to start with moneybutton.
 
 ### tag
 
