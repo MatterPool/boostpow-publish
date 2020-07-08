@@ -25,7 +25,15 @@ boostPublish.open({
 	// category: 'B',  // defaults to 'B' underneath.
 	// showTagField: true, // defaults to true
 	// showCategoryField: false, // defaults to false
+	// minDiff: 1, // defaults to 1
+	// maxDiff: 40, // defaults to 40
 	// diffMultiplier: 0.00002, // defaults to 0.00002
+	// initialDiff: 1, // defaults to 1
+	// lockDiff: true, // defaults to false
+	// showInputDiff: false, // defaults to false
+	// showSliderDiff: true, // defaults to true
+	// sliderDiffStep: 1, // defaults to 1
+	// sliderDiffMarkerStep: 10, // defaults to 10, use 0 to disable markers
 	// displayMessage: 'Boost this', // set to empty string to disable
 	// showContentPreview: true, // Whether to show content preview or not
 	onPayment: function(payment, boostJobStatus) {
@@ -75,9 +83,41 @@ Optional showCategoryField whether to show category field or not.
 
 Optional showTagField whether to show tag field or not.
 
+### minDiff
+
+Optional minDiff to set the minimal difficulty value. Default: 1
+
+### maxDiff
+
+Optional maxDiff to set the maximal difficulty value. Default: 40
+
 ### diffMultiplier
 
 Optional diffMultiplier to set how much to charge per difficulty unit. Default: 0.00002
+
+### initialDiff
+
+Optional initialDiff to set the initial difficulty value. Default: 1
+
+### lockDiff
+
+Optional lockDiff whether to disable changing the difficulty field.
+
+### showInputDiff
+
+Optional showInputDiff whether to show difficulty input field or not.
+
+### showSliderDiff
+
+Optional showSliderDiff whether to show difficulty slider field or not.
+
+### sliderDiffStep
+
+Optional sliderDiffStep the total amount of difficulty that will be changed in each slider step.
+
+### sliderDiffMarkerStep
+
+Optional sliderDiffMarkerStep defines the interval between each slider marker steps to be shown on difficulty slider bar.
 
 ### displayMessage
 

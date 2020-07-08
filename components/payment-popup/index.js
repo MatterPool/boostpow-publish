@@ -5,6 +5,7 @@ import snarkdown from 'snarkdown';
 import FormControl from '@material-ui/core/FormControl';
 import MenuItem from '@material-ui/core/MenuItem';
 import Select from '@material-ui/core/Select';
+import { DiffSlider, safeDiffValue, calculateSliderMarks, renderDiffOptions } from './difficulty';
 
 import MoneyButton from '../moneybutton';
 import RelayX from '../relayx';
@@ -44,28 +45,44 @@ const PaymentPopup = props => {
 	const [paid, setPaid] = useState(false);
 	const [tag, setTag] = useState(props.tag);
 	const [category, setCategory] = useState(props.category);
-	const [difficulty, setDifficulty] = useState(1);
-  const [content, setContent] = useState(props.content || '');
-  const [contentType, setContentType] = useState(null);
-  const [contentPreview, setContentPreview] = useState();
-  const [showContentPreview, setShowContentPreview] = useState(props.showContentPreview === false ? false : true);
 
-  useEffect(() => {
+	// Content
+	const [content, setContent] = useState(props.content || '');
+	const [contentType, setContentType] = useState(null);
+	const [contentPreview, setContentPreview] = useState();
+	const [showContentPreview, setShowContentPreview] = useState(props.showContentPreview === false ? false : true);
 
-    if (props.showContentPreview === false) {
-      setShowContentPreview(false);
-    }
+	// Difficulty
+	const [showInputDiff] = useState(props.showInputDiff === true ? true : false);
+	const [lockDiff] = useState(props.lockDiff === true ? true : false);
+	const [minDiff] = useState(props.minDiff > 0 ? parseFloat(props.minDiff) : 1);
+	const [maxDiff] = useState(props.maxDiff > minDiff ? parseFloat(props.maxDiff) : 40);
+	const [initialDiff] = useState(props.initialDiff > 0 ? safeDiffValue(parseFloat(props.initialDiff), minDiff, maxDiff) : 1);
+	const [difficulty, setDifficulty] = useState(initialDiff);
+	const [showSliderDiff] = useState(props.showSliderDiff === false ? false : true);
+	const [sliderDiffStep] = useState(props.sliderDiffStep > 0 ? parseInt(props.sliderDiffStep, 10) : 1);
+	const [sliderDiffMarkerStep] = useState(
+		props.sliderDiffMarkerStep == 0 || props.sliderDiffMarkerStep == false ? 0 : parseInt(props.sliderDiffMarkerStep, 10) || 10 
+	);
 
-    if (props.content) {
+	useEffect(() => {
+		if (props.showContentPreview === false) {
+			setShowContentPreview(false);
+		}
 
-      handleContentChange({
-        target: {
-          value: props.content
-        }
-      }, null)
-    }
-  })
+		if (props.content) {
+			handleContentChange(
+				{
+					target: {
+						value: props.content
+					}
+				},
+				null
+			);
+		}
+	});
 
+	//
 	const allOutputs = () => {
 		const o = [];
 		let defaultFeeMultiplier = 0.00002;
@@ -110,46 +127,51 @@ const PaymentPopup = props => {
 		return o;
 	}
 
+	//
+	let diffTimeout = null;
 	const handleDiffChange = (evt, value) => {
-		setDifficulty(parseFloat(evt.target.value));
+		// unifies the value when comming from slider or from input field
+		const val = value > 0 ? parseFloat(value) : parseFloat(evt.target.value);
+		if (val === difficulty) return;
+		// Controls a minimum time between changes to money button  multiple renders
+		clearTimeout(diffTimeout);
+		diffTimeout = setTimeout(() => {
+			// ensure minimun difficulty
+			if (val <= minDiff) setDifficulty(minDiff);
+			// ensure maximum difficulty
+			else if (val >= maxDiff) setDifficulty(maxDiff);
+			// if using sliders and having larger steps, ensure the slider value will be set to a mod zero value
+			else if (showSliderDiff && sliderDiffStep > 1) {
+				setDifficulty(val % sliderDiffStep === 0 ? val : val-(val % sliderDiffStep));
+			} 
+			// 
+			else setDifficulty(val);
+		}, 100);
 	};
 
+
 	const handleContentChange = async (evt, value) => {
-
-    let content = evt.target.value;
-
+		let content = evt.target.value;
 		setContent(content);
 
-    let resp = await fetch(`https://media.bitcoinfiles.org/${content}`, { method: "HEAD" })
+		let resp = await fetch(`https://media.bitcoinfiles.org/${content}`, { method: 'HEAD' });
+		if (resp.status === 404) {
+			setContentType(null);
+			return;
+		}
 
-    if (resp.status === 404) {
+		let contentType = resp.headers.get('Content-Type');
+		setContentType(contentType);
 
-      setContentType(null);
-
-      return;
-    }
-
-    let contentType = resp.headers.get('Content-Type');
-
-    setContentType(contentType);
-
-    if (contentType.match(/^text/)) {
-
-      resp = await fetch(`https://media.bitcoinfiles.org/${content}`);
-
-      let text = await resp.text();
-
-      if (contentType === 'text/markdown; charset=utf-8') {
-
-        setContentPreview(snarkdown(text));
-
-      } else {
-
-       setContentPreview(text);
-
-      }
-
-    }
+		if (contentType.match(/^text/)) {
+			resp = await fetch(`https://media.bitcoinfiles.org/${content}`);
+			let text = await resp.text();
+			if (contentType === 'text/markdown; charset=utf-8') {
+				setContentPreview(snarkdown(text));
+			} else {
+				setContentPreview(text);
+			}
+		}
 	};
 
 	const handleTagChange = (evt, value) => {
@@ -309,52 +331,35 @@ const PaymentPopup = props => {
 										<input maxlength="4" onChange={handleCategoryChange} value={category || props.category} type="text" className="input-content" placeholder=""></input>
 									</div>
 								)}
-								<div className="form-group input-diff-container">
 
-									<label className="label">Energy </label>
-									<select defaultValue={difficulty} className="input-diff" onChange={handleDiffChange}>
-										<option value="1">1</option>
-										<option value="2">2</option>
-										<option value="3">3</option>
-										<option value="4">4</option>
-										<option value="5">5</option>
-										<option value="6">6</option>
-										<option value="7">7</option>
-										<option value="8">8</option>
-										<option value="9">9</option>
-										<option value="10">10</option>
-										<option value="11">11</option>
-										<option value="12">12</option>
-										<option value="13">13</option>
-										<option value="14">14</option>
-										<option value="15">15</option>
-										<option value="16">16</option>
-										<option value="17">17</option>
-										<option value="18">18</option>
-										<option value="19">19</option>
-										<option value="20">20</option>
-										<option value="21">21</option>
-										<option value="22">22</option>
-										<option value="23">23</option>
-										<option value="24">24</option>
-										<option value="25">25</option>
-										<option value="26">26</option>
-										<option value="27">27</option>
-										<option value="28">28</option>
-										<option value="29">29</option>
-										<option value="30">30</option>
-										<option value="31">31</option>
-										<option value="32">32</option>
-										<option value="33">33</option>
-										<option value="34">34</option>
-										<option value="35">35</option>
-										<option value="36">36</option>
-										<option value="37">37</option>
-										<option value="38">36</option>
-										<option value="39">39</option>
-										<option value="40">40</option>
-									</select>
+								<div className="form-group input-diff-container">
+									{showSliderDiff && (
+										<div>
+											<label className="label">Difficulty</label>
+											<DiffSlider
+												min={minDiff}
+												max={maxDiff}
+												defaultValue={minDiff}
+												value={difficulty}
+												aria-labelledby="discrete-slider-custom"
+												step={sliderDiffStep}
+												valueLabelDisplay="on"
+												marks={calculateSliderMarks(minDiff, maxDiff, sliderDiffMarkerStep)}
+												onChange={handleDiffChange}
+												disabled={lockDiff}
+											/>
+										</div>
+									)}
+									{showInputDiff && (
+										<div>
+											<label className="label">Difficulty</label>
+											<select defaultValue={minDiff} value={difficulty} className="input-diff" onChange={handleDiffChange} disabled={lockDiff}>
+												{renderDiffOptions()}
+											</select>
+										</div>
+									)}
 								</div>
+								
 							</form>
 							<FormControl variant="outlined" margin="dense" className="boost-publisher-form-control">
 								<Select
@@ -403,7 +408,7 @@ const PaymentPopup = props => {
 				</div>
 				<div className="boost-publisher-grow" />
 			</div>
-			<Styles />
+			<Styles />			
 		</div>
 	);
 };
