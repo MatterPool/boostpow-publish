@@ -1,11 +1,13 @@
 import Head from 'next/head';
 import PaymentPopup from '../components/payment-popup';
+import { VALID_WALLETS } from '../components/payment-popup/wallets';
 import { useEffect, useState } from 'react';
 import Postmate from 'postmate';
 
+
 const Home = () => {
 	const [paymentProps, setPaymentProps] = useState({
-		wallets: ['moneybutton', 'relayx'],
+		wallets: VALID_WALLETS,
 		/*outputs: [
 			{
 				to: "18YCy8VDYcXGnekHC4g3vphnJveTskhCLf", amount: 0.0004, currency: 'BSV'
@@ -17,6 +19,7 @@ const Home = () => {
 		category: 'B' // defaults to 'B' underneath.
 		*/
 		// content: '4d0295d207f3a00d73f069fc4aa5e06d3fe98d565af9f38983c0d486d6166a09',
+		// initialWallet: 'moneybutton',
 		// tag: '$',
 		// showTagField: false, // defaults to true
 		// showCategoryField: false, // defaults to false

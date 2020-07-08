@@ -22,10 +22,14 @@ Example Files
 
 const PaymentPopup = props => {
 
-	const [wallet, setWallet] = useState('moneybutton');
 	const [paid, setPaid] = useState(false);
 	const [tag, setTag] = useState(props.tag);
 	const [category, setCategory] = useState(props.category);
+
+	// Wallet
+	const [initialWallet] = useState(Wallets.isValidWallet(props.initialWallet) ? props.initialWallet : Wallets.DEFAULT_WALLET);
+	const [wallet, setWallet] = useState(initialWallet);
+	
 	
 	// Content
 	const [content, setContent] = useState(props.content || '');
@@ -33,19 +37,6 @@ const PaymentPopup = props => {
 	const [contentPreview, setContentPreview] = useState();
 	const [showContentPreview, setShowContentPreview] = useState(
 		props.showContentPreview === false ? false : true
-	);
-
-	// Difficulty
-	const [showInputDiff] = useState(props.showInputDiff === true ? true : false);
-	const [lockDiff] = useState(props.lockDiff === true ? true : false);
-	const [minDiff] = useState(props.minDiff > 0 ? parseFloat(props.minDiff) : 1);
-	const [maxDiff] = useState(props.maxDiff > minDiff ? parseFloat(props.maxDiff) : 40);
-	const [initialDiff] = useState(props.initialDiff > 0 ? Difficulty.safeDiffValue(parseFloat(props.initialDiff), minDiff, maxDiff) : 1);
-	const [difficulty, setDifficulty] = useState(initialDiff);
-	const [showSliderDiff] = useState(props.showSliderDiff === false ? false : true);
-	const [sliderDiffStep] = useState(props.sliderDiffStep > 0 ? parseInt(props.sliderDiffStep, 10) : 1);
-	const [sliderDiffMarkerStep] = useState(
-		props.sliderDiffMarkerStep == 0 || props.sliderDiffMarkerStep == false ? 0 : parseInt(props.sliderDiffMarkerStep, 10) || 10 
 	);
 
 	useEffect(() => {
@@ -64,6 +55,19 @@ const PaymentPopup = props => {
 			);
 		}
 	});
+
+	// Difficulty
+	const [showInputDiff] = useState(props.showInputDiff === true ? true : false);
+	const [lockDiff] = useState(props.lockDiff === true ? true : false);
+	const [minDiff] = useState(props.minDiff > 0 ? parseFloat(props.minDiff) : 1);
+	const [maxDiff] = useState(props.maxDiff > minDiff ? parseFloat(props.maxDiff) : 40);
+	const [initialDiff] = useState(props.initialDiff > 0 ? Difficulty.safeDiffValue(parseFloat(props.initialDiff), minDiff, maxDiff) : 1);
+	const [difficulty, setDifficulty] = useState(initialDiff);
+	const [showSliderDiff] = useState(props.showSliderDiff === false ? false : true);
+	const [sliderDiffStep] = useState(props.sliderDiffStep > 0 ? parseInt(props.sliderDiffStep, 10) : 1);
+	const [sliderDiffMarkerStep] = useState(
+		props.sliderDiffMarkerStep == 0 || props.sliderDiffMarkerStep == false ? 0 : parseInt(props.sliderDiffMarkerStep, 10) || 10 
+	);
 
 	const allOutputs = () => {
 		const o = [];
