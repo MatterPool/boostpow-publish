@@ -229,7 +229,8 @@ const PaymentPopup = props => {
 					}}
 				>
 					<div className="boost-publisher-header">
-						<img src="/logo.svg" />
+						<img src="boost.svg" className="boost-publisher-logo"/>
+						<span className="boost-logo-text">Boost</span>
 						<div className="boost-publisher-grow" />
 						<p className="boost-publisher-close" onClick={handleClose}>
 							Close
@@ -239,7 +240,7 @@ const PaymentPopup = props => {
 						<div className="boost-publisher-body">
 							<form>
 								<div className="form-group">
-									{!props.displayMessage && (
+									{!props.content && !props.displayMessage && (
 										<p className="lead">
 											What would you like to Boost? <a href="https://boostpow.com" className="pow-help-text" target="_blank">What's Boost?</a>
 										</p>
@@ -249,7 +250,9 @@ const PaymentPopup = props => {
 											{props.displayMessage}
 										</p>
 									)}
-									<input onChange={handleContentChange} value={content || ''} type="text" className="input-content" placeholder="Transaction ID, Bitcoin File, Text, Hash, etc.."></input>
+									{!props.content && !props.displayMessage && (
+										<input onChange={handleContentChange} value={content || ''} type="text" className="input-content" placeholder="Transaction ID, Bitcoin File, Text, Hash, etc.."></input>
+									)}
                   {(showContentPreview && content) &&
                     <div className='contentPreview'>
                       {contentType === 'video/mp4' &&
@@ -264,14 +267,14 @@ const PaymentPopup = props => {
                           <source
                             src={`https://media.bitcoinfiles.org/${content}`}/>
                         </audio>
-                      }  
+                      }
                       {contentType === 'video/ogg' &&
                         <video width="320" height="240" controls playsinline autoplay muted loop>
                           <source
                             src={`https://media.bitcoinfiles.org/${content}`}
                             type="video/ogg"/>
                         </video>
-                      }  
+                      }
                       {(contentType && contentType.match(/^image/)) &&
                         <img src={`https://media.bitcoinfiles.org/${content}`}/>
                       }
@@ -333,7 +336,7 @@ const PaymentPopup = props => {
 										</div>
 									)}
 								</div>
-								
+
 							</form>
 							<FormControl variant="outlined" margin="dense" className="boost-publisher-form-control">
 								<Select
@@ -380,7 +383,7 @@ const PaymentPopup = props => {
 				</div>
 				<div className="boost-publisher-grow" />
 			</div>
-			<Styles />			
+			<Styles />
 		</div>
 	);
 };

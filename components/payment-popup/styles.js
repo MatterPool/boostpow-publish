@@ -13,7 +13,6 @@ const Styles = () => (
 		.boost-publisher-grow {
 			flex-grow: 1;
 		}
-
 		.boost-publisher-wrapper {
 			display: flex;
 			position: fixed;
@@ -64,7 +63,15 @@ const Styles = () => (
 		}
 
 		.boost-publisher-logo {
-			height: 22px;
+			height: 60px;
+		}
+
+		.boost-logo-text {
+			display: inline-block;
+			font-size: 1.4em;
+			font-weight:  bold;
+			letter-spacing: 1px;
+			padding-left: 10px;
 		}
 
 		.boost-publisher-close {
