@@ -6,6 +6,7 @@ import FormControl from '@material-ui/core/FormControl';
 import Select from '@material-ui/core/Select';
 import * as Difficulty from './difficulty';
 import * as Wallets from './wallets';
+import * as RelayxWallet from '../relayx/relayx-wallet';
 
 import * as boost from 'boostpow-js';
 /*
@@ -109,6 +110,7 @@ const PaymentPopup = props => {
 			console.log('ex', ex);
 			return [];
 		}
+		console.log("allOutputs", o);
 		return o;
 	}
 
@@ -131,8 +133,19 @@ const PaymentPopup = props => {
 				setDifficulty(val % sliderDiffStep === 0 ? val : val-(val % sliderDiffStep));
 			}
 			else setDifficulty(val);
+
+			checkWalletUpdates();
+
 		}, 100);
 	};
+
+	const checkWalletUpdates = () => {
+		if (wallet == 'relayx') {
+			const walletProps = RelayxWallet.prepareRelayxProps(getWalletProps());
+			if (!walletProps) return;
+			RelayxWallet.renderRelayx(walletProps);
+		}
+	}
 
 
 	const handleContentChange = async (evt, value) => {
@@ -181,6 +194,7 @@ const PaymentPopup = props => {
 	};
 
 	const getWalletProps = () => {
+		console.log("getWalletProps");
 		const walletProps = {
 			...props,
 			outputs: allOutputs(),
@@ -214,6 +228,7 @@ const PaymentPopup = props => {
 				}, 1000);
 			}
 		};
+		console.log("getWalletProps", walletProps);
 		return walletProps;
 	};
 

@@ -1,37 +1,13 @@
 import Script from 'react-load-script';
+import * as RelayxWallet from './relayx-wallet'
 
 const RelayX = props => {
+
 	const handleLoad = () => {
-		const div = document.getElementById('relayx-button');
-
-		if (!props.outputs || !props.outputs.length) {
-			return;
-		}
-
-		const outputs = props.outputs.map(each => ({
-			currency: 'BSV',
-			...each
-		}));
-
-		if (!outputs || !outputs.length) {
-			return (<div>no out</div>);
-		}
-
-		const walletProps = {
-			...props,
-			...props.relayxProps,
-			outputs
-		};
-
-		delete walletProps.moneybuttonProps;
-		delete walletProps.parent;
-
-		window.relayone.render(div, {
-			...walletProps,
-			onPayment: payment => {
-				return props.onPayment({ txid: payment.txid, rawtx: payment.rawTx });
-			}
-		});
+		const walletProps = RelayxWallet.prepareRelayxProps(props);
+		if (!walletProps) return (<div>No outputs</div>);
+		// console.log("RelayX walletProps before render", walletProps);
+		RelayxWallet.renderRelayx(walletProps);
 	};
 
 	return (
