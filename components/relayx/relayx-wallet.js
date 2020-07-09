@@ -5,7 +5,6 @@ export const getRelayxElem = () => {
 };
 
 export const prepareRelayxProps = props => {
-	// console.log('prepareRelayxProps', props);
 	if (!props.outputs || !props.outputs.length) {
 		return false;
 	}
@@ -32,11 +31,12 @@ export const prepareRelayxProps = props => {
 };
 
 export const renderRelayx = walletProps => {
-    console.log("renderRelayx", walletProps);
+	if (!window.relayone) return false;
 	window.relayone.render(getRelayxElem(), {
 		...walletProps,
 		onPayment: payment => {
 			return walletProps.onPayment({ txid: payment.txid, rawtx: payment.rawTx });
 		}
 	});
+	return true;
 };

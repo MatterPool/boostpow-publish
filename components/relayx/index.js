@@ -1,14 +1,29 @@
 import Script from 'react-load-script';
 import * as RelayxWallet from './relayx-wallet'
+import { useEffect } from 'react';
 
 const RelayX = props => {
 
-	const handleLoad = () => {
+	let isFirstLoad = false;
+
+	const renderRelayx = () => {
 		const walletProps = RelayxWallet.prepareRelayxProps(props);
 		if (!walletProps) return (<div>No outputs</div>);
-		// console.log("RelayX walletProps before render", walletProps);
 		RelayxWallet.renderRelayx(walletProps);
 	};
+
+	// When component first loads, load the relayone script and render the wallet on load
+	const handleLoad = () => {
+		renderRelayx();
+		isFirstLoad = true;
+	};
+
+	// This will render the wallet everytime the wallet props changes after the first load
+	useEffect(() => {
+		if (!isFirstLoad){
+			renderRelayx();
+		}
+	});
 
 	return (
 		<>
