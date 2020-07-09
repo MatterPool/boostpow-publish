@@ -5,7 +5,7 @@ const MoneyButton = props => {
 		currency: 'BSV',
 		...each
 	}));
-	// console.log('make mb', props);
+	// console.log('MoneyButton render', props, outputs);
 	return (
 		<ReactMoneyButton
 			{...props}

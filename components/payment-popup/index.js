@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react';
-import Styles from './styles';
 import snarkdown from 'snarkdown';
-
+import * as boost from 'boostpow-js';
 import FormControl from '@material-ui/core/FormControl';
 import Select from '@material-ui/core/Select';
+//
+import Styles from './styles';
 import * as Difficulty from './difficulty';
 import * as Wallets from './wallets';
 
-import * as boost from 'boostpow-js';
+
 /*
 
 Example Files
@@ -22,22 +23,23 @@ Example Files
 
 const PaymentPopup = props => {
 
+	// GENERAL PROPS
 	const [paid, setPaid] = useState(false);
 	const [tag, setTag] = useState(props.tag);
 	const [category, setCategory] = useState(props.category);
 
-	// Wallet
+	// WALLET PROPS
 	const [initialWallet] = useState(Wallets.isValidWallet(props.initialWallet) ? props.initialWallet : Wallets.DEFAULT_WALLET);
 	const [wallet, setWallet] = useState(initialWallet);
 	
 
-	// Content
+	// CONTENT PROPS
 	const [content, setContent] = useState(props.content || '');
 	const [contentType, setContentType] = useState(null);
 	const [contentPreview, setContentPreview] = useState();
 	const [showContentPreview, setShowContentPreview] = useState(props.showContentPreview === false ? false : true);
 
-	// Difficulty
+	// DIFFICULTY PROPS
 	const [showInputDiff] = useState(props.showInputDiff === true ? true : false);
 	const [lockDiff] = useState(props.lockDiff === true ? true : false);
 	const [minDiff] = useState(props.minDiff > 0 ? parseFloat(props.minDiff) : 1);
@@ -48,8 +50,51 @@ const PaymentPopup = props => {
 	const [sliderDiffStep] = useState(props.sliderDiffStep > 0 ? parseInt(props.sliderDiffStep, 10) : 1);
 	const [sliderDiffMarkerStep] = useState(
 		props.sliderDiffMarkerStep == 0 || props.sliderDiffMarkerStep == false ? 0 : parseInt(props.sliderDiffMarkerStep, 10) || 10 
-	);	
-	
+	);
+
+	// GENERAL HANDLERS
+	const handleTagChange = (evt, value) => {
+		setTag(evt.target.value);
+	};
+
+	const handleCategoryChange = (evt, value) => {
+		setCategory(evt.target.value);
+	};
+
+	const handleClose = () => {
+		if (props.parent) {
+			props.parent.emit('close');
+		}
+	};
+
+	// CONTENT HANDLERS
+
+	// Fetch and update the content
+	const handleContentChange = async (evt, value) => {
+		let content = evt.target.value;
+		setContent(content);
+
+		let resp = await fetch(`https://media.bitcoinfiles.org/${content}`, { method: 'HEAD' });
+		if (resp.status === 404) {
+			setContentType(null);
+			return;
+		}
+
+		let contentType = resp.headers.get('Content-Type');
+		setContentType(contentType);
+
+		if (contentType.match(/^text/)) {
+			resp = await fetch(`https://media.bitcoinfiles.org/${content}`);
+			let text = await resp.text();
+			if (contentType === 'text/markdown; charset=utf-8') {
+				setContentPreview(snarkdown(text));
+			} else {
+				setContentPreview(text);
+			}
+		}
+	};
+
+	// Trigger content rendering when content changes
 	useEffect(() => {
 		if (props.showContentPreview === false) {
 			setShowContentPreview(false);
@@ -67,8 +112,17 @@ const PaymentPopup = props => {
 		}
 	});
 
-	//
-	const allOutputs = () => {
+
+	// WALLET HANDLERS
+	const Wallet = Wallets.getWalletElem(wallet);
+
+	const handleChangeWallet = (evt, value) => {
+		setPaid(false);
+		setWallet(evt.target.value);
+	};
+
+	// Calculates the value of the outputs to configure the wallet
+	const allOutputs = (from) => {
 		const o = [];
 		let defaultFeeMultiplier = 0.00002;
 		let defaultTag = undefined;
@@ -112,6 +166,47 @@ const PaymentPopup = props => {
 		return o;
 	}
 
+	// Prepare wallet configuration object
+	const getWalletProps = () => {
+		const walletProps = {
+			...props,
+			outputs: allOutputs(),
+			moneybuttonProps: {
+				...props.moneybuttonProps,
+				onCryptoOperations: cryptoOperations => {
+					// console.log('onCryptoOperations', cryptoOperations);
+					if (props.parent){
+						props.parent.emit('cryptoOperations', { cryptoOperations });
+					}
+				}
+			},
+			onError: error => {
+				// console.log('onError', error);
+				if (props.parent){
+					props.parent.emit('error', { error });
+				}
+			},
+			onPayment: async payment => {
+				// console.log('onPayment', payment);
+				const boostJobStatus = await boost.Graph().submitBoostJob(payment.rawtx);
+				// console.log('boostJobStatus', boostJobStatus);
+				const mergedPayment = Object.assign({}, payment, { boostJobStatus: boostJobStatus.result } );
+				if (props.parent){
+					props.parent.emit('payment', { payment: mergedPayment});
+				}
+				setPaid(true);
+				setTimeout(() => {
+					setPaid(false);
+					handleClose();
+				}, 1000);
+			}
+		};
+		return walletProps;
+	};
+
+
+	// DIFFICULTY HANDLERS
+
 	// This timeout controls a minimum time between changes to avoid money button multiple renders
 	let diffTimeout = null;
 	const handleDiffChange = (evt, value) => {
@@ -132,89 +227,6 @@ const PaymentPopup = props => {
 			}
 			else setDifficulty(val);
 		}, 100);
-	};
-
-
-	const handleContentChange = async (evt, value) => {
-		let content = evt.target.value;
-		setContent(content);
-
-		let resp = await fetch(`https://media.bitcoinfiles.org/${content}`, { method: 'HEAD' });
-		if (resp.status === 404) {
-			setContentType(null);
-			return;
-		}
-
-		let contentType = resp.headers.get('Content-Type');
-		setContentType(contentType);
-
-		if (contentType.match(/^text/)) {
-			resp = await fetch(`https://media.bitcoinfiles.org/${content}`);
-			let text = await resp.text();
-			if (contentType === 'text/markdown; charset=utf-8') {
-				setContentPreview(snarkdown(text));
-			} else {
-				setContentPreview(text);
-			}
-		}
-	};
-
-	const handleTagChange = (evt, value) => {
-		setTag(evt.target.value);
-	};
-
-	const handleCategoryChange = (evt, value) => {
-		setCategory(evt.target.value);
-	};
-
-	const handleChangeWallet = (evt, value) => {
-		setPaid(false);
-		setWallet(evt.target.value);
-	};
-
-	const Wallet = Wallets.getWalletElem(wallet);
-
-	const handleClose = () => {
-		if (props.parent) {
-			props.parent.emit('close');
-		}
-	};
-
-	const getWalletProps = () => {
-		const walletProps = {
-			...props,
-			outputs: allOutputs(),
-			moneybuttonProps: {
-				...props.moneybuttonProps,
-				onCryptoOperations: cryptoOperations => {
-					console.log('onCryptoOperations', cryptoOperations);
-					if (props.parent){
-						props.parent.emit('cryptoOperations', { cryptoOperations });
-					}
-				}
-			},
-			onError: error => {
-				// console.log('onError', error);
-				if (props.parent){
-					props.parent.emit('error', { error });
-				}
-			},
-			onPayment: async(payment) => {
-				// console.log('onPayment', payment);
-				const boostJobStatus = await boost.Graph().submitBoostJob(payment.rawtx);
-				// console.log('boostJobStatus', boostJobStatus);
-				const mergedPayment = Object.assign({}, payment, { boostJobStatus: boostJobStatus.result } );
-				if (props.parent){
-					props.parent.emit('payment', { payment: mergedPayment});
-				}
-				setPaid(true);
-				setTimeout(() => {
-					setPaid(false);
-					handleClose();
-				}, 1000);
-			}
-		};
-		return walletProps;
 	};
 
 	return (
@@ -348,10 +360,6 @@ const PaymentPopup = props => {
 											classes: {
 												root: 'boost-publisher-menu-list'
 											}
-										},
-										anchorOrigin: {
-											vertical: 'bottom',
-											horizontal: 'left'
 										},
 										transformOrigin: {
 											vertical: 'top',

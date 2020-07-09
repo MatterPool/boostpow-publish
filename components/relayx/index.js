@@ -1,38 +1,29 @@
 import Script from 'react-load-script';
+import * as RelayxWallet from './relayx-wallet'
+import { useEffect } from 'react';
 
 const RelayX = props => {
-	const handleLoad = () => {
-		const div = document.getElementById('relayx-button');
 
-		if (!props.outputs || !props.outputs.length) {
-			return;
-		}
+	let isFirstLoad = false;
 
-		const outputs = props.outputs.map(each => ({
-			currency: 'BSV',
-			...each
-		}));
-
-		if (!outputs || !outputs.length) {
-			return (<div>no out</div>);
-		}
-
-		const walletProps = {
-			...props,
-			...props.relayxProps,
-			outputs
-		};
-
-		delete walletProps.moneybuttonProps;
-		delete walletProps.parent;
-
-		window.relayone.render(div, {
-			...walletProps,
-			onPayment: payment => {
-				return props.onPayment({ txid: payment.txid, rawtx: payment.rawTx });
-			}
-		});
+	const renderRelayx = () => {
+		const walletProps = RelayxWallet.prepareRelayxProps(props);
+		if (!walletProps) return (<div>No outputs</div>);
+		RelayxWallet.renderRelayx(walletProps);
 	};
+
+	// When component first loads, load the relayone script and render the wallet on load
+	const handleLoad = () => {
+		renderRelayx();
+		isFirstLoad = true;
+	};
+
+	// This will render the wallet everytime the wallet props changes after the first load
+	useEffect(() => {
+		if (!isFirstLoad){
+			renderRelayx();
+		}
+	});
 
 	return (
 		<>
