@@ -21,35 +21,61 @@ Example Files
 }
 */
 
-const PaymentPopup = props => {
+const PaymentPopup = compProps => {
+
+	const payProps = compProps.paymentProps;
+	const cParent = compProps.parent;
+	// console.log("PaymentPopup component", compProps, cParent, payProps);
+
+	// Communicates parent to change the opening property to false
+	if (payProps.opening && cParent) {
+		cParent.emit('opened', { ...payProps });
+	}
+
+	// const [pageLoaded, setPageLoaded] = useState(false);
+	// useEffect(() => {
+	// 	console.log('PaymentPopup loaded',  pageLoaded)
+	// 	if (!pageLoaded){
+	// 		setPageLoaded(true)
+	// 	}
+	// }, [pageLoaded]);
 
 	// GENERAL PROPS
 	const [paid, setPaid] = useState(false);
-	const [tag, setTag] = useState(props.tag);
-	const [category, setCategory] = useState(props.category);
+	const [tag, setTag] = useState(payProps.tag);
+	const [category, setCategory] = useState(payProps.category);
 
 	// WALLET PROPS
-	const [initialWallet] = useState(Wallets.isValidWallet(props.initialWallet) ? props.initialWallet : Wallets.DEFAULT_WALLET);
+	const [initialWallet] = useState(Wallets.isValidWallet(payProps.initialWallet) ? payProps.initialWallet : Wallets.DEFAULT_WALLET);
 	const [wallet, setWallet] = useState(initialWallet);
 	
 
 	// CONTENT PROPS
-	const [content, setContent] = useState(props.content || '');
+	const [content, setContent] = useState(payProps.content || '');
 	const [contentType, setContentType] = useState(null);
 	const [contentPreview, setContentPreview] = useState();
-	const [showContentPreview, setShowContentPreview] = useState(props.showContentPreview === false ? false : true);
+	const [showContentPreview, setShowContentPreview] = useState(payProps.showContentPreview === false ? false : true);
 
 	// DIFFICULTY PROPS
-	const [showInputDiff] = useState(props.showInputDiff === true ? true : false);
-	const [lockDiff] = useState(props.lockDiff === true ? true : false);
-	const [minDiff] = useState(props.minDiff > 0 ? parseFloat(props.minDiff) : 1);
-	const [maxDiff] = useState(props.maxDiff > minDiff ? parseFloat(props.maxDiff) : 40);
-	const [initialDiff] = useState(props.initialDiff > 0 ? Difficulty.safeDiffValue(parseFloat(props.initialDiff), minDiff, maxDiff) : 1);
+	const [showInputDiff] = useState(payProps.showInputDiff === true ? true : false);
+	const [lockDiff] = useState(payProps.lockDiff === true ? true : false);
+	// const [minDiff] = useState(payProps.minDiff > 0 ? parseFloat(payProps.minDiff) : 1);
+	// const [maxDiff] = useState(payProps.maxDiff > minDiff ? parseFloat(payProps.maxDiff) : 40);
+	// const [initialDiff] = useState(payProps.initialDiff > 0 ? Difficulty.safeDiffValue(parseFloat(payProps.initialDiff), minDiff, maxDiff) : 1);
+	const minDiff = payProps.minDiff > 0 ? parseFloat(payProps.minDiff) : 1;
+	const maxDiff = payProps.maxDiff > minDiff ? parseFloat(payProps.maxDiff) : 40;
+	const initialDiff = (payProps.initialDiff > 0) ? Difficulty.safeDiffValue(payProps.initialDiff, minDiff, maxDiff) : 1;
 	const [difficulty, setDifficulty] = useState(initialDiff);
-	const [showSliderDiff] = useState(props.showSliderDiff === false ? false : true);
-	const [sliderDiffStep] = useState(props.sliderDiffStep > 0 ? parseInt(props.sliderDiffStep, 10) : 1);
+
+	// If is opening, adjust initialDiff
+	if (payProps.opening && initialDiff !== difficulty){ 
+		setDifficulty(initialDiff); 
+	}
+
+	const [showSliderDiff] = useState(payProps.showSliderDiff === false ? false : true);
+	const [sliderDiffStep] = useState(payProps.sliderDiffStep > 0 ? parseInt(payProps.sliderDiffStep, 10) : 1);
 	const [sliderDiffMarkerStep] = useState(
-		props.sliderDiffMarkerStep == 0 || props.sliderDiffMarkerStep == false ? 0 : parseInt(props.sliderDiffMarkerStep, 10) || 10 
+		payProps.sliderDiffMarkerStep == 0 || payProps.sliderDiffMarkerStep == false ? 0 : parseInt(payProps.sliderDiffMarkerStep, 10) || 10 
 	);
 
 	// GENERAL HANDLERS
@@ -62,8 +88,8 @@ const PaymentPopup = props => {
 	};
 
 	const handleClose = () => {
-		if (props.parent) {
-			props.parent.emit('close');
+		if (cParent) {
+			cParent.emit('close');
 		}
 	};
 
@@ -96,15 +122,15 @@ const PaymentPopup = props => {
 
 	// Trigger content rendering when content changes
 	useEffect(() => {
-		if (props.showContentPreview === false) {
+		if (payProps.showContentPreview === false) {
 			setShowContentPreview(false);
 		}
 
-		if (props.content) {
+		if (payProps.content) {
 			handleContentChange(
 				{
 					target: {
-						value: props.content
+						value: payProps.content
 					}
 				},
 				null
@@ -128,24 +154,24 @@ const PaymentPopup = props => {
 		let defaultTag = undefined;
 		let defaultCategory = Buffer.from('B', 'utf8').toString('hex');
 
-		if (props.diffMultiplier) {
-			defaultFeeMultiplier = props.diffMultiplier
+		if (payProps.diffMultiplier) {
+			defaultFeeMultiplier = payProps.diffMultiplier
 		}
-		if (props.tag) {
-			defaultTag = Buffer.from(props.tag, 'utf8').toString('hex')
+		if (payProps.tag) {
+			defaultTag = Buffer.from(payProps.tag, 'utf8').toString('hex')
 		}
-		if (props.category) {
-			defaultCategory = Buffer.from(props.category, 'utf8').toString('hex')
+		if (payProps.category) {
+			defaultCategory = Buffer.from(payProps.category, 'utf8').toString('hex')
 		}
 
-		if (props.outputs && props.outputs.length) {
-			props.outputs.forEach((out) => {
+		if (payProps.outputs && payProps.outputs.length) {
+			payProps.outputs.forEach((out) => {
 				o.push(out);
 			});
 		}
 		try {
 			const boostJob = boost.BoostPowJob.fromObject({
-				content: content ? content : props.content,
+				content: content ? content : payProps.content,
 				tag: tag ? Buffer.from(tag, 'utf8').toString('hex') : defaultTag,
 				category: category ? Buffer.from(category, 'utf8').toString('hex') : defaultCategory,
 				diff: difficulty,
@@ -169,21 +195,21 @@ const PaymentPopup = props => {
 	// Prepare wallet configuration object
 	const getWalletProps = () => {
 		const walletProps = {
-			...props,
+			...payProps,
 			outputs: allOutputs(),
 			moneybuttonProps: {
-				...props.moneybuttonProps,
+				...payProps.moneybuttonProps,
 				onCryptoOperations: cryptoOperations => {
 					// console.log('onCryptoOperations', cryptoOperations);
-					if (props.parent){
-						props.parent.emit('cryptoOperations', { cryptoOperations });
+					if (cParent){
+						cParent.emit('cryptoOperations', { cryptoOperations });
 					}
 				}
 			},
 			onError: error => {
 				// console.log('onError', error);
-				if (props.parent){
-					props.parent.emit('error', { error });
+				if (cParent){
+					cParent.emit('error', { error });
 				}
 			},
 			onPayment: async payment => {
@@ -191,8 +217,8 @@ const PaymentPopup = props => {
 				const boostJobStatus = await boost.Graph().submitBoostJob(payment.rawtx);
 				// console.log('boostJobStatus', boostJobStatus);
 				const mergedPayment = Object.assign({}, payment, { boostJobStatus: boostJobStatus.result } );
-				if (props.parent){
-					props.parent.emit('payment', { payment: mergedPayment});
+				if (cParent){
+					cParent.emit('payment', { payment: mergedPayment });
 				}
 				setPaid(true);
 				setTimeout(() => {
@@ -248,21 +274,21 @@ const PaymentPopup = props => {
 							Close
 						</p>
 					</div>
-					{props.wallets.length > 1 && !paid &&
+					{payProps.wallets.length > 1 && !paid &&
 						<div className="boost-publisher-body">
 							<form>
 								<div className="form-group">
-									{!props.content && !props.displayMessage && (
+									{!payProps.content && !payProps.displayMessage && (
 										<p className="lead">
 											What would you like to Boost? <a href="https://boostpow.com" className="pow-help-text" target="_blank">What's Boost?</a>
 										</p>
 									)}
-									{props.displayMessage && (
+									{payProps.displayMessage && (
 										<p className="lead">
-											{props.displayMessage}
+											{payProps.displayMessage}
 										</p>
 									)}
-									{!props.content && !props.displayMessage && (
+									{!payProps.content && !payProps.displayMessage && (
 										<input onChange={handleContentChange} value={content || ''} type="text" className="input-content" placeholder="Transaction ID, Bitcoin File, Text, Hash, etc.."></input>
 									)}
                   {(showContentPreview && content) &&
@@ -303,20 +329,20 @@ const PaymentPopup = props => {
                     </div>
                   }
 								</div>
-								{props.showTagField && (
+								{payProps.showTagField && (
 									<div className="form-group">
 										<p className="lead">
 											Tag (optional)
 										</p>
-										<input maxlength="20" onChange={handleTagChange} value={tag || props.tag} type="text" className="input-content" placeholder="ex: photos, programming, bitcoin..."></input>
+										<input maxlength="20" onChange={handleTagChange} value={tag || payProps.tag} type="text" className="input-content" placeholder="ex: photos, programming, bitcoin..."></input>
 									</div>
 								)}
-								{props.showCategoryField === true && (
+								{payProps.showCategoryField === true && (
 									<div className="form-group">
 										<p className="lead">
 											Category (optional)
 										</p>
-										<input maxlength="4" onChange={handleCategoryChange} value={category || props.category} type="text" className="input-content" placeholder=""></input>
+										<input maxlength="4" onChange={handleCategoryChange} value={category || payProps.category} type="text" className="input-content" placeholder=""></input>
 									</div>
 								)}
 
@@ -370,7 +396,7 @@ const PaymentPopup = props => {
 										outlined: 'boost-publisher-select-outlined'
 									}}
 								>
-									{Wallets.renderWalletMenuItems(props.wallets)}
+									{Wallets.renderWalletMenuItems(payProps.wallets)}
 								</Select>
 							</FormControl>
 						</div>

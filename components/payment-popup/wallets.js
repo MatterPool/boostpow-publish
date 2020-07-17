@@ -22,23 +22,18 @@ const WALLETS = {
 	}
 };
 
-// Returns all wallets configurations
-// export const geAllWallets = () => {
-// 	return WALLETS;
-// };
-
 // Return a wallet configuration by wallet key
-export const getWallet = (wKey) => {
+export const getWallet = wKey => {
 	return WALLETS[wKey];
 };
 
 // Return a wallet Element by wallet key
-export const getWalletElem = (wKey) => {
+export const getWalletElem = wKey => {
 	return getWallet(wKey).Element;
 };
 
 // Returns true if wallet ID is a valid wallet
-export const isValidWallet = (wKey) => {
+export const isValidWallet = wKey => {
 	return VALID_WALLETS.indexOf(wKey) > -1;
 };
 

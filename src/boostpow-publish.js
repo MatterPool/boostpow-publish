@@ -1,52 +1,59 @@
+// BoostPublish API Class
 const Postmate = require('postmate');
-
-function sleep(ms) {
-	return new Promise(resolve => setTimeout(resolve, ms));
-}
+const Helpers = require('../lib/helpers');
 
 class BoostPublish {
+	// Initializes the widget after page load
 	async init() {
-		var style = document.createElement('style');
-		style.type = 'text/css';
-		style.innerHTML = `.boostPublishFrame {
-			border: none;
-			overflow: hidden;
-			width: 0px;
-			height: 0px;
-			position: fixed;
-			bottom: 0;
-			left: 0;
-		}`;
-		document.getElementsByTagName('head')[0].appendChild(style);
+		// console.log("BPow Initializing...")
+		Helpers.addStyle(
+			`.boostPublishFrame {
+				border: none;
+				overflow: hidden;
+				width: 0px;
+				height: 0px;
+				position: fixed;
+				bottom: 0;
+				left: 0;
+			}`,
+			'head'
+		);
+
+		// Postmate iframe wrapper
 		this.child = await new Postmate({
+			name: 'boostpow-publish',
 			container: document.body,
-			url: 'https://publish.boostpow.com',
-			classListArray: ['boostPublishFrame']
+			url: 'https://publish.boostpow.com', // 'http://localhost:4000', 
+			classListArray: ['boostPublishFrame'],
+			model: { fromPowPublish: true }
 		});
+
+		// direct link to the iframe
 		this.iframe = this.child.frame;
-
 		this.didInit = true;
-
+		// console.log("BPow Initialized!")
 	}
 
 	displayIframe() {
-		this.iframe.style.height = '100%';
-		this.iframe.style.width = '100vw';
+		Helpers.displayElem(this.iframe);
 	}
 
 	hideIframe() {
-		this.iframe.style.width = '0px';
-		this.iframe.style.height = '0px';
+		Helpers.hideElem(this.iframe);
 	}
 
+	// Opens the widget using the props configuration object
 	async open(props) {
-		// console.log('boostpow-publish open', props);
+		// console.log('BoostPublish open', props);
+
+		// If trying to open before init, keep trying each 200 miliseconds until the widget initializes
 		if (!this.didInit) {
-			await sleep(200);
+			await Helpers.sleep(200);
 			this.open(props);
 			return;
 		}
 
+		// Prepares callbacks
 		let onCryptoOperations;
 		let onError;
 		let onPayment;
@@ -66,11 +73,14 @@ class BoostPublish {
 			delete props.onError;
 		}
 
-		this.child.call('open', { props });
+		this.child.call('open', props);
 		this.displayIframe();
-		const self = this;
 
+		const self = this;
 		return new Promise((resolve, reject) => {
+			self.child.on('opened', props => {
+				self.child.call('opened', props);
+			});
 			self.child.on('close', () => {
 				self.hideIframe();
 				return resolve();

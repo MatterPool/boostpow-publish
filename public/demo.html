@@ -9,9 +9,12 @@
 	</body>
 	<script>
 		async function showBoostPublisher() {
+			console.log("Boost POW Publish Demo");
 			const response = await boostPublish.open({
-        content: "1e1c7c06786d4e7979aaaa0f6c9204910cba288741bfa8b95b43027d698e2f90",
-        showContentPreview: true,
+				content: "1e1c7c06786d4e7979aaaa0f6c9204910cba288741bfa8b95b43027d698e2f90",
+				showContentPreview: true,
+				getBoostRank: true,
+				rankHours: 24,
 				outputs: [
 					// { to: "18YCy8VDYcXGnekHC4g3vphnJveTskhCLf", value: 4000 }
 				], 	// Optionally apply other outputs

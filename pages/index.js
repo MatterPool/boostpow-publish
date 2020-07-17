@@ -1,13 +1,15 @@
+// Iframe child page. Prepares the widget, connects to parent iFrame and waits for calls
 import Head from 'next/head';
-import PaymentPopup from '../components/payment-popup';
-import { VALID_WALLETS } from '../components/payment-popup/wallets';
 import { useEffect, useState } from 'react';
 import Postmate from 'postmate';
-
+import PaymentPopup from '../components/payment-popup';
+import { VALID_WALLETS } from '../components/payment-popup/wallets';
+import * as BoostHelpers from '../lib/boost-helpers';
 
 const Home = () => {
-	const [paymentProps, setPaymentProps] = useState({
-		wallets: VALID_WALLETS,
+
+	const initialProps = {
+		wallets: VALID_WALLETS
 		/*outputs: [
 			{
 				to: "18YCy8VDYcXGnekHC4g3vphnJveTskhCLf", amount: 0.0004, currency: 'BSV'
@@ -33,34 +35,71 @@ const Home = () => {
 		// sliderDiffStep: 1, // defaults to 1
 		// sliderDiffMarkerStep: 10, // defaults to 10, use 0 to disable markers
 		// displayMessage: 'hello world',
-	});
+	};
 
-	const [parent, setParent] = useState();
-	const listenForPay = async () => {
+	const [paymentProps, setPaymentProps] = useState();
+	const [parent, setParent] = useState(null);
+	
+	const [boostsRank, setBoostsRank] = useState();
+	const updateBoosts = async props => {
+		props = await BoostHelpers.prepareBoostProps(props);
+		setBoostsRank(props);
+		return props;
+	};
 
+	const startParentHandshake = async () => {
+		if (parent) return; // parent connects only once
 		try {
-			const p = await new Postmate.Model({
-				open: ({ props }) => {
+			const parentHandshake = new Postmate.Model({
+				open: async userProps => {
+					if (userProps.getBoostRank) {
+						userProps = await updateBoosts(userProps);
+					}
+					let localProps = Object.assign(
+						{},
+						initialProps || {},
+						paymentProps || {},
+						userProps || {}
+					);
+					localProps.opening = true;
+					setPaymentProps(localProps);
+				},
 
-					setPaymentProps({ ...paymentProps, ...props });
+				// updates the widget as opening false, after widget opened manually
+				opened: args => {
+					args.opening = false;
+					setPaymentProps({ ...args });
 				}
 			});
-			p.emit('init', true);
-			setParent(p);
+
+			//
+			parentHandshake.then(p => {
+				p.emit('init', true);
+				setParent(p);
+			});
+
+			// If it is in dev mode, directly on publish page, so this will trigger an error
+			parentHandshake.emit('init', true);
+		} catch (err) {
+			// If error, set initial properties
+			setPaymentProps(initialProps);
+		}
+
+	};
+
+	const checkParentHandshake = async () => {
+		try {
+			await startParentHandshake();
 		} catch (e) {
-			const p = await new Postmate.Model({
-				open: ({ props }) => {
-					setPaymentProps({ ...paymentProps, ...props });
-				}
-			});
-			p.emit('init', true);
-			setParent(p);
+			await startParentHandshake();
 		}
 	};
 
 	useEffect(() => {
-		listenForPay();
-	});
+		if (!parent) {
+			checkParentHandshake();
+		}
+	}, [parent]);
 
 	return (
 		<div className="container">
@@ -69,9 +108,7 @@ const Home = () => {
 				<link rel="icon" href="/favicon.png" />
 				<link rel="stylesheet" href="https://use.typekit.net/kwm6mcp.css" />
 			</Head>
-			<main>
-				<PaymentPopup {...paymentProps} parent={parent} />
-			</main>
+			<main>{paymentProps && <PaymentPopup paymentProps={paymentProps} parent={parent} />}</main>
 			<style jsx global>{`
 				html,
 				body {
