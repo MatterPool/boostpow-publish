@@ -25,20 +25,12 @@ const PaymentPopup = compProps => {
 
 	const payProps = compProps.paymentProps;
 	const cParent = compProps.parent;
-	// console.log("PaymentPopup component", compProps, cParent, payProps);
 
 	// Communicates parent to change the opening property to false
+	// simulates an "opening phase", to be able to set initial diff, and other initial properties while fetching the api
 	if (payProps.opening && cParent) {
 		cParent.emit('opened', { ...payProps });
 	}
-
-	// const [pageLoaded, setPageLoaded] = useState(false);
-	// useEffect(() => {
-	// 	console.log('PaymentPopup loaded',  pageLoaded)
-	// 	if (!pageLoaded){
-	// 		setPageLoaded(true)
-	// 	}
-	// }, [pageLoaded]);
 
 	// GENERAL PROPS
 	const [paid, setPaid] = useState(false);
@@ -46,37 +38,48 @@ const PaymentPopup = compProps => {
 	const [category, setCategory] = useState(payProps.category);
 
 	// WALLET PROPS
-	const [initialWallet] = useState(Wallets.isValidWallet(payProps.initialWallet) ? payProps.initialWallet : Wallets.DEFAULT_WALLET);
+	const initialWallet = Wallets.isValidWallet(payProps.initialWallet) ? payProps.initialWallet : Wallets.DEFAULT_WALLET;
 	const [wallet, setWallet] = useState(initialWallet);
-	
+	// If is opening, adjust initialWallet
+	if (payProps.opening && initialWallet !== wallet){
+		setWallet(initialWallet);
+	}
 
 	// CONTENT PROPS
 	const [content, setContent] = useState(payProps.content || '');
+	if (payProps.opening && payProps.content !== content){
+		setContent(payProps.content);
+	}
 	const [contentType, setContentType] = useState(null);
 	const [contentPreview, setContentPreview] = useState();
 	const [showContentPreview, setShowContentPreview] = useState(payProps.showContentPreview === false ? false : true);
 
 	// DIFFICULTY PROPS
-	const [showInputDiff] = useState(payProps.showInputDiff === true ? true : false);
-	const [lockDiff] = useState(payProps.lockDiff === true ? true : false);
-	// const [minDiff] = useState(payProps.minDiff > 0 ? parseFloat(payProps.minDiff) : 1);
-	// const [maxDiff] = useState(payProps.maxDiff > minDiff ? parseFloat(payProps.maxDiff) : 40);
-	// const [initialDiff] = useState(payProps.initialDiff > 0 ? Difficulty.safeDiffValue(parseFloat(payProps.initialDiff), minDiff, maxDiff) : 1);
+	const showInputDiff = payProps.showInputDiff === true ? true : false;
+	const lockDiff = payProps.lockDiff === true ? true : false;
 	const minDiff = payProps.minDiff > 0 ? parseFloat(payProps.minDiff) : 1;
 	const maxDiff = payProps.maxDiff > minDiff ? parseFloat(payProps.maxDiff) : 40;
 	const initialDiff = (payProps.initialDiff > 0) ? Difficulty.safeDiffValue(payProps.initialDiff, minDiff, maxDiff) : 1;
 	const [difficulty, setDifficulty] = useState(initialDiff);
 
 	// If is opening, adjust initialDiff
-	if (payProps.opening && initialDiff !== difficulty){ 
-		setDifficulty(initialDiff); 
+	if (payProps.opening && initialDiff !== difficulty){
+		setDifficulty(initialDiff);
 	}
 
-	const [showSliderDiff] = useState(payProps.showSliderDiff === false ? false : true);
-	const [sliderDiffStep] = useState(payProps.sliderDiffStep > 0 ? parseInt(payProps.sliderDiffStep, 10) : 1);
-	const [sliderDiffMarkerStep] = useState(
-		payProps.sliderDiffMarkerStep == 0 || payProps.sliderDiffMarkerStep == false ? 0 : parseInt(payProps.sliderDiffMarkerStep, 10) || 10 
-	);
+	const showSliderDiff = payProps.showSliderDiff === false ? false : true;
+	const sliderDiffStep = payProps.sliderDiffStep > 0 ? parseInt(payProps.sliderDiffStep, 10) : 1;
+	let sliderDiffMarkerStep = ( payProps.sliderDiffMarkerStep == 0 || payProps.sliderDiffMarkerStep == false ) ? 0 : parseInt(payProps.sliderDiffMarkerStep, 10) || 10;
+	const sliderMarkersMaxCount = ( payProps.sliderMarkersMaxCount == 0 || payProps.sliderMarkersMaxCount == false ) ? 15 : parseInt(payProps.sliderMarkersMaxCount, 10) || 15;
+	
+	// When boost rank is enabled, force slider markers to respect their maximum count limit
+	if (payProps.getBoostRank){
+		const countMarkers = Math.floor(maxDiff / sliderDiffMarkerStep);
+		if (countMarkers > sliderMarkersMaxCount){
+			sliderDiffMarkerStep = Math.round(maxDiff/sliderMarkersMaxCount);
+		}
+	}
+
 
 	// GENERAL HANDLERS
 	const handleTagChange = (evt, value) => {
@@ -87,8 +90,15 @@ const PaymentPopup = compProps => {
 		setCategory(evt.target.value);
 	};
 
+	const clearContent = () => {
+		setContent(null);
+		setContentType(null);
+		setContentPreview("");
+	}
+
 	const handleClose = () => {
 		if (cParent) {
+			clearContent();
 			cParent.emit('close');
 		}
 	};
@@ -353,7 +363,6 @@ const PaymentPopup = compProps => {
 											<Difficulty.DiffSlider
 												min={minDiff}
 												max={maxDiff}
-												defaultValue={minDiff}
 												value={difficulty}
 												aria-labelledby="discrete-slider-custom"
 												step={sliderDiffStep}

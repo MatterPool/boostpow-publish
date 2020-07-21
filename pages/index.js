@@ -9,7 +9,9 @@ import * as BoostHelpers from '../lib/boost-helpers';
 const Home = () => {
 
 	const initialProps = {
-		wallets: VALID_WALLETS
+		wallets: VALID_WALLETS,
+		getBoostRank: true,
+		rankHours: 24,
 		/*outputs: [
 			{
 				to: "18YCy8VDYcXGnekHC4g3vphnJveTskhCLf", amount: 0.0004, currency: 'BSV'
@@ -21,28 +23,30 @@ const Home = () => {
 		category: 'B' // defaults to 'B' underneath.
 		*/
 		// content: '4d0295d207f3a00d73f069fc4aa5e06d3fe98d565af9f38983c0d486d6166a09',
-		// initialWallet: 'moneybutton',
+		// initialWallet: 'moneybutton', // 'moneybutton' or 'relayx'
 		// tag: '$',
 		// showTagField: false, // defaults to true
 		// showCategoryField: false, // defaults to false
-		// minDiff: 1, // defaults to 1
-		// maxDiff: 40, // defaults to 40
+		// minDiff: 1, // defaults to 1; ignored if getBoostRank is true
+		// maxDiff: 40, // defaults to 40; ignored if getBoostRank is true
+		// initialDiff: 1, // defaults to the minimal difficulty or 1; ignored if getBoostRank is true
 		// diffMultiplier: 0.00002, // defaults to 0.00002
-		// initialDiff: 1, // defaults to the minimal difficulty or 1
 		// lockDiff: false, // defaults to false
 		// showInputDiff: false, // defaults to false
 		// showSliderDiff: true, // defaults to true
 		// sliderDiffStep: 1, // defaults to 1
 		// sliderDiffMarkerStep: 10, // defaults to 10, use 0 to disable markers
+		// sliderMarkersMaxCount: 15, // defaults to 15
 		// displayMessage: 'hello world',
 	};
 
 	const [paymentProps, setPaymentProps] = useState();
 	const [parent, setParent] = useState(null);
-	
-	const [boostsRank, setBoostsRank] = useState();
-	const updateBoosts = async props => {
+	const [opened, setOpened] = useState(true);
+	const [boostsRank, setBoostsRank] = useState({});
+	const updateBoostsRank = async props => {
 		props = await BoostHelpers.prepareBoostProps(props);
+		props.minDiff = 1;
 		setBoostsRank(props);
 		return props;
 	};
@@ -53,7 +57,15 @@ const Home = () => {
 			const parentHandshake = new Postmate.Model({
 				open: async userProps => {
 					if (userProps.getBoostRank) {
-						userProps = await updateBoosts(userProps);
+						if (boostsRank.rankHours != userProps.rankHours) {
+							// avoid fetching the same rank hours again
+							userProps = await updateBoostsRank(userProps);
+						} else {
+							userProps = {
+								...userProps,
+								...{ maxDiff: boostsRank.maxDiff, initialDiff: boostsRank.initialDiff }
+							};
+						}
 					}
 					let localProps = Object.assign(
 						{},
@@ -62,14 +74,21 @@ const Home = () => {
 						userProps || {}
 					);
 					localProps.opening = true;
+					setOpened(true);
 					setPaymentProps(localProps);
 				},
 
 				// updates the widget as opening false, after widget opened manually
 				opened: args => {
 					args.opening = false;
+					setOpened(true);
 					setPaymentProps({ ...args });
+				},
+
+				close: () => {
+					setOpened(false)
 				}
+
 			});
 
 			//
@@ -108,7 +127,9 @@ const Home = () => {
 				<link rel="icon" href="/favicon.png" />
 				<link rel="stylesheet" href="https://use.typekit.net/kwm6mcp.css" />
 			</Head>
-			<main>{paymentProps && <PaymentPopup paymentProps={paymentProps} parent={parent} />}</main>
+			<main>{opened && paymentProps && 
+			<PaymentPopup paymentProps={paymentProps} parent={parent} boostsRank={boostsRank} />
+			}</main>
 			<style jsx global>{`
 				html,
 				body {

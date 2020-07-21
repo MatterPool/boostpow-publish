@@ -82,6 +82,7 @@ class BoostPublish {
 				self.child.call('opened', props);
 			});
 			self.child.on('close', () => {
+				self.child.call('close');
 				self.hideIframe();
 				return resolve();
 			});
