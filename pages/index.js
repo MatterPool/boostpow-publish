@@ -3,7 +3,7 @@ import Head from 'next/head';
 import { useEffect, useState } from 'react';
 import Postmate from 'postmate';
 import PaymentPopup from '../components/payment-popup';
-import { VALID_WALLETS } from '../components/payment-popup/wallets';
+import { VALID_WALLETS, getValidWallet } from '../components/payment-popup/wallets';
 import * as BoostHelpers from '../lib/boost-helpers';
 
 const Home = () => {
@@ -12,6 +12,7 @@ const Home = () => {
 		wallets: VALID_WALLETS,
 		getBoostRank: true,
 		rankHours: 24,
+		initialWallet: 'moneybutton',
 		/*outputs: [
 			{
 				to: "18YCy8VDYcXGnekHC4g3vphnJveTskhCLf", amount: 0.0004, currency: 'BSV'
@@ -56,6 +57,9 @@ const Home = () => {
 		try {
 			const parentHandshake = new Postmate.Model({
 				open: async userProps => {
+					// Ensure getBoostRank is true as default
+					if (userProps.getBoostRank === undefined) userProps.getBoostRank = true;
+
 					if (userProps.getBoostRank) {
 						if (boostsRank.rankHours != userProps.rankHours) {
 							// avoid fetching the same rank hours again
@@ -73,8 +77,13 @@ const Home = () => {
 						paymentProps || {},
 						userProps || {}
 					);
+
+					// Ensures a valid initial wallet id
+					localProps.initialWallet = getValidWallet(localProps.initialWallet);
+
 					localProps.opening = true;
 					setOpened(true);
+
 					setPaymentProps(localProps);
 				},
 

@@ -25,11 +25,19 @@ const RelayX = props => {
 		}
 	});
 
+	const showWallet = () => {
+		return ['relayx'].indexOf(props.currentWallet) > -1;
+	};
+
 	return (
-		<>
-			<Script url="https://one.relayx.io/relayone.js" onLoad={handleLoad} />
-			<div id="relayx-button" style={{ height: '43px' }} />
-		</>
+		<div>
+			{showWallet() && (
+				<div>
+					<Script url="https://one.relayx.io/relayone.js" onLoad={handleLoad} />
+					<div id="relayx-button" style={{ height: '43px' }}></div>
+				</div>
+			)}
+		</div>
 	);
 };
 

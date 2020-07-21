@@ -65,7 +65,7 @@ Optional initial wallet id to initialize with. Leave empty to start with moneybu
 
 ### getBoostRank
 
-Optional defaults to true. When getBoostsRank is true, finds minimum and maximum boosts rank from last rankHours property.
+Optional defaults to true. When getBoostRank is true, finds minimum and maximum boosts rank from last rankHours property.
 
 ### rankHours
 

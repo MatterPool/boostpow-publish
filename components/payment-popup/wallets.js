@@ -37,6 +37,11 @@ export const isValidWallet = wKey => {
 	return VALID_WALLETS.indexOf(wKey) > -1;
 };
 
+// Receives a wallet id and returns it, if valid, or default wallet id if not valid
+export const getValidWallet = wKey => {
+	return isValidWallet(wKey) ? wKey : DEFAULT_WALLET;
+};
+
 const renderMenuItem = wKey => (
 	<MenuItem
 		classes={{

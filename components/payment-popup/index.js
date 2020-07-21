@@ -24,6 +24,7 @@ Example Files
 const PaymentPopup = compProps => {
 
 	const payProps = compProps.paymentProps;
+	// console.log("payprops", payProps);
 	const cParent = compProps.parent;
 
 	// Communicates parent to change the opening property to false
@@ -38,7 +39,7 @@ const PaymentPopup = compProps => {
 	const [category, setCategory] = useState(payProps.category);
 
 	// WALLET PROPS
-	const initialWallet = Wallets.isValidWallet(payProps.initialWallet) ? payProps.initialWallet : Wallets.DEFAULT_WALLET;
+	const initialWallet = Wallets.isValidWallet(payProps.initialWallet) ? payProps.initialWallet : '';
 	const [wallet, setWallet] = useState(initialWallet);
 	// If is opening, adjust initialWallet
 	if (payProps.opening && initialWallet !== wallet){
@@ -146,11 +147,13 @@ const PaymentPopup = compProps => {
 				null
 			);
 		}
-	});
+	}, [content, showContentPreview, contentType]);
 
 
 	// WALLET HANDLERS
-	const Wallet = Wallets.getWalletElem(wallet);
+	let Wallet;
+	// Avoid rendering wallet while still opening
+	if (!payProps.opening && typeof wallet === 'string' && wallet.length > 0) Wallet = Wallets.getWalletElem(wallet);
 
 	const handleChangeWallet = (evt, value) => {
 		setPaid(false);
@@ -206,6 +209,7 @@ const PaymentPopup = compProps => {
 	const getWalletProps = () => {
 		const walletProps = {
 			...payProps,
+			currentWallet: wallet || '',
 			outputs: allOutputs(),
 			moneybuttonProps: {
 				...payProps.moneybuttonProps,
@@ -411,7 +415,7 @@ const PaymentPopup = compProps => {
 						</div>
 					}
 					<div className="boost-publisher-body">
-						{!paid && !!allOutputs() && !!allOutputs().length && <Wallet {...getWalletProps()} />}
+						{Wallet && !paid && !!allOutputs() && !!allOutputs().length && <Wallet {...getWalletProps()} />}
 						{paid && (
 							<div className="payment-completed-section">
 								<img
