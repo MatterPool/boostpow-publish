@@ -47,10 +47,7 @@ const PaymentPopup = compProps => {
 	}
 
 	// CONTENT PROPS
-	const [content, setContent] = useState(payProps.content || '');
-	if (payProps.opening && payProps.content !== content){
-		setContent(payProps.content);
-	}
+	const [content, setContent] = useState();
 	const [contentType, setContentType] = useState(null);
 	const [contentPreview, setContentPreview] = useState();
 	const [showContentPreview, setShowContentPreview] = useState(payProps.showContentPreview === false ? false : true);
@@ -108,10 +105,14 @@ const PaymentPopup = compProps => {
 
 	// Fetch and update the content
 	const handleContentChange = async (evt, value) => {
-		let content = evt.target.value;
-		setContent(content);
+		let newContent = evt.target.value;
 
-		let resp = await fetch(`https://media.bitcoinfiles.org/${content}`, { method: 'HEAD' });
+		// Prevents multiple content reloads from the api if it did not changed
+		if (content == newContent) return;
+
+		setContent(newContent);
+
+		let resp = await fetch(`https://media.bitcoinfiles.org/${newContent}`, { method: 'HEAD' });
 		if (resp.status === 404) {
 			setContentType(null);
 			return;
@@ -121,7 +122,7 @@ const PaymentPopup = compProps => {
 		setContentType(contentType);
 
 		if (contentType.match(/^text/)) {
-			resp = await fetch(`https://media.bitcoinfiles.org/${content}`);
+			resp = await fetch(`https://media.bitcoinfiles.org/${newContent}`);
 			let text = await resp.text();
 			if (contentType === 'text/markdown; charset=utf-8') {
 				setContentPreview(snarkdown(text));
@@ -147,7 +148,7 @@ const PaymentPopup = compProps => {
 				null
 			);
 		}
-	}, [content, showContentPreview, contentType]);
+	});
 
 
 	// WALLET HANDLERS
