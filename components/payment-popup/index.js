@@ -22,9 +22,9 @@ Example Files
 */
 
 const PaymentPopup = compProps => {
-
+	const rankProps = compProps.boostsRank || {};
 	const payProps = compProps.paymentProps;
-	// console.log("payprops", payProps);
+	// console.log("compProps", compProps);
 	const cParent = compProps.parent;
 
 	// Communicates parent to change the opening property to false
@@ -169,7 +169,7 @@ const PaymentPopup = compProps => {
 		let defaultCategory = Buffer.from('B', 'utf8').toString('hex');
 
 		if (payProps.diffMultiplier) {
-			defaultFeeMultiplier = payProps.diffMultiplier
+			defaultFeeMultiplier = payProps.diffMultiplier;
 		}
 		if (payProps.tag) {
 			defaultTag = Buffer.from(payProps.tag, 'utf8').toString('hex')
@@ -244,7 +244,6 @@ const PaymentPopup = compProps => {
 		};
 		return walletProps;
 	};
-
 
 	// DIFFICULTY HANDLERS
 
@@ -364,7 +363,9 @@ const PaymentPopup = compProps => {
 								<div className="form-group input-diff-container">
 									{showSliderDiff && (
 										<div>
-											<label className="label">Difficulty</label>
+											<label className="label">Difficulty {difficulty} 
+											{/* {Difficulty.hasRankSignals(rankProps) && <span> leads to the Rank {Difficulty.getDiffRank(rankProps.signals, difficulty)}</span>} */}
+											</label>
 											<Difficulty.DiffSlider
 												min={minDiff}
 												max={maxDiff}
@@ -387,6 +388,9 @@ const PaymentPopup = compProps => {
 											</select>
 										</div>
 									)}
+									{Difficulty.hasRankSignals(rankProps) && 
+										<div class="boost-rank-display">This post will appear at <span>Rank {Difficulty.getDiffRank(rankProps.signals, difficulty)}</span> of all boosted content on the last <span>{rankProps.rankHours} hours</span>.</div>
+									}
 								</div>
 
 							</form>
