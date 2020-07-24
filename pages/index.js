@@ -46,10 +46,13 @@ const Home = () => {
 	const [opened, setOpened] = useState(true);
 	const [boostsRank, setBoostsRank] = useState({});
 	const updateBoostsRank = async props => {
-		props = await BoostHelpers.prepareBoostProps(props);
-		props.minDiff = 1;
-		setBoostsRank(props);
-		return props;
+		const newProps = await BoostHelpers.prepareBoostProps(props);
+		newProps.minDiff = 1;
+		// If user defined maxDiff, then overrides boost rank maxDiff
+		if (props.maxDiff > 0) newProps.maxDiff = props.maxDiff;
+		if (newProps.initialDiff > newProps.maxDiff) newProps.initialDiff = newProps.maxDiff;
+		setBoostsRank(newProps);
+		return newProps;
 	};
 
 	const startParentHandshake = async () => {
@@ -57,6 +60,7 @@ const Home = () => {
 		try {
 			const parentHandshake = new Postmate.Model({
 				open: async userProps => {
+					// console.log("boostsRank", boostsRank, userProps);
 					// Ensure getBoostRank is true as default
 					if (userProps.getBoostRank === undefined) userProps.getBoostRank = true;
 
@@ -83,7 +87,7 @@ const Home = () => {
 
 					localProps.opening = true;
 					setOpened(true);
-
+					// console.log("localProps",localProps, userProps);
 					setPaymentProps(localProps);
 				},
 

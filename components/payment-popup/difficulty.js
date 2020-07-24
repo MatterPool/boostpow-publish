@@ -27,6 +27,9 @@ export const DiffSlider = withStyles({
 	track: {
 		height: 6,
 		borderRadius: 4
+	},
+	markLabel:{
+		fontSize: '0.75em'
 	}
 })(Slider);
 
