@@ -68,17 +68,23 @@ const PaymentPopup = compProps => {
 	const showSliderDiff = payProps.showSliderDiff === false ? false : true;
 	const sliderDiffStep = payProps.sliderDiffStep > 0 ? parseInt(payProps.sliderDiffStep, 10) : 1;
 	let sliderDiffMarkerStep = ( payProps.sliderDiffMarkerStep == 0 || payProps.sliderDiffMarkerStep == false ) ? 0 : parseInt(payProps.sliderDiffMarkerStep, 10) || 10;
+	let sliderRankMarkers = (Array.isArray(rankProps.sliderRankMarkers) && rankProps.sliderRankMarkers.length > 0) ? rankProps.sliderRankMarkers : [];
 	const sliderMarkersMaxCount = ( payProps.sliderMarkersMaxCount == 0 || payProps.sliderMarkersMaxCount == false ) ? 15 : parseInt(payProps.sliderMarkersMaxCount, 10) || 15;
 	
-	// When boost rank is enabled, force slider markers to respect their maximum count limit
-	if (payProps.getBoostRank){
-		const countMarkers = Math.floor(maxDiff / sliderDiffMarkerStep);
-		if (countMarkers > sliderMarkersMaxCount){
-			sliderDiffMarkerStep = Math.round(maxDiff/sliderMarkersMaxCount);
-		}
+	
+	// Force slider markers to respect their maximum count limits
+	const countMarkers = Math.floor(maxDiff / sliderDiffMarkerStep);
+	if (countMarkers > sliderMarkersMaxCount){
+		sliderDiffMarkerStep = Math.round(maxDiff/sliderMarkersMaxCount);
 	}
 
-
+	// Shows slider markers
+	let sliderMarkers = Difficulty.calculateSliderMarks(minDiff, maxDiff, sliderDiffMarkerStep);;
+	if (payProps.getBoostRank && sliderRankMarkers.length > 0){
+		// use rank markers
+		sliderMarkers = sliderRankMarkers;
+	}
+	
 	// GENERAL HANDLERS
 	const handleTagChange = (evt, value) => {
 		setTag(evt.target.value);
@@ -374,7 +380,7 @@ const PaymentPopup = compProps => {
 												step={sliderDiffStep}
 												valueLabelDisplay="on"
 												ValueLabelComponent={Difficulty.DiffValueLabel}
-												marks={Difficulty.calculateSliderMarks(minDiff, maxDiff, sliderDiffMarkerStep)}
+												marks={sliderMarkers}
 												onChange={handleDiffChange}
 												disabled={lockDiff}
 											/>
@@ -389,7 +395,9 @@ const PaymentPopup = compProps => {
 										</div>
 									)}
 									{Difficulty.hasRankSignals(rankProps) && 
-										<div class="boost-rank-display">This post will appear at <span>Rank {Difficulty.getDiffRank(rankProps.signals, difficulty)}</span> of all boosted content on the last <span>{rankProps.rankHours} hours</span>.</div>
+										<div className="boost-rank-display">
+											This post will appear at <span>Rank {Difficulty.getDiffRank(rankProps.signals, difficulty)}</span> 
+											&nbsp; of all boosted content on the last <span>{payProps.rankHours} hours</span>.</div>
 									}
 								</div>
 
