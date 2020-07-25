@@ -21,37 +21,70 @@ Example Files
 }
 */
 
-const PaymentPopup = props => {
+const PaymentPopup = compProps => {
+	const rankProps = compProps.boostsRank || {};
+	const payProps = compProps.paymentProps;
+	// console.log("compProps", compProps);
+	const cParent = compProps.parent;
+
+	// Communicates parent to change the opening property to false
+	// simulates an "opening phase", to be able to set initial diff, and other initial properties while fetching the api
+	if (payProps.opening && cParent) {
+		cParent.emit('opened', { ...payProps });
+	}
 
 	// GENERAL PROPS
 	const [paid, setPaid] = useState(false);
-	const [tag, setTag] = useState(props.tag);
-	const [category, setCategory] = useState(props.category);
+	const [tag, setTag] = useState(payProps.tag);
+	const [category, setCategory] = useState(payProps.category);
 
 	// WALLET PROPS
-	const [initialWallet] = useState(Wallets.isValidWallet(props.initialWallet) ? props.initialWallet : Wallets.DEFAULT_WALLET);
+	const initialWallet = Wallets.isValidWallet(payProps.initialWallet) ? payProps.initialWallet : '';
 	const [wallet, setWallet] = useState(initialWallet);
-	
+	// If is opening, adjust initialWallet
+	if (payProps.opening && initialWallet !== wallet){
+		setWallet(initialWallet);
+	}
 
 	// CONTENT PROPS
-	const [content, setContent] = useState(props.content || '');
+	const [content, setContent] = useState();
 	const [contentType, setContentType] = useState(null);
 	const [contentPreview, setContentPreview] = useState();
-	const [showContentPreview, setShowContentPreview] = useState(props.showContentPreview === false ? false : true);
+	const [showContentPreview, setShowContentPreview] = useState(payProps.showContentPreview === false ? false : true);
 
 	// DIFFICULTY PROPS
-	const [showInputDiff] = useState(props.showInputDiff === true ? true : false);
-	const [lockDiff] = useState(props.lockDiff === true ? true : false);
-	const [minDiff] = useState(props.minDiff > 0 ? parseFloat(props.minDiff) : 1);
-	const [maxDiff] = useState(props.maxDiff > minDiff ? parseFloat(props.maxDiff) : 40);
-	const [initialDiff] = useState(props.initialDiff > 0 ? Difficulty.safeDiffValue(parseFloat(props.initialDiff), minDiff, maxDiff) : 1);
+	const showInputDiff = payProps.showInputDiff === true ? true : false;
+	const lockDiff = payProps.lockDiff === true ? true : false;
+	const minDiff = payProps.minDiff > 0 ? parseFloat(payProps.minDiff) : 1;
+	const maxDiff = payProps.maxDiff > minDiff ? parseFloat(payProps.maxDiff) : 40;
+	const initialDiff = (payProps.initialDiff > 0) ? Difficulty.safeDiffValue(payProps.initialDiff, minDiff, maxDiff) : 1;
 	const [difficulty, setDifficulty] = useState(initialDiff);
-	const [showSliderDiff] = useState(props.showSliderDiff === false ? false : true);
-	const [sliderDiffStep] = useState(props.sliderDiffStep > 0 ? parseInt(props.sliderDiffStep, 10) : 1);
-	const [sliderDiffMarkerStep] = useState(
-		props.sliderDiffMarkerStep == 0 || props.sliderDiffMarkerStep == false ? 0 : parseInt(props.sliderDiffMarkerStep, 10) || 10 
-	);
 
+	// If is opening, adjust initialDiff
+	if (payProps.opening && initialDiff !== difficulty){
+		setDifficulty(initialDiff);
+	}
+
+	const showSliderDiff = payProps.showSliderDiff === false ? false : true;
+	const sliderDiffStep = payProps.sliderDiffStep > 0 ? parseInt(payProps.sliderDiffStep, 10) : 1;
+	let sliderDiffMarkerStep = ( payProps.sliderDiffMarkerStep == 0 || payProps.sliderDiffMarkerStep == false ) ? 0 : parseInt(payProps.sliderDiffMarkerStep, 10) || 10;
+	let sliderRankMarkers = (Array.isArray(rankProps.sliderRankMarkers) && rankProps.sliderRankMarkers.length > 0) ? rankProps.sliderRankMarkers : [];
+	const sliderMarkersMaxCount = ( payProps.sliderMarkersMaxCount == 0 || payProps.sliderMarkersMaxCount == false ) ? 15 : parseInt(payProps.sliderMarkersMaxCount, 10) || 15;
+	
+	
+	// Force slider markers to respect their maximum count limits
+	const countMarkers = Math.floor(maxDiff / sliderDiffMarkerStep);
+	if (countMarkers > sliderMarkersMaxCount){
+		sliderDiffMarkerStep = Math.round(maxDiff/sliderMarkersMaxCount);
+	}
+
+	// Shows slider markers
+	let sliderMarkers = Difficulty.calculateSliderMarks(minDiff, maxDiff, sliderDiffMarkerStep);;
+	if (payProps.getBoostRank && sliderRankMarkers.length > 0){
+		// use rank markers
+		sliderMarkers = sliderRankMarkers;
+	}
+	
 	// GENERAL HANDLERS
 	const handleTagChange = (evt, value) => {
 		setTag(evt.target.value);
@@ -61,9 +94,16 @@ const PaymentPopup = props => {
 		setCategory(evt.target.value);
 	};
 
+	const clearContent = () => {
+		setContent(null);
+		setContentType(null);
+		setContentPreview("");
+	}
+
 	const handleClose = () => {
-		if (props.parent) {
-			props.parent.emit('close');
+		if (cParent) {
+			clearContent();
+			cParent.emit('close');
 		}
 	};
 
@@ -71,10 +111,14 @@ const PaymentPopup = props => {
 
 	// Fetch and update the content
 	const handleContentChange = async (evt, value) => {
-		let content = evt.target.value;
-		setContent(content);
+		let newContent = evt.target.value;
 
-		let resp = await fetch(`https://media.bitcoinfiles.org/${content}`, { method: 'HEAD' });
+		// Prevents multiple content reloads from the api if it did not changed
+		if (content == newContent) return;
+
+		setContent(newContent);
+
+		let resp = await fetch(`https://media.bitcoinfiles.org/${newContent}`, { method: 'HEAD' });
 		if (resp.status === 404) {
 			setContentType(null);
 			return;
@@ -84,7 +128,7 @@ const PaymentPopup = props => {
 		setContentType(contentType);
 
 		if (contentType.match(/^text/)) {
-			resp = await fetch(`https://media.bitcoinfiles.org/${content}`);
+			resp = await fetch(`https://media.bitcoinfiles.org/${newContent}`);
 			let text = await resp.text();
 			if (contentType === 'text/markdown; charset=utf-8') {
 				setContentPreview(snarkdown(text));
@@ -96,15 +140,15 @@ const PaymentPopup = props => {
 
 	// Trigger content rendering when content changes
 	useEffect(() => {
-		if (props.showContentPreview === false) {
+		if (payProps.showContentPreview === false) {
 			setShowContentPreview(false);
 		}
 
-		if (props.content) {
+		if (payProps.content) {
 			handleContentChange(
 				{
 					target: {
-						value: props.content
+						value: payProps.content
 					}
 				},
 				null
@@ -114,7 +158,9 @@ const PaymentPopup = props => {
 
 
 	// WALLET HANDLERS
-	const Wallet = Wallets.getWalletElem(wallet);
+	let Wallet;
+	// Avoid rendering wallet while still opening
+	if (!payProps.opening && typeof wallet === 'string' && wallet.length > 0) Wallet = Wallets.getWalletElem(wallet);
 
 	const handleChangeWallet = (evt, value) => {
 		setPaid(false);
@@ -128,24 +174,24 @@ const PaymentPopup = props => {
 		let defaultTag = undefined;
 		let defaultCategory = Buffer.from('B', 'utf8').toString('hex');
 
-		if (props.diffMultiplier) {
-			defaultFeeMultiplier = props.diffMultiplier
+		if (payProps.diffMultiplier) {
+			defaultFeeMultiplier = payProps.diffMultiplier;
 		}
-		if (props.tag) {
-			defaultTag = Buffer.from(props.tag, 'utf8').toString('hex')
+		if (payProps.tag) {
+			defaultTag = Buffer.from(payProps.tag, 'utf8').toString('hex')
 		}
-		if (props.category) {
-			defaultCategory = Buffer.from(props.category, 'utf8').toString('hex')
+		if (payProps.category) {
+			defaultCategory = Buffer.from(payProps.category, 'utf8').toString('hex')
 		}
 
-		if (props.outputs && props.outputs.length) {
-			props.outputs.forEach((out) => {
+		if (payProps.outputs && payProps.outputs.length) {
+			payProps.outputs.forEach((out) => {
 				o.push(out);
 			});
 		}
 		try {
 			const boostJob = boost.BoostPowJob.fromObject({
-				content: content ? content : props.content,
+				content: content ? content : payProps.content,
 				tag: tag ? Buffer.from(tag, 'utf8').toString('hex') : defaultTag,
 				category: category ? Buffer.from(category, 'utf8').toString('hex') : defaultCategory,
 				diff: difficulty,
@@ -169,21 +215,22 @@ const PaymentPopup = props => {
 	// Prepare wallet configuration object
 	const getWalletProps = () => {
 		const walletProps = {
-			...props,
+			...payProps,
+			currentWallet: wallet || '',
 			outputs: allOutputs(),
 			moneybuttonProps: {
-				...props.moneybuttonProps,
+				...payProps.moneybuttonProps,
 				onCryptoOperations: cryptoOperations => {
 					// console.log('onCryptoOperations', cryptoOperations);
-					if (props.parent){
-						props.parent.emit('cryptoOperations', { cryptoOperations });
+					if (cParent){
+						cParent.emit('cryptoOperations', { cryptoOperations });
 					}
 				}
 			},
 			onError: error => {
 				// console.log('onError', error);
-				if (props.parent){
-					props.parent.emit('error', { error });
+				if (cParent){
+					cParent.emit('error', { error });
 				}
 			},
 			onPayment: async payment => {
@@ -191,8 +238,8 @@ const PaymentPopup = props => {
 				const boostJobStatus = await boost.Graph().submitBoostJob(payment.rawtx);
 				// console.log('boostJobStatus', boostJobStatus);
 				const mergedPayment = Object.assign({}, payment, { boostJobStatus: boostJobStatus.result } );
-				if (props.parent){
-					props.parent.emit('payment', { payment: mergedPayment});
+				if (cParent){
+					cParent.emit('payment', { payment: mergedPayment });
 				}
 				setPaid(true);
 				setTimeout(() => {
@@ -203,7 +250,6 @@ const PaymentPopup = props => {
 		};
 		return walletProps;
 	};
-
 
 	// DIFFICULTY HANDLERS
 
@@ -248,21 +294,21 @@ const PaymentPopup = props => {
 							Close
 						</p>
 					</div>
-					{props.wallets.length > 1 && !paid &&
+					{payProps.wallets.length > 1 && !paid &&
 						<div className="boost-publisher-body">
 							<form>
 								<div className="form-group">
-									{!props.content && !props.displayMessage && (
+									{!payProps.content && !payProps.displayMessage && (
 										<p className="lead">
 											What would you like to Boost? <a href="https://boostpow.com" className="pow-help-text" target="_blank">What's Boost?</a>
 										</p>
 									)}
-									{props.displayMessage && (
+									{payProps.displayMessage && (
 										<p className="lead">
-											{props.displayMessage}
+											{payProps.displayMessage}
 										</p>
 									)}
-									{!props.content && !props.displayMessage && (
+									{!payProps.content && !payProps.displayMessage && (
 										<input onChange={handleContentChange} value={content || ''} type="text" className="input-content" placeholder="Transaction ID, Bitcoin File, Text, Hash, etc.."></input>
 									)}
                   {(showContentPreview && content) &&
@@ -303,37 +349,38 @@ const PaymentPopup = props => {
                     </div>
                   }
 								</div>
-								{props.showTagField && (
+								{payProps.showTagField && (
 									<div className="form-group">
 										<p className="lead">
 											Tag (optional)
 										</p>
-										<input maxlength="20" onChange={handleTagChange} value={tag || props.tag} type="text" className="input-content" placeholder="ex: photos, programming, bitcoin..."></input>
+										<input maxlength="20" onChange={handleTagChange} value={tag || payProps.tag} type="text" className="input-content" placeholder="ex: photos, programming, bitcoin..."></input>
 									</div>
 								)}
-								{props.showCategoryField === true && (
+								{payProps.showCategoryField === true && (
 									<div className="form-group">
 										<p className="lead">
 											Category (optional)
 										</p>
-										<input maxlength="4" onChange={handleCategoryChange} value={category || props.category} type="text" className="input-content" placeholder=""></input>
+										<input maxlength="4" onChange={handleCategoryChange} value={category || payProps.category} type="text" className="input-content" placeholder=""></input>
 									</div>
 								)}
 
 								<div className="form-group input-diff-container">
 									{showSliderDiff && (
 										<div>
-											<label className="label">Difficulty</label>
+											<label className="label">Difficulty {difficulty} 
+											{/* {Difficulty.hasRankSignals(rankProps) && <span> leads to the Rank {Difficulty.getDiffRank(rankProps.signals, difficulty)}</span>} */}
+											</label>
 											<Difficulty.DiffSlider
 												min={minDiff}
 												max={maxDiff}
-												defaultValue={minDiff}
 												value={difficulty}
 												aria-labelledby="discrete-slider-custom"
 												step={sliderDiffStep}
 												valueLabelDisplay="on"
 												ValueLabelComponent={Difficulty.DiffValueLabel}
-												marks={Difficulty.calculateSliderMarks(minDiff, maxDiff, sliderDiffMarkerStep)}
+												marks={sliderMarkers}
 												onChange={handleDiffChange}
 												disabled={lockDiff}
 											/>
@@ -347,6 +394,11 @@ const PaymentPopup = props => {
 											</select>
 										</div>
 									)}
+									{Difficulty.hasRankSignals(rankProps) && 
+										<div className="boost-rank-display">
+											This post will appear at <span>Rank {Difficulty.getDiffRank(rankProps.signals, difficulty)}</span> 
+											&nbsp; of all boosted content on the last <span>{payProps.rankHours} hours</span>.</div>
+									}
 								</div>
 
 							</form>
@@ -370,13 +422,13 @@ const PaymentPopup = props => {
 										outlined: 'boost-publisher-select-outlined'
 									}}
 								>
-									{Wallets.renderWalletMenuItems(props.wallets)}
+									{Wallets.renderWalletMenuItems(payProps.wallets)}
 								</Select>
 							</FormControl>
 						</div>
 					}
 					<div className="boost-publisher-body">
-						{!paid && !!allOutputs() && !!allOutputs().length && <Wallet {...getWalletProps()} />}
+						{Wallet && !paid && !!allOutputs() && !!allOutputs().length && <Wallet {...getWalletProps()} />}
 						{paid && (
 							<div className="payment-completed-section">
 								<img

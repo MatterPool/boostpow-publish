@@ -19,7 +19,11 @@
 # misc
 .DS_Store
 .env*
+
+# ide
 /tmp
+/.vscode
+/.history
 
 # debug
 npm-debug.log*

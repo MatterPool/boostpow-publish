@@ -112,6 +112,16 @@ const Styles = () => (
 			line-height: 17px;
 		}
 
+		.boost-rank-display {
+			text-align: center;
+		}
+
+		.boost-rank-display span {
+			font-weight: 600;
+			font-size: 1.3em;
+			letter-spacing: -1px;
+		}
+
 		.boost-publisher-menu-list {
 			padding: 0;
 		}

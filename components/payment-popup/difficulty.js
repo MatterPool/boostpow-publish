@@ -27,6 +27,9 @@ export const DiffSlider = withStyles({
 	track: {
 		height: 6,
 		borderRadius: 4
+	},
+	markLabel:{
+		fontSize: '0.75em'
 	}
 })(Slider);
 
@@ -82,4 +85,18 @@ export const renderDiffOptions = (minDiff, maxDiff, sliderDiffStep) => {
 	// always push the boost maxDiff option
 	rows.push(renderDiffOption(maxDiff));
 	return rows;
+};
+
+// Verifies if there are rank signals loaded
+export const hasRankSignals = rankProps => {
+	return Array.isArray(rankProps.signals) && rankProps.signals.length > 0;
+}
+
+// Get the rank of a given difficulty compared to the actual loaded boost ranks
+export const getDiffRank = (signals, difficulty) => {
+	for (let i = signals.length; i > 0; i--) {
+		const sig = signals[i-1];
+		if (sig.totalDifficulty > difficulty) return i+1;
+	}
+	return 1;
 };

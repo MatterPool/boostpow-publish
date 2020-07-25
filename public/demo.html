@@ -1,26 +1,101 @@
+<!DOCTYPE html>
 <html>
 	<head>
 		<title>Boost POW Publish Demo</title>
 		<script src="/publish.js"></script>
+		<style>
+			body { font-family: Arial; }
+			p { border-bottom: 1px solid #999; padding: 0 0 15px }
+		</style>
 	</head>
 	<body>
-		Boost POW Publish Demo
-		<button id="button" onclick="showBoostPublisher()">Click Me</button>
+		<svg _ngcontent-ldm-c18="" width="173" height="65" viewBox="0 0 173 65" fill="none" xmlns="http://www.w3.org/2000/svg"><path _ngcontent-ldm-c18="" d="M32.5 65C50.4493 65 65 50.4493 65 32.5C65 14.5507 50.4493 0 32.5 0C14.5507 0 0 14.5507 0 32.5C0 50.4493 14.5507 65 32.5 65Z" fill="#CEDEFD"></path><path _ngcontent-ldm-c18="" d="M32.4999 52.5876C43.5945 52.5876 52.5886 43.5936 52.5886 32.4989C52.5886 21.4042 43.5945 12.4102 32.4999 12.4102C21.4052 12.4102 12.4111 21.4042 12.4111 32.4989C12.4111 43.5936 21.4052 52.5876 32.4999 52.5876Z" fill="#6B9CFA"></path><path _ngcontent-ldm-c18="" d="M44.9113 32.8604C44.9113 37.5655 42.2948 41.7715 38.4331 43.8773C36.6715 44.8413 34.646 41.5305 32.5 41.5305C30.4343 41.5305 28.4892 44.7667 26.7735 43.8773C22.7971 41.8059 20.083 37.6516 20.083 32.8604C20.083 26.0035 25.6431 20.4434 32.5 20.4434C39.3569 20.4434 44.9113 26.0035 44.9113 32.8604Z" fill="#085AF6"></path><path _ngcontent-ldm-c18="" d="M40.1719 32.6561C40.1719 35.6054 38.5079 38.1645 36.0692 39.4499C35.002 40.0122 33.7855 36.2423 32.4945 36.2423C31.1288 36.2423 29.8492 40.0696 28.7418 39.4499C26.4007 38.1359 24.8228 35.5308 24.8228 32.6561C24.8228 28.4214 28.2598 24.9844 32.4945 24.9844C36.7291 24.9844 40.1719 28.4157 40.1719 32.6561Z" fill="white"></path><path _ngcontent-ldm-c18="" d="M98.91 32.08C100.62 31.18 101.7 29.56 101.7 27.46C101.7 24.19 99 22 93.75 22H83.49V43H94.35C99.87 43 102.75 40.9 102.75 37.27C102.75 34.63 101.25 32.83 98.91 32.08ZM93.15 25.66C95.52 25.66 96.81 26.47 96.81 28.12C96.81 29.77 95.52 30.61 93.15 30.61H88.32V25.66H93.15ZM93.99 39.34H88.32V34.15H93.99C96.51 34.15 97.86 34.99 97.86 36.76C97.86 38.56 96.51 39.34 93.99 39.34ZM113.779 43.24C118.909 43.24 122.629 39.79 122.629 34.93C122.629 30.07 118.909 26.62 113.779 26.62C108.649 26.62 104.899 30.07 104.899 34.93C104.899 39.79 108.649 43.24 113.779 43.24ZM113.779 39.4C111.439 39.4 109.639 37.72 109.639 34.93C109.639 32.14 111.439 30.46 113.779 30.46C116.119 30.46 117.889 32.14 117.889 34.93C117.889 37.72 116.119 39.4 113.779 39.4ZM133.438 43.24C138.568 43.24 142.288 39.79 142.288 34.93C142.288 30.07 138.568 26.62 133.438 26.62C128.308 26.62 124.558 30.07 124.558 34.93C124.558 39.79 128.308 43.24 133.438 43.24ZM133.438 39.4C131.098 39.4 129.298 37.72 129.298 34.93C129.298 32.14 131.098 30.46 133.438 30.46C135.778 30.46 137.548 32.14 137.548 34.93C137.548 37.72 135.778 39.4 133.438 39.4ZM150.846 43.24C155.676 43.24 158.466 41.11 158.466 38.11C158.466 31.75 148.716 34.42 148.716 31.66C148.716 30.82 149.616 30.16 151.716 30.16C153.186 30.16 154.776 30.46 156.366 31.36L157.926 28.03C156.396 27.13 153.936 26.62 151.716 26.62C147.006 26.62 144.246 28.78 144.246 31.84C144.246 38.29 153.996 35.59 153.996 38.23C153.996 39.13 153.186 39.7 151.026 39.7C149.046 39.7 146.856 39.07 145.416 38.14L143.856 41.5C145.356 42.49 148.116 43.24 150.846 43.24ZM170.503 38.92C169.993 39.31 169.303 39.52 168.613 39.52C167.353 39.52 166.603 38.77 166.603 37.39V30.82H170.623V27.22H166.603V23.29H161.923V27.22H159.433V30.82H161.923V37.45C161.923 41.29 164.143 43.24 167.953 43.24C169.393 43.24 170.803 42.91 171.763 42.22L170.503 38.92Z" fill="#007bff"></path></svg>
+		<h1>BoostPOW Publish widget demo</h1>
+		<p><button id="button1" onclick="showBoostPublisher()">DEMO 1</button> - Text content with standard options (defaults to 24 hours boost rank)</p>
+		<p><button id="button2" onclick="showBoostPublisher2()">DEMO 2</button> - Image content and boost rank from the last 72 hours, with RelayX as initial wallet</p>
+		<p><button id="button3" onclick="showBoostPublisher3()">DEMO 3</button> - Video content without boost rank, and custom slider difficulty configuration</p>
+		<p><button id="button4" onclick="showBoostPublisher4()">DEMO 4</button> - Markdown content with boost rank from last 10 days, and custom slider steps and marker configuration</p>
 	</body>
 	<script>
 		async function showBoostPublisher() {
+			console.log("DEMO 1");
 			const response = await boostPublish.open({
-        content: "1e1c7c06786d4e7979aaaa0f6c9204910cba288741bfa8b95b43027d698e2f90",
-        showContentPreview: true,
-				outputs: [
-					// { to: "18YCy8VDYcXGnekHC4g3vphnJveTskhCLf", value: 4000 }
-				], 	// Optionally apply other outputs
+				content: "2829b4df5152fb867128f0ea2cffdfe3b7134a98b356eb1a1813b68fd3b83519",
+				showContentPreview: true,
+				// getBoostRank: true,
+				// rankHours: 24,
+				// initialWallet: 'relayx', // 'moneybutton' or 'relayx'
+				// tag: '$',
+				// showTagField: false, // defaults to true
+				// showCategoryField: false, // defaults to false
+				// minDiff: 1, // defaults to 1; ignored if getBoostRank is true
+				// maxDiff: 40, // defaults to 40; ignored if getBoostRank is true
+				// initialDiff: 1, // defaults to the minimal difficulty or 1; ignored if getBoostRank is true
+				// diffMultiplier: 0.00002, // defaults to 0.00002
+				// lockDiff: false, // defaults to false
+				// showInputDiff: false, // defaults to false
+				// showSliderDiff: true, // defaults to true 
+				// sliderDiffStep: 1, // defaults to 1
+				// sliderDiffMarkerStep: 10, // defaults to 10, use 0 to disable markers
+				// sliderMarkersMaxCount: 10, // defaults to 10
+				// displayMessage: 'hello world',
+				// outputs: [
+				// 	// { to: "18YCy8VDYcXGnekHC4g3vphnJveTskhCLf", value: 4000 }
+				// ], 	// Optionally apply other outputs
 				onPayment: (payment, boostJob) => {
 					console.log({ payment, boostJob});
 				}
 			});
-
+			
 			console.log({ response });
 		}
+
+		async function showBoostPublisher2() {
+			console.log("DEMO 2");
+			const response = await boostPublish.open({
+				initialWallet: 'relayx',
+				content: "1cbf1cb5b6c1b72600da298a9c116cb262649ae53db380853508ca2d0bc94b64",
+				showContentPreview: true,
+				getBoostRank: true,
+				rankHours: 72,
+				onPayment: (payment, boostJob) => {
+					console.log({ payment, boostJob});
+				}
+			});
+		}
+
+		async function showBoostPublisher3() {
+			console.log("DEMO 3");
+			const response = await boostPublish.open({
+				content: "1e1c7c06786d4e7979aaaa0f6c9204910cba288741bfa8b95b43027d698e2f90",
+				showContentPreview: true,
+				getBoostRank: false,
+				minDiff: 20,
+				maxDiff: 200,
+				initialDiff: 40,
+				sliderDiffStep: 5, // defaults to 1
+				onPayment: (payment, boostJob) => {
+					console.log({ payment, boostJob});
+				}
+			});
+		}
+
+		async function showBoostPublisher4() {
+			console.log("DEMO 4");
+			const response = await boostPublish.open({
+				content: "a1ef1e13a09b1f58c5ce7e42f7e24c02c529baa4608652b9895d10b25bb30f5a",
+				showContentPreview: true,
+				getBoostRank: true,
+				rankHours: 240,
+				sliderDiffStep: 10, // defaults to 1
+				sliderDiffMarkerStep: 20, // defaults to 10, use 0 to disable markers
+				sliderMarkersMaxCount: 15,
+				onPayment: (payment, boostJob) => {
+					console.log({ payment, boostJob});
+				}
+			});
+		}
+
+		
 	</script>
 </html>

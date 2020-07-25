@@ -22,6 +22,8 @@ boostPublish.open({
 		}
 	],*/
 	// initialWallet: 'moneybutton', // Possible wallets: moneybutton or relayx
+	// getBoostRank: true,
+	// rankHours: 24, 
 	// tag: 'bitcoin',
 	// category: 'B',  // defaults to 'B' underneath.
 	// showTagField: true, // defaults to true
@@ -35,6 +37,7 @@ boostPublish.open({
 	// showSliderDiff: true, // defaults to true
 	// sliderDiffStep: 1, // defaults to 1
 	// sliderDiffMarkerStep: 10, // defaults to 10, use 0 to disable markers
+	// sliderMarkersMaxCount: 15, // defaults to 15
 	// displayMessage: 'Boost this', // set to empty string to disable
 	// showContentPreview: true, // Whether to show content preview or not
 	onPayment: function(payment, boostJobStatus) {
@@ -59,6 +62,14 @@ Optional content to initialize with. Leave empty to allow user to set it.
 ### initialWallet
 
 Optional initial wallet id to initialize with. Leave empty to start with moneybutton.
+
+### getBoostRank
+
+Optional defaults to true. When getBoostRank is true, finds minimum and maximum boosts rank from last rankHours property.
+
+### rankHours
+
+Optional default to 24. Defines the total number of hours to return boosts ranks.
 
 ### tag
 
@@ -123,6 +134,10 @@ Optional sliderDiffStep the total amount of difficulty that will be changed in e
 ### sliderDiffMarkerStep
 
 Optional sliderDiffMarkerStep defines the interval between each slider marker steps to be shown on difficulty slider bar.
+
+### sliderMarkersMaxCount
+
+Optional sliderMarkersMaxCount defines the maximum number of markers allowed to show in slider bar.
 
 ### displayMessage
 
