@@ -271,7 +271,7 @@ const PaymentPopup = compProps => {
 				setDifficulty(val % sliderDiffStep === 0 ? val : val-(val % sliderDiffStep));
 			}
 			else setDifficulty(val);
-		}, 100);
+		}, 50);
 	};
 
 	return (

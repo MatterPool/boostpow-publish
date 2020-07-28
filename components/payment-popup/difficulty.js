@@ -35,15 +35,35 @@ export const DiffSlider = withStyles({
 
 // Custom styles for the Difficulty ValueLabel component
 export const DiffValueLabel = withStyles({
+	thumb: {
+		'&$open': {
+			'& $offset': {
+				transform: 'scale(.9) translateY(-5px)'
+			}
+		}
+	},
+	open: {},
 	offset: {
-		top: -22,
-		left: -2
+		zIndex: 1,
+		lineHeight: 1.2,
+		top: -34,
+		transformOrigin: 'bottom center',
+		transform: 'scale(0)',
+		position: 'absolute'
 	},
 	circle: {
-		height: 24,
-		width: 24
+		display: 'flex',
+		alignItems: 'center',
+		justifyContent: 'center',
+		width: 32,
+		height: 32,
+		borderRadius: '50% 50% 50% 0',
+		backgroundColor: 'currentColor',
+		transform: 'rotate(-45deg)'
+	},
+	label: {
+		transform: 'rotate(45deg)'
 	}
-	// label: {}
 })(ValueLabel);
 
 // Return the difficulty value safely between min and max difficulty
