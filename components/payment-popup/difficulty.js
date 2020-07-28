@@ -22,28 +22,48 @@ export const DiffSlider = withStyles({
 	},
 	active: {},
 	valueLabel: {
-		left: 'calc(-50% + 4px)',
+		left: 'calc(-50% + 4px)'
 	},
 	track: {
 		height: 6,
 		borderRadius: 4
 	},
-	markLabel:{
-		fontSize: '0.75em'
+	markLabel: {
+		fontSize: '0.7em'
 	}
 })(Slider);
 
 // Custom styles for the Difficulty ValueLabel component
 export const DiffValueLabel = withStyles({
+	thumb: {
+		'&$open': {
+			'& $offset': {
+				transform: 'scale(.9) translateY(-5px)'
+			}
+		}
+	},
+	open: {},
 	offset: {
-		top: -22,
-		left: -2
+		zIndex: 1,
+		lineHeight: 1.2,
+		top: -34,
+		transformOrigin: 'bottom center',
+		transform: 'scale(0)',
+		position: 'absolute'
 	},
 	circle: {
-		height: 24,
-		width: 24
+		display: 'flex',
+		alignItems: 'center',
+		justifyContent: 'center',
+		width: 32,
+		height: 32,
+		borderRadius: '50% 50% 50% 0',
+		backgroundColor: 'currentColor',
+		transform: 'rotate(-45deg)'
 	},
-	// label: {}
+	label: {
+		transform: 'rotate(45deg)'
+	}
 })(ValueLabel);
 
 // Return the difficulty value safely between min and max difficulty
@@ -54,12 +74,24 @@ export const safeDiffValue = (diffValue, minDiff, maxDiff) => {
 };
 
 // Returns an array of slider markers between min and max difficulty into a defined steps distance
-export const calculateSliderMarks = (minDiff, maxDiff, sliderDiffMarkerStep) => {
+export const calculateSliderMarks = (minDiff, maxDiff, sliderDiffMarkerStep, marginRate) => {
+	// margin rate defines the minimum distance, in percentage of the total slider bar length, of the markers that will appear after the first and before the last one on the bar
+	marginRate = marginRate > 0 && marginRate > 1 ? marginRate : 0.035;
 	if (!sliderDiffMarkerStep) return [];
+	const sliderLength = maxDiff - minDiff;
 	const sm = [{ value: minDiff, label: minDiff }];
 	for (var i = minDiff + 1; i < maxDiff; i++) {
-		if (i % sliderDiffMarkerStep == 0) sm.push({ value: i, label: i });
+		if (i % sliderDiffMarkerStep == 0) {
+			const minRate = (i - minDiff) / sliderLength;
+			// If the first value does not respect minimum margin, does not add it
+			if (sm.length == 1 && minRate < marginRate) continue;
+			sm.push({ value: i, label: i });
+		}
 	}
+	const last = sm[sm.length - 1];
+	const maxRate = 1 - (last.value - minDiff) / sliderLength;
+	// If the last value does not respect the last margin, removes it
+	if (maxRate < marginRate) sm.pop();
 	sm.push({ value: maxDiff, label: maxDiff });
 	return sm;
 };
@@ -90,13 +122,13 @@ export const renderDiffOptions = (minDiff, maxDiff, sliderDiffStep) => {
 // Verifies if there are rank signals loaded
 export const hasRankSignals = rankProps => {
 	return Array.isArray(rankProps.signals) && rankProps.signals.length > 0;
-}
+};
 
 // Get the rank of a given difficulty compared to the actual loaded boost ranks
 export const getDiffRank = (signals, difficulty) => {
 	for (let i = signals.length; i > 0; i--) {
-		const sig = signals[i-1];
-		if (sig.totalDifficulty > difficulty) return i+1;
+		const sig = signals[i - 1];
+		if (sig.totalDifficulty > difficulty) return i + 1;
 	}
 	return 1;
 };
