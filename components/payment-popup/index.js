@@ -71,7 +71,6 @@ const PaymentPopup = compProps => {
 	let sliderRankMarkers = (Array.isArray(rankProps.sliderRankMarkers) && rankProps.sliderRankMarkers.length > 0) ? rankProps.sliderRankMarkers : [];
 	const sliderMarkersMaxCount = ( payProps.sliderMarkersMaxCount == 0 || payProps.sliderMarkersMaxCount == false ) ? 15 : parseInt(payProps.sliderMarkersMaxCount, 10) || 15;
 	
-	
 	// Force slider markers to respect their maximum count limits
 	const countMarkers = Math.floor(maxDiff / sliderDiffMarkerStep);
 	if (countMarkers > sliderMarkersMaxCount){
@@ -397,7 +396,7 @@ const PaymentPopup = compProps => {
 									{Difficulty.hasRankSignals(rankProps) && 
 										<div className="boost-rank-display">
 											This post will appear at <span>Rank {Difficulty.getDiffRank(rankProps.signals, difficulty)}</span> 
-											&nbsp; of all boosted content on the last <span>{payProps.rankHours} hours</span>.</div>
+											&nbsp; of all Boosted content on the last <span>{payProps.rankHours} hours</span>.</div>
 									}
 								</div>
 
