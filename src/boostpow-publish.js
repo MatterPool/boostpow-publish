@@ -1,11 +1,12 @@
 // BoostPublish API Class
 const Postmate = require('postmate');
 const Helpers = require('../lib/helpers');
+const VERSION = '1.0.7';
 
 class BoostPublish {
 	// Initializes the widget after page load
 	async init() {
-		// console.log("BPow Initializing...")
+		console.log('BoostPOW Publish ' + VERSION + ' initialized.');
 		Helpers.addStyle(
 			`.boostPublishFrame {
 				border: none;
@@ -23,7 +24,7 @@ class BoostPublish {
 		this.child = await new Postmate({
 			name: 'boostpow-publish',
 			container: document.body,
-			url: 'https://publish.boostpow.com', // 'http://localhost:4000', 
+			url: 'https://publish.boostpow.com', // 'http://localhost:4000',
 			classListArray: ['boostPublishFrame'],
 			model: { fromPowPublish: true }
 		});
