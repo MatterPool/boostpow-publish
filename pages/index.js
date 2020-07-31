@@ -3,8 +3,9 @@ import Head from 'next/head';
 import { useEffect, useState } from 'react';
 import Postmate from 'postmate';
 import PaymentPopup from '../components/payment-popup';
-import { VALID_WALLETS, getValidWallet } from '../components/payment-popup/wallets';
+import { VALID_WALLETS, getValidWallet } from '../lib/wallets';
 import * as BoostHelpers from '../lib/boost-helpers';
+import * as ApiCompat from '../lib/api-compatibility';
 
 const Home = () => {
 
@@ -42,19 +43,22 @@ const Home = () => {
 	};
 
 	const newInitialProps = {
-		message: { // displayMessage
-			text: '', // displayMessage
-			markdown: '', // new
-			html: '' // new
-		},
-		contentHash: '', // content => If is a hash, show content, else hides the content
-		tags: true, // showTagField => If (true|[]) then shows empty tags field | If ['tag1', ..., 'tagN'] then shows box with tags | else hides the field
-		categories: true, // showCategoryField => If (true|[]) then shows empty tags field | If ['tag1', ..., 'tagN'] then shows box with tags | else hides the field
-		boostRank: { // getBoostRank
-			hours: 24, // rankHours
-			tags: [], // filters the api with tags
-			category: [] // filter the api with categories
-		},
+		// message: { // displayMessage
+		// 	text: '', // displayMessage
+		// 	markdown: '', // new
+		// 	html: '' // new
+		// },
+		// content: {
+		// 	hash: '', // content => If is a hash, show content, else hides the content
+		// 	showPreview: true // showContentPreview
+		// },
+		// tag: undefined, // showTagField => if is a string or empty string show tag field with tag filled
+		// category: undefined, // showCategoryField => if is a string or empty string show category field with category filled
+		// boostRank: { // getBoostRank
+		// 	hours: 24, // rankHours
+		// 	tags: [], // filters the api with tags
+		// 	category: [] // filter the api with categories
+		// },
 		difficulty: {
 			min: 1, // minDiff
 			max: 40, // maxDiff
@@ -71,11 +75,11 @@ const Home = () => {
 			},
 			logScale: false,
 		},
-		wallets: {
-			available: ['moneybutton', 'relayx'], // wallets
-			initial: 'moneybutton' // initialWallet
-		},
-		outputs: [],
+		// wallets: {
+		// 	available: ['moneybutton', 'relayx'], // wallets
+		// 	initial: 'moneybutton' // initialWallet
+		// },
+		// outputs: [],
 	};
 
 	const [paymentProps, setPaymentProps] = useState();
@@ -106,6 +110,7 @@ const Home = () => {
 		try {
 			const parentHandshake = new Postmate.Model({
 				open: async userProps => {
+					console.log("compatible API", userProps, ApiCompat.normalizeLegacyApi(userProps));
 					// Ensure getBoostRank is true as default
 					if (userProps.getBoostRank === undefined) userProps.getBoostRank = true;
 					userProps = await updateBoostsRank(userProps);

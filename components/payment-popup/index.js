@@ -7,6 +7,7 @@ import Select from '@material-ui/core/Select';
 import Styles from './styles';
 import * as Difficulty from './difficulty';
 import * as Wallets from './wallets';
+import { isValidWallet } from '../../lib/wallets';
 
 /*
 
@@ -38,7 +39,7 @@ const PaymentPopup = compProps => {
 	const [category, setCategory] = useState(payProps.category);
 
 	// WALLET PROPS
-	const initialWallet = Wallets.isValidWallet(payProps.initialWallet) ? payProps.initialWallet : '';
+	const initialWallet = isValidWallet(payProps.initialWallet) ? payProps.initialWallet : '';
 	const [wallet, setWallet] = useState(initialWallet);
 	// If is opening, adjust initialWallet
 	if (payProps.opening && initialWallet !== wallet) {
