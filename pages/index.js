@@ -42,46 +42,6 @@ const Home = () => {
 		// displayMessage: 'hello world',
 	};
 
-	const newInitialProps = {
-		// message: { // displayMessage
-		// 	text: '', // displayMessage
-		// 	markdown: '', // new
-		// 	html: '' // new
-		// },
-		// content: {
-		// 	hash: '', // content => If is a hash, show content, else hides the content
-		// 	showPreview: true // showContentPreview
-		// },
-		// tag: undefined, // showTagField => if is a string or empty string show tag field with tag filled
-		// category: undefined, // showCategoryField => if is a string or empty string show category field with category filled
-		// boostRank: { // getBoostRank
-		// 	hours: 24, // rankHours
-		// 	tags: [], // filters the api with tags
-		// 	category: [] // filter the api with categories
-		// },
-		difficulty: {
-			min: 1, // minDiff
-			max: 40, // maxDiff
-			initial: 20, // initialDiff
-			multiplier: 0.00002, // diffMultiplier
-			locked: false, // lockDiff
-			showInput: false, // showInputDiff
-		},
-		slider: { // showSliderDiff
-			step: 1, // sliderDiffStep
-			markers: {
-				step: 10, // sliderDiffMarkerStep
-				maxCount: 15, // sliderMarkersMaxCount
-			},
-			logScale: false,
-		},
-		// wallets: {
-		// 	available: ['moneybutton', 'relayx'], // wallets
-		// 	initial: 'moneybutton' // initialWallet
-		// },
-		// outputs: [],
-	};
-
 	const [paymentProps, setPaymentProps] = useState();
 	const [parent, setParent] = useState(null);
 	const [opened, setOpened] = useState(true);
