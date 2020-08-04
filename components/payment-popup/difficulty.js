@@ -2,6 +2,7 @@
 import { withStyles } from '@material-ui/core/styles';
 import Slider from '@material-ui/core/Slider';
 import ValueLabel from '@material-ui/core/Slider/ValueLabel';
+const Helpers = require('../../lib/helpers');
 
 // Custom styles configuration for the Difficulty Slider component
 export const DiffSlider = withStyles({
@@ -126,9 +127,12 @@ export const hasRankSignals = rankProps => {
 
 // Get the rank of a given difficulty compared to the actual loaded boost ranks
 export const getDiffRank = (signals, difficulty) => {
-	for (let i = signals.length; i > 0; i--) {
-		const sig = signals[i - 1];
-		if (sig.totalDifficulty > difficulty) return i + 1;
+	const sigs = signals;
+	// const sigs = signals.sort(Helpers.dynamicSort('totalDifficulty'));
+	for (let i = sigs.length; i > 0; i--) {
+		const sig = sigs[i - 1];
+		const tot = sig.totalDifficulty || sig.totalDifficulty_;
+		if (tot > difficulty) return i + 1;
 	}
 	return 1;
 };

@@ -22,9 +22,8 @@ Example Files
 */
 
 const PaymentPopup = compProps => {
-	const rankProps = compProps.boostsRank || {};
 	const payProps = compProps.paymentProps;
-	// console.log("compProps", compProps);
+	// console.log('compProps', compProps);
 	const cParent = compProps.parent;
 
 	// Communicates parent to change the opening property to false
@@ -35,53 +34,71 @@ const PaymentPopup = compProps => {
 
 	// GENERAL PROPS
 	const [paid, setPaid] = useState(false);
-	const [tag, setTag] = useState(payProps.tag);
-	const [category, setCategory] = useState(payProps.category);
+
+	const hasTag = payProps.tag && payProps.tag.value;
+	const showTag = hasTag && payProps.tag.show === true ? true : false;
+	const initialTagValue = payProps.tag && payProps.tag.value ? payProps.tag.value : '';
+	const [tag, setTag] = useState(initialTagValue);
+
+	const hasCategory = payProps.category && payProps.category.value;
+	const showCategory = hasCategory && payProps.category.show === true ? true : false;
+	const initialCategoryValue =
+		payProps.category && payProps.category.value ? payProps.category.value : '';
+	const [category, setCategory] = useState(initialCategoryValue);
 
 	// WALLET PROPS
-	const initialWallet = isValidWallet(payProps.initialWallet) ? payProps.initialWallet : '';
+	const initialWallet = isValidWallet(payProps.wallets.initial) ? payProps.wallets.initial : '';
 	const [wallet, setWallet] = useState(initialWallet);
 	// If is opening, adjust initialWallet
 	if (payProps.opening && initialWallet !== wallet) {
 		setWallet(initialWallet);
 	}
 
+	// MESSAGE
+	const hasMessage =
+		payProps.message &&
+		typeof payProps.message.text === 'string' &&
+		payProps.message.text.length > 0;
+
 	// CONTENT PROPS
+	const hasContent =
+		payProps.content &&
+		typeof payProps.content.hash === 'string' &&
+		payProps.content.hash.length > 0;
 	const [content, setContent] = useState();
 	const [contentType, setContentType] = useState(null);
 	const [contentPreview, setContentPreview] = useState();
-	const [showContentPreview, setShowContentPreview] = useState(
-		payProps.showContentPreview === false ? false : true
-	);
+	var showContentPreview = !hasContent ? false : payProps.content.show === false ? false : true;
 
 	// DIFFICULTY PROPS
-	const showInputDiff = payProps.showInputDiff === true ? true : false;
-	const lockDiff = payProps.lockDiff === true ? true : false;
-	const minDiff = payProps.minDiff > 0 ? parseFloat(payProps.minDiff) : 1;
-	const maxDiff = payProps.maxDiff > minDiff ? parseFloat(payProps.maxDiff) : 40;
+	const _diff = payProps.difficulty || {};
+	const showInputDiff = _diff && _diff.showInput === true ? true : false;
+	const lockDiff = _diff.disabled === true ? true : false;
+	const minDiff = _diff.min > 0 ? parseFloat(_diff.min) : 1;
+	const maxDiff = _diff.max > minDiff ? parseFloat(_diff.max) : 40;
 	const initialDiff =
-		payProps.initialDiff > 0 ? Difficulty.safeDiffValue(payProps.initialDiff, minDiff, maxDiff) : 1;
+		_diff.initial > 0 ? Difficulty.safeDiffValue(_diff.initial, minDiff, maxDiff) : 1;
 	const [difficulty, setDifficulty] = useState(initialDiff);
 
 	// If is opening, adjust initialDiff
 	if (payProps.opening && initialDiff !== difficulty) {
 		setDifficulty(initialDiff);
 	}
-
-	const showSliderDiff = payProps.showSliderDiff === false ? false : true;
-	const sliderDiffStep = payProps.sliderDiffStep > 0 ? parseInt(payProps.sliderDiffStep, 10) : 1;
+	const _slider = payProps.slider || {};
+	const showSliderDiff = _slider.show === false ? false : true;
+	const sliderDiffStep = _slider.sliderStep > 0 ? parseInt(_slider.sliderStep, 10) : 1;
 	let sliderDiffMarkerStep =
-		payProps.sliderDiffMarkerStep == 0 || payProps.sliderDiffMarkerStep == false
+		_slider.markerStep == 0 || _slider.markerStep == false
 			? 0
-			: parseInt(payProps.sliderDiffMarkerStep, 10) || 10;
+			: parseInt(_slider.markerStep, 10) || 10;
 	let sliderRankMarkers =
-		Array.isArray(rankProps.sliderRankMarkers) && rankProps.sliderRankMarkers.length > 0
-			? rankProps.sliderRankMarkers
+		Array.isArray(_slider.sliderRankMarkers) && _slider.sliderRankMarkers.length > 0
+			? _slider.sliderRankMarkers
 			: [];
 	const sliderMarkersMaxCount =
-		payProps.sliderMarkersMaxCount == 0 || payProps.sliderMarkersMaxCount == false
+		_slider.maxMarkers == 0 || _slider.maxMarkers == false
 			? 15
-			: parseInt(payProps.sliderMarkersMaxCount, 10) || 15;
+			: parseInt(_slider.maxMarkers, 10) || 15;
 
 	// Force slider markers to respect their maximum count limits
 	const countMarkers = Math.floor(maxDiff / sliderDiffMarkerStep);
@@ -91,7 +108,7 @@ const PaymentPopup = compProps => {
 
 	// Shows slider markers
 	let sliderMarkers = Difficulty.calculateSliderMarks(minDiff, maxDiff, sliderDiffMarkerStep);
-	if (payProps.getBoostRank && sliderRankMarkers.length > 0) {
+	if (payProps.boostRank && sliderRankMarkers.length > 0) {
 		// use rank markers
 		sliderMarkers = sliderRankMarkers;
 	}
@@ -151,15 +168,15 @@ const PaymentPopup = compProps => {
 
 	// Trigger content rendering when content changes
 	useEffect(() => {
-		if (payProps.showContentPreview === false) {
-			setShowContentPreview(false);
+		if (!showContentPreview) {
+			showContentPreview = false;
 		}
 
-		if (payProps.content) {
+		if (payProps.content && payProps.content.hash) {
 			handleContentChange(
 				{
 					target: {
-						value: payProps.content
+						value: payProps.content.hash
 					}
 				},
 				null
@@ -185,14 +202,14 @@ const PaymentPopup = compProps => {
 		let defaultTag = undefined;
 		let defaultCategory = Buffer.from('B', 'utf8').toString('hex');
 
-		if (payProps.diffMultiplier) {
-			defaultFeeMultiplier = payProps.diffMultiplier;
+		if (payProps.difficulty.multiplier) {
+			defaultFeeMultiplier = payProps.difficulty.multiplier;
 		}
-		if (payProps.tag) {
-			defaultTag = Buffer.from(payProps.tag, 'utf8').toString('hex');
+		if (payProps.tag && payProps.tag.value) {
+			defaultTag = Buffer.from(payProps.tag.value, 'utf8').toString('hex');
 		}
-		if (payProps.category) {
-			defaultCategory = Buffer.from(payProps.category, 'utf8').toString('hex');
+		if (payProps.category && payProps.category.value) {
+			defaultCategory = Buffer.from(payProps.category.value, 'utf8').toString('hex');
 		}
 
 		if (payProps.outputs && payProps.outputs.length) {
@@ -202,7 +219,7 @@ const PaymentPopup = compProps => {
 		}
 		try {
 			const boostJob = boost.BoostPowJob.fromObject({
-				content: content ? content : payProps.content,
+				content: content ? content : payProps.content.hash,
 				tag: tag ? Buffer.from(tag, 'utf8').toString('hex') : defaultTag,
 				category: category ? Buffer.from(category, 'utf8').toString('hex') : defaultCategory,
 				diff: difficulty
@@ -304,11 +321,11 @@ const PaymentPopup = compProps => {
 							Close
 						</p>
 					</div>
-					{payProps.wallets.length >= 1 && !paid && (
+					{payProps.wallets.available.length >= 1 && !paid && (
 						<div className="boost-publisher-body">
 							<form>
 								<div className="form-group">
-									{!payProps.content && !payProps.displayMessage && (
+									{!payProps.content.hash && !hasMessage && (
 										<p className="lead">
 											What would you like to Boost?{' '}
 											<a href="https://boostpow.com" className="pow-help-text" target="_blank">
@@ -316,14 +333,14 @@ const PaymentPopup = compProps => {
 											</a>
 										</p>
 									)}
-									{/* {payProps.displayMessage && <p className="lead">{payProps.displayMessage}</p>} */}
-									{payProps.displayMessage && (
+									{/* {hasMessage && <p className="lead">{payProps.message.text}</p>} */}
+									{hasMessage && (
 										<p
 											className="lead"
-											dangerouslySetInnerHTML={{ __html: payProps.displayMessage }}
+											dangerouslySetInnerHTML={{ __html: payProps.message.text }}
 										></p>
 									)}
-									{!payProps.content && !payProps.displayMessage && (
+									{!payProps.content.hash && !hasMessage && (
 										<input
 											onChange={handleContentChange}
 											value={content || ''}
@@ -379,32 +396,33 @@ const PaymentPopup = compProps => {
 										</div>
 									)}
 								</div>
-								{payProps.showTagField && (
+
+								{showTag && (
 									<div id="boostpow-tags" className="form-group">
 										<div className="lead">Tags (optional)</div>
 										<div>
 											<input
 												maxLength="20"
 												onChange={handleTagChange}
-												value={tag || payProps.tag}
+												value={tag || payProps.tag.value}
 												type="text"
 												className="input-content"
-												placeholder="ex: photos, programming, bitcoin..."
+												placeholder="Ex: tag name"
 											></input>
 										</div>
 									</div>
 								)}
-								{payProps.showCategoryField === true && (
+								{showCategory && (
 									<div id="boostpow-categories" className="form-group">
 										<div className="lead">Categories (optional)</div>
 										<div>
 											<input
 												maxLength="4"
 												onChange={handleCategoryChange}
-												value={category || payProps.category}
+												value={category || payProps.category.value}
 												type="text"
 												className="input-content"
-												placeholder=""
+												placeholder="Ex: category name"
 											></input>
 										</div>
 									</div>
@@ -413,10 +431,7 @@ const PaymentPopup = compProps => {
 								<div className="form-group input-diff-container">
 									{showSliderDiff && (
 										<div>
-											<label className="label">
-												Difficulty {difficulty}
-												{/* {Difficulty.hasRankSignals(rankProps) && <span> leads to the Rank {Difficulty.getDiffRank(rankProps.signals, difficulty)}</span>} */}
-											</label>
+											<label className="label">Difficulty {difficulty}</label>
 											<Difficulty.DiffSlider
 												min={minDiff}
 												max={maxDiff}
@@ -444,17 +459,17 @@ const PaymentPopup = compProps => {
 											</select>
 										</div>
 									)}
-									{Difficulty.hasRankSignals(rankProps) && (
+									{Difficulty.hasRankSignals(payProps) && (
 										<div className="boost-rank-display">
 											This post will appear at{' '}
-											<span>Rank {Difficulty.getDiffRank(rankProps.signals, difficulty)}</span>
+											<span>Rank {Difficulty.getDiffRank(payProps.signals, difficulty)}</span>
 											&nbsp; of all Boosted content on the last{' '}
 											<span>{payProps.rankHours} hours</span>.
 										</div>
 									)}
 								</div>
 							</form>
-							{payProps.wallets.length > 1 && (
+							{payProps.wallets.available.length > 1 && (
 								<FormControl
 									variant="outlined"
 									margin="dense"
@@ -479,7 +494,7 @@ const PaymentPopup = compProps => {
 											outlined: 'boost-publisher-select-outlined'
 										}}
 									>
-										{Wallets.renderWalletMenuItems(payProps.wallets)}
+										{Wallets.renderWalletMenuItems(payProps.wallets.available)}
 									</Select>
 								</FormControl>
 							)}
