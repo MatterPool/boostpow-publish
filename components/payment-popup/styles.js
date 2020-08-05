@@ -86,6 +86,7 @@ const Styles = () => (
 		.boost-publisher-body {
 			padding: 16px;
 			border-top: 2px solid #f2f2f2;
+			min-height: 90px;
 		}
 
 		p.lead {

@@ -35,17 +35,26 @@ const PaymentPopup = compProps => {
 	// GENERAL PROPS
 	const [paid, setPaid] = useState(false);
 
-	const hasTag = payProps.tag && payProps.tag.value;
+	const tagMaxLength = 20;
+	const hasTag = payProps.tag && typeof payProps.tag.value === 'string';
 	const showTag = hasTag && payProps.tag.show === true ? true : false;
-	const initialTagValue = payProps.tag && payProps.tag.value ? payProps.tag.value : '';
+	const disabledTag = hasTag && showTag && payProps.tag.disabled === true ? true : false;
+	const initialTagValue = payProps.tag && payProps.tag.value ? payProps.tag.value.substr(0, tagMaxLength) : '';
 	const [tag, setTag] = useState(initialTagValue);
+	if (payProps.opening && initialTagValue !== tag) {
+		setTag(initialTagValue);
+	}
 
-	const hasCategory = payProps.category && payProps.category.value;
+	const categoryMaxLength = 4;
+	const hasCategory = payProps.category && typeof payProps.category.value === 'string';
 	const showCategory = hasCategory && payProps.category.show === true ? true : false;
-	const initialCategoryValue =
-		payProps.category && payProps.category.value ? payProps.category.value : '';
+	const disabledCategory = hasCategory && showCategory && payProps.category.disabled === true ? true : false;
+	const initialCategoryValue = payProps.category && payProps.category.value ? payProps.category.value.substr(0, categoryMaxLength) : '';
 	const [category, setCategory] = useState(initialCategoryValue);
-
+	if (payProps.opening && initialCategoryValue !== category) {
+		setCategory(initialCategoryValue);
+	}
+	
 	// WALLET PROPS
 	const initialWallet = isValidWallet(payProps.wallets.initial) ? payProps.wallets.initial : '';
 	const [wallet, setWallet] = useState(initialWallet);
@@ -61,14 +70,14 @@ const PaymentPopup = compProps => {
 		payProps.message.text.length > 0;
 
 	// CONTENT PROPS
-	const hasContent =
-		payProps.content &&
-		typeof payProps.content.hash === 'string' &&
-		payProps.content.hash.length > 0;
-	const [content, setContent] = useState();
+	const [content, setContent] = useState(payProps.content.hash.length > 0 ? payProps.content.hash : '');
+	const [hasContent, setHasContent] = useState(content && content.length > 0);
 	const [contentType, setContentType] = useState(null);
 	const [contentPreview, setContentPreview] = useState();
-	var showContentPreview = !hasContent ? false : payProps.content.show === false ? false : true;
+	var showContent = payProps.content.show === false ? false : true;
+	if (payProps.opening && content !== payProps.content.hash) {
+		setContent(payProps.content.hash);
+	}
 
 	// DIFFICULTY PROPS
 	const _diff = payProps.difficulty || {};
@@ -122,15 +131,9 @@ const PaymentPopup = compProps => {
 		setCategory(evt.target.value);
 	};
 
-	const clearContent = () => {
-		setContent(null);
-		setContentType(null);
-		setContentPreview('');
-	};
 
 	const handleClose = () => {
 		if (cParent) {
-			clearContent();
 			cParent.emit('close');
 		}
 	};
@@ -140,38 +143,42 @@ const PaymentPopup = compProps => {
 	// Fetch and update the content
 	const handleContentChange = async (evt, value) => {
 		let newContent = evt.target.value;
-
-		// Prevents multiple content reloads from the api if it did not changed
-		if (content == newContent) return;
-
-		setContent(newContent);
-
-		let resp = await fetch(`https://media.bitcoinfiles.org/${newContent}`, { method: 'HEAD' });
-		if (resp.status === 404) {
-			setContentType(null);
+		if (typeof newContent === 'string' && newContent.length == 0) {
+			setContent('');
 			return;
 		}
+		// Prevents multiple content reloads from the api if it did not changed
+		if (content == newContent && contentType > '') return;
 
-		let contentType = resp.headers.get('Content-Type');
-		setContentType(contentType);
+		setContent(newContent);
+		setHasContent(true);
 
-		if (contentType.match(/^text/)) {
-			resp = await fetch(`https://media.bitcoinfiles.org/${newContent}`);
-			let text = await resp.text();
-			if (contentType === 'text/markdown; charset=utf-8') {
-				setContentPreview(snarkdown(text));
-			} else {
-				setContentPreview(text);
+		// Do not query content if hash is not 64 bytes long
+		if (newContent.length == 64){
+			let resp = await fetch(`https://media.bitcoinfiles.org/${newContent}`, { method: 'HEAD' });
+			if (resp.status === 404) {
+				setContent('');
+				setContentType(null);
+				return;
+			}
+
+			let type = resp.headers.get('Content-Type');
+			setContentType(type);
+
+			if (type.match(/^text/)) {
+				resp = await fetch(`https://media.bitcoinfiles.org/${newContent}`);
+				let text = await resp.text();
+				if (type === 'text/markdown; charset=utf-8') {
+					setContentPreview(snarkdown(text));
+				} else {
+					setContentPreview(text);
+				}
 			}
 		}
 	};
 
 	// Trigger content rendering when content changes
 	useEffect(() => {
-		if (!showContentPreview) {
-			showContentPreview = false;
-		}
-
 		if (payProps.content && payProps.content.hash) {
 			handleContentChange(
 				{
@@ -182,7 +189,7 @@ const PaymentPopup = compProps => {
 				null
 			);
 		}
-	});
+	}, [ content ]); // only handle this if content changes
 
 	// WALLET HANDLERS
 	let Wallet;
@@ -206,10 +213,10 @@ const PaymentPopup = compProps => {
 			defaultFeeMultiplier = payProps.difficulty.multiplier;
 		}
 		if (payProps.tag && payProps.tag.value) {
-			defaultTag = Buffer.from(payProps.tag.value, 'utf8').toString('hex');
+			defaultTag = Buffer.from(payProps.tag.value.substr(0, tagMaxLength), 'utf8').toString('hex');
 		}
 		if (payProps.category && payProps.category.value) {
-			defaultCategory = Buffer.from(payProps.category.value, 'utf8').toString('hex');
+			defaultCategory = Buffer.from(payProps.category.value.substr(0, categoryMaxLength), 'utf8').toString('hex');
 		}
 
 		if (payProps.outputs && payProps.outputs.length) {
@@ -217,25 +224,30 @@ const PaymentPopup = compProps => {
 				o.push(out);
 			});
 		}
-		try {
-			const boostJob = boost.BoostPowJob.fromObject({
-				content: content ? content : payProps.content.hash,
-				tag: tag ? Buffer.from(tag, 'utf8').toString('hex') : defaultTag,
-				category: category ? Buffer.from(category, 'utf8').toString('hex') : defaultCategory,
-				diff: difficulty
-			});
 
-			const latestOutputState = {
-				script: boostJob.toASM(),
-				amount: Math.max(boostJob.getDiff() * defaultFeeMultiplier, 0.00000546),
-				currency: 'BSV'
-			};
-			if (latestOutputState) {
-				o.push(latestOutputState);
+		const boostContent = content ? content : payProps.content.hash;
+		// Only prepare boost jobs for content string with even length numbers, otherwise it is an invalid hex string
+		if (boostContent.length > 0 && boostContent.length % 2 == 0){
+			try {
+				const boostJob = boost.BoostPowJob.fromObject({
+					content: content ? content : payProps.content.hash,
+					tag: tag ? Buffer.from(tag, 'utf8').toString('hex') : defaultTag,
+					category: category ? Buffer.from(category, 'utf8').toString('hex') : defaultCategory,
+					diff: difficulty
+				});
+
+				const latestOutputState = {
+					script: boostJob.toASM(),
+					amount: Math.max(boostJob.getDiff() * defaultFeeMultiplier, 0.00000546),
+					currency: 'BSV'
+				};
+				if (latestOutputState) {
+					o.push(latestOutputState);
+				}
+			} catch (ex) {
+				console.log('ex', ex);
+				return [];
 			}
-		} catch (ex) {
-			console.log('ex', ex);
-			return [];
 		}
 		return o;
 	};
@@ -349,7 +361,7 @@ const PaymentPopup = compProps => {
 											placeholder="Transaction ID, Bitcoin File, Text, Hash, etc.."
 										></input>
 									)}
-									{showContentPreview && content && (
+									{showContent && hasContent && content && (
 										<div className="contentPreview">
 											{contentType === 'video/mp4' && (
 												<video width="320" height="240" controls playsInline autoPlay muted loop>
@@ -404,10 +416,11 @@ const PaymentPopup = compProps => {
 											<input
 												maxLength="20"
 												onChange={handleTagChange}
-												value={tag || payProps.tag.value}
+												value={tag}
 												type="text"
 												className="input-content"
 												placeholder="Ex: tag name"
+												disabled={disabledTag}
 											></input>
 										</div>
 									</div>
@@ -419,10 +432,11 @@ const PaymentPopup = compProps => {
 											<input
 												maxLength="4"
 												onChange={handleCategoryChange}
-												value={category || payProps.category.value}
+												value={category}
 												type="text"
 												className="input-content"
 												placeholder="Ex: category name"
+												disabled={disabledCategory}
 											></input>
 										</div>
 									</div>
@@ -464,7 +478,7 @@ const PaymentPopup = compProps => {
 											This post will appear at{' '}
 											<span>Rank {Difficulty.getDiffRank(payProps.signals, difficulty)}</span>
 											&nbsp; of all Boosted content on the last{' '}
-											<span>{payProps.rankHours} hours</span>.
+											<span>{payProps.boostRank.hours} hours</span>.
 										</div>
 									)}
 								</div>
@@ -501,7 +515,7 @@ const PaymentPopup = compProps => {
 						</div>
 					)}
 					<div className="boost-publisher-body">
-						{Wallet && !paid && !!allOutputs() && !!allOutputs().length && (
+						{hasContent && Wallet && !paid && !!allOutputs() && !!allOutputs().length && (
 							<Wallet {...getWalletProps()} />
 						)}
 						{paid && (
