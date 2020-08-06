@@ -80,7 +80,7 @@ const PaymentPopup = compProps => {
 	}
 
 	// DIFFICULTY PROPS
-	const _diff = payProps.difficulty || {};
+	const _diff = payProps.diff || {};
 	const showInputDiff = _diff && _diff.showInput === true ? true : false;
 	const lockDiff = _diff.disabled === true ? true : false;
 	const minDiff = _diff.min > 0 ? parseFloat(_diff.min) : 1;
@@ -209,8 +209,8 @@ const PaymentPopup = compProps => {
 		let defaultTag = undefined;
 		let defaultCategory = Buffer.from('B', 'utf8').toString('hex');
 
-		if (payProps.difficulty.multiplier) {
-			defaultFeeMultiplier = payProps.difficulty.multiplier;
+		if (payProps.diff.multiplier) {
+			defaultFeeMultiplier = payProps.diff.multiplier;
 		}
 		if (payProps.tag && payProps.tag.value) {
 			defaultTag = Buffer.from(payProps.tag.value.substr(0, tagMaxLength), 'utf8').toString('hex');

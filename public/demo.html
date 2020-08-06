@@ -113,7 +113,7 @@ const response = await boostPublish.open({
 const response = await boostPublish.open({
 	content: "1e1c7c06786d4e7979aaaa0f6c9204910cba288741bfa8b95b43027d698e2f90",
 	boostRank: false,
-	difficulty: {
+	diff: {
 		min: 20,
 		max: 200,
 		initial: 40
@@ -156,16 +156,19 @@ const response = await boostPublish.open({
 
 
 
-
         <div>
             <h2>DEMO 6</h2>
-            <h3>Hides the content and display editable tag and category fields</h3>
+            <h3>Markdown content with boost rank from the last week, using custom slider TOP 1, 2, 3 and 5 rank markers configuration.</h3>
             <pre>
 const response = await boostPublish.open({
-    content: '2829b4df5152fb867128f0ea2cffdfe3b7134a98b356eb1a1813b68fd3b83519',
-    showContent: false,
-    tag: '$message',
-    category: 'B',
+    content: "a1ef1e13a09b1f58c5ce7e42f7e24c02c529baa4608652b9895d10b25bb30f5a",
+    boostRank: {
+        hours: 24 * 7
+    },
+    slider: {
+        sliderStep: 10,
+        rankMarkers: [1, 2, 3, 5]
+    },
     onPayment: (payment, boostJob) => {
         console.log(payment, boostJob);
     }
@@ -179,6 +182,26 @@ const response = await boostPublish.open({
 
         <div>
             <h2>DEMO 7</h2>
+            <h3>Hides the content and display editable tag and category fields</h3>
+            <pre>
+const response = await boostPublish.open({
+    content: '2829b4df5152fb867128f0ea2cffdfe3b7134a98b356eb1a1813b68fd3b83519',
+    showContent: false,
+    tag: '$message',
+    category: 'B',
+    onPayment: (payment, boostJob) => {
+        console.log(payment, boostJob);
+    }
+});
+			</pre>
+            <p><button onclick="showBoostPublisher7()">OPEN DEMO 7</button></p>
+        </div>
+
+
+
+
+        <div>
+            <h2>DEMO 8</h2>
             <h3>Display simple message, hides the content, display fixed tag and category fields</h3>
             <pre>
 const response = await boostPublish.open({
@@ -194,14 +217,14 @@ const response = await boostPublish.open({
     }
 });
 			</pre>
-            <p><button onclick="showBoostPublisher7()">OPEN DEMO 7</button></p>
+            <p><button onclick="showBoostPublisher8()">OPEN DEMO 8</button></p>
         </div>
 
 
 
 
         <div>
-            <h2>DEMO 8</h2>
+            <h2>DEMO 9</h2>
             <h3>Display content with a fixed tag, an editable category, and using MoneyButton as the only wallet option</h3>
             <pre>
 const response = await boostPublish.open({
@@ -216,8 +239,12 @@ const response = await boostPublish.open({
     }
 });
 			</pre>
-            <p><button onclick="showBoostPublisher8()">OPEN DEMO 8</button></p>
+            <p><button onclick="showBoostPublisher9()">OPEN DEMO 9</button></p>
         </div>
+
+
+
+        
     </div>
 </body>
 <script>
@@ -262,7 +289,7 @@ const response = await boostPublish.open({
         const response = await boostPublish.open({
             content: "1e1c7c06786d4e7979aaaa0f6c9204910cba288741bfa8b95b43027d698e2f90",
             boostRank: false,
-            difficulty: {
+            diff: {
                 min: 20,
                 max: 200,
                 initial: 40
@@ -295,12 +322,16 @@ const response = await boostPublish.open({
     }
 
     async function showBoostPublisher6() {
-        console.log("DEMO 6 - Hiding content, showing tag and category");
+        console.log("DEMO 6 - Custom slider rank markers");
         const response = await boostPublish.open({
-            content: '2829b4df5152fb867128f0ea2cffdfe3b7134a98b356eb1a1813b68fd3b83519',
-            showContent: false,
-            tag: '$message',
-            category: 'B',
+            content: "a1ef1e13a09b1f58c5ce7e42f7e24c02c529baa4608652b9895d10b25bb30f5a",
+            boostRank: {
+                hours: 24 * 7
+            },
+            slider: {
+                sliderStep: 10,
+                rankMarkers: [1, 2, 3, 5]
+            },
             onPayment: (payment, boostJob) => {
                 console.log(payment, boostJob);
             }
@@ -308,15 +339,12 @@ const response = await boostPublish.open({
     }
 
     async function showBoostPublisher7() {
-        console.log("DEMO 7 - Show message with tag and category disabled");
+        console.log("DEMO 7 - Hiding content, showing tag and category");
         const response = await boostPublish.open({
-            message: 'This is a custom message from the user!',
-            content: {
-                hash: '2829b4df5152fb867128f0ea2cffdfe3b7134a98b356eb1a1813b68fd3b83519',
-                show: false
-            },
-            tag: { value: '$', disabled: true },
-            category: { value: 'B', disabled: true },
+            content: '2829b4df5152fb867128f0ea2cffdfe3b7134a98b356eb1a1813b68fd3b83519',
+            showContent: false,
+            tag: '$tag',
+            category: 'B',
             onPayment: (payment, boostJob) => {
                 console.log(payment, boostJob);
             }
@@ -324,7 +352,23 @@ const response = await boostPublish.open({
     }
 
     async function showBoostPublisher8() {
-        console.log("DEMO 8 - Money button only");
+        console.log("DEMO 8 - Show message with tag and category disabled");
+        const response = await boostPublish.open({
+            message: 'This is a custom message from the user!',
+            content: {
+                hash: '2829b4df5152fb867128f0ea2cffdfe3b7134a98b356eb1a1813b68fd3b83519',
+                show: false
+            },
+            tag: { value: '$tag', disabled: true },
+            category: { value: 'B', disabled: true },
+            onPayment: (payment, boostJob) => {
+                console.log(payment, boostJob);
+            }
+        });
+    }
+
+    async function showBoostPublisher9() {
+        console.log("DEMO 9 - Money button only");
         const response = await boostPublish.open({
             content: '2829b4df5152fb867128f0ea2cffdfe3b7134a98b356eb1a1813b68fd3b83519',
             tag: { value: '$tag', disabled: true },
@@ -337,6 +381,8 @@ const response = await boostPublish.open({
             }
         });
     }
+
+    
 </script>
 
 

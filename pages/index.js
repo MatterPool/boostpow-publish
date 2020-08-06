@@ -26,13 +26,13 @@ const Home = () => {
 		}
 
 		// Overrides min, max and initial when they are explicitly defined by the user
-		if (props.difficulty.min > 0) newProps.difficulty.min = props.difficulty.min;
-		if (props.difficulty.max > 0) newProps.difficulty.max = props.difficulty.max;
-		if (props.difficulty.initial > 0) newProps.difficulty.initial = props.difficulty.initial;
+		if (props.diff.min > 0) newProps.diff.min = props.diff.min;
+		if (props.diff.max > 0) newProps.diff.max = props.diff.max;
+		if (props.diff.initial > 0) newProps.diff.initial = props.diff.initial;
 
 		// Ensures safe initial value
-		if (newProps.difficulty.initial > newProps.difficulty.max)
-			newProps.difficulty.initial = newProps.difficulty.max;
+		if (newProps.diff.initial > newProps.diff.max)
+			newProps.diff.initial = newProps.diff.max;
 
 		return newProps;
 	};
