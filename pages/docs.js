@@ -1,11 +1,13 @@
 import ReactMarkdown from 'react-markdown';
 
 const content = `
-## Publish Widget
+# Publish Widget
 
 Boost POW Publish is a simple way to Boost content on your website. It is a reference publisher implementation to Boost content.
 
 Currently supported wallets are Money Button and RelayX.
+
+## Simple usage
 
 The simplest Boost POW Publish usage looks like this:
 \`\`\`
@@ -14,157 +16,305 @@ The simplest Boost POW Publish usage looks like this:
 
 // in javascript
 boostPublish.open({
-	// content: 'optional content to initialize',
-	// content: '4d0295d207f3a00d73f069fc4aa5e06d3fe98d565af9f38983c0d486d6166a09', // txid
-	/* outputs: [
-		{
-			to: "18YCy8VDYcXGnekHC4g3vphnJveTskhCLf", amount: 0.0004, currency: 'BSV'
-		}
-	],*/
-	// initialWallet: 'moneybutton', // Possible wallets: moneybutton or relayx
-	// getBoostRank: true,
-	// rankHours: 24, 
-	// tag: 'bitcoin',
-	// category: 'B',  // defaults to 'B' underneath.
-	// showTagField: true, // defaults to true
-	// showCategoryField: false, // defaults to false
-	// minDiff: 1, // defaults to 1
-	// maxDiff: 40, // defaults to 40
-	// diffMultiplier: 0.00002, // defaults to 0.00002
-	// initialDiff: 1, // defaults to 1
-	// lockDiff: true, // defaults to false
-	// showInputDiff: false, // defaults to false
-	// showSliderDiff: true, // defaults to true
-	// sliderDiffStep: 1, // defaults to 1
-	// sliderDiffMarkerStep: 10, // defaults to 10, use 0 to disable markers
-	// sliderMarkersMaxCount: 15, // defaults to 15
-	// displayMessage: 'Boost this', // set to empty string to disable
-	// showContentPreview: true, // Whether to show content preview or not
-	onPayment: function(payment, boostJobStatus) {
-		console.log(payment, boostJobStatus);
+	content: '4d0295d207f3a00d73f069fc4aa5e06d3fe98d565af9f38983c0d486d6166a09',
+	onPayment: function(payment) {
+		console.log(payment);
 	}
 });
 \`\`\`
 
-## The boostPublish object
+[See our DEMO page for more examples of the BoostPOW Publish widget configuration](https://publish.boostpow.com/demo.html "Demo Page")
 
-Including the Boost POW Publisher embed on your makes \`boostPublish\` available on the browser's \`window\` object.
-It has one asynchronous method, \`open\` that resolves with
-a payment object upon a successful payment and throws if there was an error.
+## Complete options object
+
+The complete Boost POW Publish configuration options object looks like this:
+
+\`\`\`
+// in HTML
+<script src="https://publish.boostpow.com/publish.js"></script>
+
+// in javascript
+boostPublish.open({
+	message: 'Your message!',
+	content: '4d0295d207f3a00d73f069fc4aa5e06d3fe98d565af9f38983c0d486d6166a09',
+	showContent: true,
+	tag: '$your-tag',
+	showTag: true,
+	category: 'B',
+	showCategory: true,
+	boostRank: {
+		hours: 24,
+		tags: [],
+		categories: []
+	},
+	diff: {
+		min: 1,
+		max: 40,
+		initial: 1,
+		multiplier: 0.00002,
+		disabled: false,
+		showInput: false
+	},
+	slider: {
+		sliderStep: 1,
+		markerStep: 10,
+		maxMarkers: 15,
+		rankMarkers: []
+	},
+	wallets: ['moneybutton','relayx'],
+	initialWallet: 'moneybutton',
+	outputs: [
+		{
+			to: "18YCy8VDYcXGnekHC4g3vphnJveTskhCLf", 
+			amount: 0.0004, 
+			currency: 'BSV'
+		}
+	],
+	onPayment: function(payment) {
+		console.log(payment);
+	},
+	onError: function(error) {
+		console.log(error);
+	},
+	moneybuttonProps: {
+		onCryptoOperations: (cryptoOperationsCallback) => {},
+		// Additional moneybutton options to be passed to the button
+	},
+	relayxProps: {
+		// Additional relayX options to be passed to the button
+	}
+
+});
+\`\`\`
+
+You will hardly use all the options at the same time, but it is useful to have a general look of all the available options at one glance.
+There are some different ways you can use each property, as we will see below.
+
+# The boostPublish object
+
+Including the Boost POW Publisher embed on your page, makes \`boostPublish\` available on the browser's \`window\` object.
+It has one asynchronous method, \`open\` that resolves with a payment object upon a successful payment and throws if there was an error.
 \`open\` returns \`undefined\` if the payment was canceled.
 
-## Available options:
+# Available options
+___
 
-### content
+## Message Options
+#### message: string;
+Optional text message to show to the user at the top of the widget. Defaults to 'What's Boost?' text if not set.
+___
 
-Optional content to initialize with. Leave empty to allow user to set it.
+## Content Options
+#### content: string;
+Optional content hash string to initialize with. Leave empty to allow user to set it.
 
-### initialWallet
+#### showContent: boolean;
+Optionally show/hide the content field. Defaults to true.
 
-Optional initial wallet id to initialize with. Leave empty to start with moneybutton.
+#### content: object;
+The content property can also be used as an object like:
+\`\`\`
+content: {
+	hash: '', // content tx hash
+	show: true
+}
 
-### getBoostRank
+// undefined properties will be initialized with default values
+\`\`\`
 
-Optional defaults to true. When getBoostRank is true, finds minimum and maximum boosts rank from last rankHours property.
+___
 
-### rankHours
-
-Optional default to 24. Defines the total number of hours to return boosts ranks.
-
-### tag
-
+## Tag Options
+#### tag: string;
 Optional tag to initialize with. Leave empty to allow user to set it.
+#### showTag: boolean;
+Optional showTag whether to show tag field or not.
 
-### outputs
+#### tag: object;
+The tag property can also be used as an object like:
+\`\`\`
+tag: {
+	value: '',
+	show: true,
+	disabled: false // when true, disables tag input field
+}
 
+// undefined properties will be initialized with default values
+\`\`\`
+
+___
+
+## Category Options
+#### category: string;
+Optional category to initialize with. Leave empty to default to 'B'
+
+#### showCategory: boolean;
+Optional showCategory whether to show category field or not.
+
+#### category: object;
+The category property can also be used as an object like:
+\`\`\`
+category: {
+	value: '',
+	show: true,
+	disabled: false // when true, disables category input field
+}
+
+// undefined properties will be initialized with default values
+\`\`\`
+___
+
+## Boost Rank Options
+
+#### boostRank: object;
+The boostRank property can be configured as the object below:
+\`\`\`
+boostRank: {
+	hours: 24,
+	tags: [], // filters the boostpow api with one or many tags
+	category: '' // filters the boostpow api with one category
+}
+
+// undefined properties will be initialized with default values
+\`\`\`
+
+#### boostRank: boolean;
+Optional defaults to true. When boostRank is true, returns the same configurations showed on boostRank object above.
+
+#### rankHours: number;
+Another way to set the total number of hours to return boosts ranks. Defaults to 24 hours.
+___
+
+## Difficulty Options
+
+#### diff: object;
+The diff property can be configured as the object below:
+\`\`\`
+diff: {
+	min: number;,
+	max: undefined,
+	initial: undefined,
+	multiplier: 0.00002,
+	disabled: false,
+	showInput: false,
+}
+
+// undefined properties will be initialized with default values
+\`\`\`
+
+#### minDiff: number;
+Another way to set the minimal difficulty value. Default: 1
+
+#### maxDiff: number;
+Another way to set the maximal difficulty value. Default: 40
+
+#### diffMultiplier: number;
+Another way to set how much to charge per difficulty unit. Default: 0.00002
+
+#### initialDiff: number;
+Another way to set the initial difficulty value. Default: 1
+
+#### lockDiff: boolean;
+Another way to disable changes on the difficulty field. Defaults to false.
+
+#### showInputDiff: boolean;
+Another way to set whether to show difficulty input field or not. Defaults to false.
+
+___
+
+## Slider Options
+#### slider: object;
+The slider property can be configured as the object below:
+\`\`\`
+slider: {
+	sliderStep: 1,
+	markerStep: 10,
+	maxMarkers: 15,
+	rankMarkers: []	// an array of the TOP ranks number you want to show on the markers bar
+}
+
+// undefined properties will be initialized with default values
+\`\`\`
+
+#### slider: boolean;
+Optional defaults to true. When slider is true, returns the same configurations showed on slider object above.
+If slider is false, hides the slider component.
+
+#### showSliderDiff: boolean;
+Another way to set whether to show difficulty slider field or not. Default: true
+
+#### sliderDiffStep: number;
+Another way to set the total amount of difficulty that will be changed in each slider step. Default 1
+
+#### sliderDiffMarkerStep: number;
+Another way to set the interval between each slider marker steps to be shown on difficulty slider bar. Default: 10
+
+#### sliderMarkersMaxCount: number;
+Another way to set the maximum number of markers allowed to show in slider bar. Default: 15
+
+___
+
+## Wallet Options
+
+#### wallets: object;
+The wallets property can be configured as the object below:
+\`\`\`
+wallets: {
+	available: ['moneybutton', 'relayx'],
+	initial: 'moneybutton'
+}
+
+// undefined properties will be initialized with default values
+\`\`\`
+
+#### wallets: array\\[string\\];
+A an array of wallet ids that the user wants available as payment options.
+Currently supports only 'moneybutton' and 'relayx' options.
+Defaults to the same configuration object showed on wallets object above.
+
+#### initialWallet: string;
+Another way to set the wallet id to initialize with. Leave empty to start with moneybutton.
+___
+
+## Outputs Option
+#### outputs
 An array containing a list of output ojects. Each output object may have the following properties:
 
 - \`to\`: (string) - bitcoin address
 - \`amount\`: (number) - amount of bitcoin (BSV)
 - \`script\`: (string) - valid bitcoin script using ASM format
 
-### Category
+Example: 
+\`\`\`
+outputs: [
+	{
+		to: "18YCy8VDYcXGnekHC4g3vphnJveTskhCLf", 
+		amount: 0.0004, 
+		currency: 'BSV'
+	}
+]
+\`\`\`
+___
 
-Optional category to initialize with. Leave empty to default to 'B'
-
-### showContentPreview
-
-Whether to attempt to resolve txid to a B file (image, video, pdf, etc)
-
-### showCategoryField
-
-Optional showCategoryField whether to show category field or not.
-
-### showTagField
-
-Optional showTagField whether to show tag field or not.
-
-### minDiff
-
-Optional minDiff to set the minimal difficulty value. Default: 1
-
-### maxDiff
-
-Optional maxDiff to set the maximal difficulty value. Default: 40
-
-### diffMultiplier
-
-Optional diffMultiplier to set how much to charge per difficulty unit. Default: 0.00002
-
-### initialDiff
-
-Optional initialDiff to set the initial difficulty value. Default: 1
-
-### lockDiff
-
-Optional lockDiff whether to disable changing the difficulty field.
-
-### showInputDiff
-
-Optional showInputDiff whether to show difficulty input field or not.
-
-### showSliderDiff
-
-Optional showSliderDiff whether to show difficulty slider field or not.
-
-### sliderDiffStep
-
-Optional sliderDiffStep the total amount of difficulty that will be changed in each slider step.
-
-### sliderDiffMarkerStep
-
-Optional sliderDiffMarkerStep defines the interval between each slider marker steps to be shown on difficulty slider bar.
-
-### sliderMarkersMaxCount
-
-Optional sliderMarkersMaxCount defines the maximum number of markers allowed to show in slider bar.
-
-### displayMessage
-
-Optional displayMessage to show user. Defaults to 'What's Boost?' text if not set.
-
-### onPayment
-
+## Events and Callback Options
+#### onPayment: function;
 A function that is called after a successful payment
 
-### onError
-
+#### onError: function;
 A function that is called when an error occurs during the payment
 
-### moneybuttonProps
-
+#### moneybuttonProps: object;
 Additional properties passed into moneybutton.
 
-### relayxProps
-
-Additional propeties passed into relayx
+#### relayxProps: object;
+Additional propeties passed into relayx button.
 `;
 
 const Docs = () => {
 	return (
 		<div style={{ width: '100vw' }}>
 
-			<div style={{ maxWidth: '100%', margin: '0 auto', width: '600px' }}>
+			<div style={{ maxWidth: '100%', margin: '0 auto', width: '800px' }}>
 				<a href="https://boostpow.com">
 					<img src="/logo.svg" style={{ marginTop: '1em' }}/>
 				</a>

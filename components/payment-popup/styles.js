@@ -51,7 +51,7 @@ const Styles = () => (
 			border-radius: 6px;
 			display: block;
 			width: 100%;
-			font-size: 1.1em
+			font-size: 1.1em;
 		}
 		.input-diff {
 			padding: 10px;
@@ -69,7 +69,7 @@ const Styles = () => (
 		.boost-logo-text {
 			display: inline-block;
 			font-size: 1.4em;
-			font-weight:  bold;
+			font-weight: bold;
 			letter-spacing: 1px;
 			padding-left: 10px;
 		}
@@ -86,6 +86,7 @@ const Styles = () => (
 		.boost-publisher-body {
 			padding: 16px;
 			border-top: 2px solid #f2f2f2;
+			min-height: 90px;
 		}
 
 		p.lead {
@@ -93,7 +94,7 @@ const Styles = () => (
 		}
 
 		.boost-publisher-bumper {
-			height: 10vh;
+			height: 5vh;
 		}
 
 		.boost-publisher-form-control {
@@ -149,108 +150,124 @@ const Styles = () => (
 			border-color: #f2f2f2 !important;
 			border-width: 1px !important;
 		}
-    .contentPreview {
-      text-align:center;
-    }
+		.contentPreview {
+			text-align: center;
+		}
 
-    .contentPreview img {
-      width: 320px;
-      margin: 0 auto;;
-    }
+		.contentPreview img {
+			width: 320px;
+			margin: 0 auto;
+		}
 
-    .contentPreview textarea {
-      width: 100%;
-      max-height: 300px;
-      overflow-y: scroll;
-      padding: 1em;
-      margin: 0 auto;
-    }
+		.contentPreview textarea {
+			width: 100%;
+			max-height: 300px;
+			overflow-y: scroll;
+			padding: 1em;
+			margin: 0 auto;
+		}
 
-    .contentPreview embed {
-      width: 100%;
-      padding: 1em;
-      margin: 0 auto;
-    }
+		.contentPreview embed {
+			width: 100%;
+			padding: 1em;
+			margin: 0 auto;
+		}
 
-    .markdownPreview  {
-      width: 100%;
-      padding: 1em;
-      margin: 0 auto;
-      max-height:300px;
-      height:300px;
-      border: 1px solid #ccc;
-      border-radius: 0.5em;
-      overflow-y:scroll;
-    }
-    media only screen and (min-width: 600px) {
+		.markdownPreview {
+			width: 100%;
+			padding: 1em;
+			margin: 0 auto;
+			max-height: 300px;
+			height: 300px;
+			border: 1px solid #ccc;
+			border-radius: 0.5em;
+			overflow-y: scroll;
+		}
+		media only screen and (min-width: 600px) {
+			.contentPreview img {
+				max-height: 200px;
+				width: auto;
+				margin: 0 auto;
+			}
 
-      .contentPreview img {
-        max-height:200px;
-        width: auto;
-        margin: 0 auto;;
-      }
+			.contentPreview video {
+				max-height: 200px;
+				width: auto;
+				margin: 0 auto;
+			}
+		}
+		@media only screen and (max-width: 600px) {
+			.pdfPreview {
+				height: 400;
+				width: 300;
+			}
 
-      .contentPreview video {
-        max-height:200px;
-        width: auto;
-        margin: 0 auto;;
-      }
+			.contentPreview {
+				padding: 1em;
+				text-align: center;
+			}
 
+			.contentPreview img {
+				max-height: 100px;
+				width: auto;
+				margin: 0 auto;
+			}
 
+			.contentPreview video {
+				height: 100px;
+				width: 300px;
+				margin: 0 auto;
+			}
 
-    }
-    @media only screen and (max-width: 600px) {
-      .pdfPreview {
-        height: 400;
-        width: 300;
-      }
+			.contentPreview textarea {
+				width: 100%;
+				max-height: 100px;
+				overflow-y: scroll;
+				padding: 1em;
+				margin: 0 auto;
+			}
 
-      .contentPreview {
-        padding: 1em;
-        text-align:center;
-      }
+			.contentPreview embed {
+				width: 100%;
+				height: 100px;
+				padding: 1em;
+				margin: 0 auto;
+			}
 
-      .contentPreview img {
-        max-height:100px;
-        width: auto;
-        margin: 0 auto;;
-      }
+			.markdownPreview {
+				width: 100%;
+				padding: 1em;
+				margin: 0 auto;
+				max-height: 100px;
+				height: 100px;
+				border: 1px solid #ccc;
+				border-radius: 0.5em;
+				overflow-y: scroll;
+			}
+		}
 
-      .contentPreview video {
-        height:100px;
-        width: 300px;
-        margin: 0 auto;;
-      }
-
-      .contentPreview textarea {
-        width: 100%;
-        max-height: 100px;
-        overflow-y: scroll;
-        padding: 1em;
-        margin: 0 auto;
-      }
-
-      .contentPreview embed {
-        width: 100%;
-        height: 100px;
-        padding: 1em;
-        margin: 0 auto;
-      }
-
-      .markdownPreview  {
-        width: 100%;
-        padding: 1em;
-        margin: 0 auto;
-        max-height:100px;
-        height:100px;
-        border: 1px solid #ccc;
-        border-radius: 0.5em;
-        overflow-y:scroll;
-      }
-    }
-
-
-
+		#boostpow-tags,
+		#boostpow-categories {
+			display: block;
+			height: 50px;
+			margin-top: 5px;
+		}
+		#boostpow-tags div,
+		#boostpow-categories div {
+			float: left;
+		}
+		#boostpow-tags div:first-child,
+		#boostpow-categories div:first-child {
+			min-width: 80px;
+			width: 15%;
+			padding-top: 5px;
+			font-weight: 500;
+		}
+		#boostpow-tags div:last-child,
+		#boostpow-categories div:last-child {
+			width: 82%;
+			float: right;
+		}
 	`}</style>
 );
 

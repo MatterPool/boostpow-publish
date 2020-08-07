@@ -3,9 +3,6 @@ import RelayX from '../relayx';
 import ProxyPay from '../proxypay';
 import MenuItem from '@material-ui/core/MenuItem';
 
-export const VALID_WALLETS = ['moneybutton', 'relayx'];
-export const DEFAULT_WALLET = 'moneybutton';
-
 // Available wallets configurations
 const WALLETS = {
 	moneybutton: {
@@ -30,16 +27,6 @@ export const getWallet = wKey => {
 // Return a wallet Element by wallet key
 export const getWalletElem = wKey => {
 	return getWallet(wKey).Element;
-};
-
-// Returns true if wallet ID is a valid wallet
-export const isValidWallet = wKey => {
-	return VALID_WALLETS.indexOf(wKey) > -1;
-};
-
-// Receives a wallet id and returns it, if valid, or default wallet id if not valid
-export const getValidWallet = wKey => {
-	return isValidWallet(wKey) ? wKey : DEFAULT_WALLET;
 };
 
 const renderMenuItem = wKey => (
