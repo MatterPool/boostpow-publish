@@ -11,7 +11,7 @@ Currently supported wallets are Money Button and RelayX.
 ## Installation
 Put this script on your page.
 ```
-<script src="https://publish.boostpow.com/publish.js" defer>
+<script src="https://publish.boostpow.com/publish.js"></script>
 ```
 ## Usage
 After page loads the boostPublish object will be available for access from your script.
@@ -24,7 +24,8 @@ const response = await boostPublish.open({
 	}
 });
 ```
-<a href='https://publish.boostpow.com/docs'>See our DOCS page for complete reference to the BoostPOW Publish widget configuration</a>
+<a href='https://publish.boostpow.com/docs.html'>See our DOCS page for complete reference to the BoostPOW Publish widget configuration</a>
+
 <a href='https://publish.boostpow.com/demo.html'>See our DEMO page for more examples of the BoostPOW Publish widget configuration</a>
 
 ## More about Boost POW protocol and tools
