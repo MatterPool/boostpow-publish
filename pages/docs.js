@@ -51,8 +51,8 @@ boostPublish.open({
 	showCategory: true,
 	boostRank: {
 		hours: 24,
-		tags: [],
-		categories: []
+		tag: '',
+		category: ''
 	},
 	diff: {
 		min: 1,
@@ -173,7 +173,7 @@ The boostRank property can be configured as the object below:
 \`\`\`
 boostRank: {
 	hours: 24,
-	tags: [], // filters the boostpow api with one or many tags
+	tag: '', // filters the boostpow api with one tag
 	category: '' // filters the boostpow api with one category
 }
 

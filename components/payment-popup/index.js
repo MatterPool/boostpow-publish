@@ -411,7 +411,7 @@ const PaymentPopup = compProps => {
 
 								{showTag && (
 									<div id="boostpow-tags" className="form-group">
-										<div className="lead">Tags (optional)</div>
+										<div className="lead">Tag (optional)</div>
 										<div>
 											<input
 												maxLength="20"
@@ -427,7 +427,7 @@ const PaymentPopup = compProps => {
 								)}
 								{showCategory && (
 									<div id="boostpow-categories" className="form-group">
-										<div className="lead">Categories (optional)</div>
+										<div className="lead">Category (optional)</div>
 										<div>
 											<input
 												maxLength="4"

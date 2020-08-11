@@ -158,16 +158,18 @@ const response = await boostPublish.open({
 
         <div>
             <h2>DEMO 6</h2>
-            <h3>Markdown content with boost rank from the last week, using custom slider TOP 1, 2, 3 and 5 rank markers configuration.</h3>
+            <h3>Markdown content with boost rank from the last 2 weeks, filtered by tag and category, and using a custom slider with TOP 1, 2 and 3 rank markers configuration.</h3>
             <pre>
 const response = await boostPublish.open({
     content: "a1ef1e13a09b1f58c5ce7e42f7e24c02c529baa4608652b9895d10b25bb30f5a",
     boostRank: {
-        hours: 24 * 7
+        hours: 24 * 14,
+        tag: '$osg',
+        category: 'B'
     },
     slider: {
-        sliderStep: 10,
-        rankMarkers: [1, 2, 3, 5]
+        sliderStep: 5,
+        rankMarkers: [1, 2, 3]
     },
     onPayment: (payment, boostJob) => {
         console.log(payment, boostJob);
@@ -322,15 +324,17 @@ const response = await boostPublish.open({
     }
 
     async function showBoostPublisher6() {
-        console.log("DEMO 6 - Custom slider rank markers");
+        console.log("DEMO 6 - Custom slider rank markers, with tag and category filtering");
         const response = await boostPublish.open({
             content: "a1ef1e13a09b1f58c5ce7e42f7e24c02c529baa4608652b9895d10b25bb30f5a",
             boostRank: {
-                hours: 24 * 7
+                hours: 24 * 14,
+                tag: '$osg',
+                category: 'B'
             },
             slider: {
-                sliderStep: 10,
-                rankMarkers: [1, 2, 3, 5]
+                sliderStep: 5,
+                rankMarkers: [1, 2, 3]
             },
             onPayment: (payment, boostJob) => {
                 console.log(payment, boostJob);
