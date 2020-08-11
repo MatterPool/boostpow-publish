@@ -25,7 +25,14 @@ boostPublish.open({
 
 [See our DEMO page for more examples of the BoostPOW Publish widget configuration](https://publish.boostpow.com/demo.html "Demo Page")
 
-## Complete options object
+# The boostPublish object
+
+Including the Boost POW Publisher embed on your page, makes \`boostPublish\` available on the browser's \`window\` object.
+It has one asynchronous method, \`open\` that resolves with a payment object upon a successful payment and throws if there was an error.
+\`open\` returns \`undefined\` if the payment was canceled.
+
+
+## Complete configuration options
 
 The complete Boost POW Publish configuration options object looks like this:
 
@@ -44,8 +51,8 @@ boostPublish.open({
 	showCategory: true,
 	boostRank: {
 		hours: 24,
-		tags: [],
-		categories: []
+		tag: '',
+		category: ''
 	},
 	diff: {
 		min: 1,
@@ -87,14 +94,9 @@ boostPublish.open({
 });
 \`\`\`
 
-You will hardly use all the options at the same time, but it is useful to have a general look of all the available options at one glance.
 There are some different ways you can use each property, as we will see below.
 
-# The boostPublish object
-
-Including the Boost POW Publisher embed on your page, makes \`boostPublish\` available on the browser's \`window\` object.
-It has one asynchronous method, \`open\` that resolves with a payment object upon a successful payment and throws if there was an error.
-\`open\` returns \`undefined\` if the payment was canceled.
+There are no required options.
 
 # Available options
 ___
@@ -171,7 +173,7 @@ The boostRank property can be configured as the object below:
 \`\`\`
 boostRank: {
 	hours: 24,
-	tags: [], // filters the boostpow api with one or many tags
+	tag: '', // filters the boostpow api with one tag
 	category: '' // filters the boostpow api with one category
 }
 
