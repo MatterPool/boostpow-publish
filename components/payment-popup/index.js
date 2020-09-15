@@ -8,6 +8,7 @@ import Styles from './styles';
 import * as Difficulty from './difficulty';
 import * as Wallets from './wallets';
 import { isValidWallet } from '../../lib/wallets';
+import * as LogSlider from './log-slider';
 
 /*
 
@@ -314,6 +315,15 @@ const PaymentPopup = compProps => {
 		}, 50);
 	};
 
+	let AddedBoost = 1;
+	if (payProps.sliderCtrl && payProps.sliderCtrl.content) {
+		AddedBoost = LogSlider.getAddedBoost(payProps.sliderCtrl, difficulty);
+	}
+
+	const sliderScaleLabel = (x) => {
+		return LogSlider.sliderScaleLabel(payProps.sliderCtrl, x);
+	};
+
 	return (
 		<div className="boost-publisher-container" onClick={handleClose}>
 			<div className="boost-publisher-wrapper">
@@ -442,14 +452,21 @@ const PaymentPopup = compProps => {
 									</div>
 								)}
 
-								<div className="form-group input-diff-container">
+								<div id="boostpow-slider" className="form-group input-diff-container">
 									{showSliderDiff && (
 										<div>
-											<label className="label">Difficulty {difficulty}</label>
+											
+											{ payProps.sliderCtrl && 
+											<label className="label">Adding +{AddedBoost} boost points to current boost of {payProps.sliderCtrl.content.CurrentBoost}</label>
+											// <label className="label">Current Boost {payProps.sliderCtrl.content.CurrentBoost}</label>
+											}
+											
+											
 											<Difficulty.DiffSlider
 												min={minDiff}
 												max={maxDiff}
 												value={difficulty}
+												scale={sliderScaleLabel}
 												aria-labelledby="discrete-slider-custom"
 												step={sliderDiffStep}
 												valueLabelDisplay="on"
@@ -476,7 +493,12 @@ const PaymentPopup = compProps => {
 									{Difficulty.hasRankSignals(payProps) && (
 										<div className="boost-rank-display">
 											This post will appear at{' '}
+											{payProps.sliderCtrl &&
+											<span>Rank {LogSlider.rankAfterAddedDiff(payProps.sliderCtrl.content.CurrentBoost, AddedBoost, payProps.sliderCtrl.ranksCtrl.ranks).rank}</span>
+											}
+											{!payProps.sliderCtrl &&
 											<span>Rank {Difficulty.getDiffRank(payProps.signals, difficulty)}</span>
+											}
 											&nbsp; of all Boosted content on the last{' '}
 											<span>{payProps.boostRank.hours} hours</span>.
 										</div>

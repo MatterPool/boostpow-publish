@@ -47,7 +47,8 @@ export const DiffValueLabel = withStyles({
 	offset: {
 		zIndex: 1,
 		lineHeight: 1.2,
-		top: -34,
+		top: -46,
+		left: -10,
 		transformOrigin: 'bottom center',
 		transform: 'scale(0)',
 		position: 'absolute'
@@ -56,8 +57,8 @@ export const DiffValueLabel = withStyles({
 		display: 'flex',
 		alignItems: 'center',
 		justifyContent: 'center',
-		width: 32,
-		height: 32,
+		width: 40,
+		height: 40,
 		borderRadius: '50% 50% 50% 0',
 		backgroundColor: 'currentColor',
 		transform: 'rotate(-45deg)'

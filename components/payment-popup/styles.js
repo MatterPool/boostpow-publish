@@ -245,6 +245,11 @@ const Styles = () => (
 				overflow-y: scroll;
 			}
 		}
+		
+		#boostpow-slider {
+			margin-left: 15px;
+			margin-right: 30px;
+		}
 
 		#boostpow-tags,
 		#boostpow-categories {
