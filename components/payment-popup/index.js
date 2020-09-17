@@ -457,12 +457,22 @@ const PaymentPopup = compProps => {
 										<div>
 											
 											{ payProps.sliderCtrl && 
-											<label className="label">Adding +{AddedBoost} boost points to current boost of {payProps.sliderCtrl.content.CurrentBoost}</label>
+											<label className="label">Current boost of {payProps.sliderCtrl.content.CurrentBoost} <big><b>+</b></big> <select
+											value={difficulty}
+											className="inline-diff-selector"
+											onChange={handleDiffChange}
+											disabled={lockDiff}
+										>
+											{Difficulty.renderDiffOptions(minDiff, maxDiff, sliderDiffStep, "")}
+										</select> boosts =&nbsp;
+											{payProps.sliderCtrl.content.CurrentBoost + AddedBoost} total boost</label>
+											//  at Rank #{LogSlider.rankAfterAddedDiff(payProps.sliderCtrl.content.CurrentBoost, AddedBoost, payProps.sliderCtrl.ranksCtrl.ranks).rank}
+											// <label className="label">Adding +{AddedBoost} boost points to current boost of {payProps.sliderCtrl.content.CurrentBoost}</label>
 											// <label className="label">Current Boost {payProps.sliderCtrl.content.CurrentBoost}</label>
 											}
 											
-											
 											<Difficulty.DiffSlider
+											 	key='unique-slider'
 												min={minDiff}
 												max={maxDiff}
 												value={difficulty}
@@ -481,6 +491,7 @@ const PaymentPopup = compProps => {
 										<div>
 											<label className="label">Difficulty</label>
 											<select
+												key='unique-diff-selector'
 												value={difficulty}
 												className="input-diff"
 												onChange={handleDiffChange}
@@ -492,8 +503,8 @@ const PaymentPopup = compProps => {
 									)}
 									{Difficulty.hasRankSignals(payProps) && (
 										<div className="boost-rank-display">
-											This post will appear at{' '}
-											{payProps.sliderCtrl &&
+											{/* This post will appear at{' '}*/}
+											Leads to {payProps.sliderCtrl &&
 											<span>Rank {LogSlider.rankAfterAddedDiff(payProps.sliderCtrl.content.CurrentBoost, AddedBoost, payProps.sliderCtrl.ranksCtrl.ranks).rank}</span>
 											}
 											{!payProps.sliderCtrl &&

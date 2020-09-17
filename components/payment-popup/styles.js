@@ -251,6 +251,10 @@ const Styles = () => (
 			margin-right: 30px;
 		}
 
+		#boostpow-slider .inline-diff-selector {
+			padding: 4px;
+		}
+
 		#boostpow-tags,
 		#boostpow-categories {
 			display: block;

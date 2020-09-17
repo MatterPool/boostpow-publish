@@ -100,24 +100,26 @@ export const calculateSliderMarks = (minDiff, maxDiff, sliderDiffMarkerStep, mar
 
 // Render a single select box difficulty option
 const renderDiffOption = (value, label) => {
+	// console.log("value, label",value, label);
 	return (
-		<option key={value} value={value}>
+		<option key={'diffopt-'+value} value={value}>
 			{label || value}
 		</option>
 	);
 };
 
 // Renders all difficulty options available for the selection box
-export const renderDiffOptions = (minDiff, maxDiff, sliderDiffStep) => {
+export const renderDiffOptions = (minDiff, maxDiff, sliderDiffStep, labelPrefix) => {
+	const lbl = (labelPrefix || '');
 	// always push the boost minDiff option
-	let rows = [renderDiffOption(minDiff)];
+	let rows = [renderDiffOption(minDiff, lbl+"1")];
 	for (let i = minDiff; i < maxDiff; i++) {
 		if (i > minDiff) {
-			if (i % sliderDiffStep == 0) rows.push(renderDiffOption(i));
+			if (i % sliderDiffStep == 0) rows.push(renderDiffOption(i, lbl+(i-minDiff+1)));
 		}
 	}
 	// always push the boost maxDiff option
-	rows.push(renderDiffOption(maxDiff));
+	rows.push(renderDiffOption(maxDiff, lbl+(maxDiff-minDiff+1)));
 	return rows;
 };
 

@@ -10,7 +10,7 @@ export const INITIAL_SLIDER_CTRL = {
 	TopNextBoost: 0, // The position of the TopN (last position) marker
 	// MinSpaceSize: 0, // the total number of points between minimum and TopN
 	// RankSpaceSize: 0, // the total number of points TopN and Top1 ranks
-	ExtendedSpaceRate: 1.2,
+	ExtendedSpaceRate: 1.25,
 	// MaxBoost: 0, // maximum boost space (normally Top1 * ExtendedSpaceRate but, can be different)
 	// ExtendedSpaceSize: the total number of boost points between Top 1 and MaxBoost
 	ranksCtrl: {}
@@ -21,12 +21,21 @@ export function NewRank(rank, boostVal) {
 }
 
 export function NewRanksCtrl(ranks) {
-	if (ranks.length == 0) return null;
+	const emptyRank = NewRank(1, 0);
+	if (ranks.length == 0)
+		return {
+			top1: emptyRank,
+			topN: emptyRank,
+			ranks: [emptyRank],
+			unique: true,
+			empty: true
+		};
 	return {
 		top1: ranks[0],
 		topN: ranks[ranks.length - 1],
 		ranks: ranks,
-		unique: ranks.length === 1
+		unique: ranks.length === 1,
+		empty: false
 	};
 }
 
@@ -53,9 +62,11 @@ export function RankSpaceSize(sliderCtrl) {
 	});
 }
 
-export function MaxBoost(sliderCtrl) {
+export function MaxBoost(sliderCtrl, Top1Boost, ExtendedSpaceRate) {
 	return Object.assign({}, sliderCtrl, {
-		MaxBoost: sliderCtrl.Top1Boost * sliderCtrl.ExtendedSpaceRate
+		MaxBoost:
+			(Top1Boost || sliderCtrl.Top1Boost || 1) *
+			(ExtendedSpaceRate || sliderCtrl.ExtendedSpaceRate || 1.25)
 	});
 }
 
@@ -103,26 +114,25 @@ export function rankAfterAddedDiff(CBV, addedDiff, ranks) {
 export function sliderRankMarkers(sliderCtrl, rankMarkers) {
 	if (!rankMarkers) rankMarkers = [1, 2, 3, 5, 10];
 	// const markers = [{ value: sliderCtrl.MaxBoost, label: '' + sliderCtrl.MaxBoost }];
-	const markers = [{ value: sliderCtrl.MaxBoost, label: '#LEAD'}];
+	const markers = [{ value: sliderCtrl.MaxBoost, label: '#LEAD' }];
+	const addedBoostValues = []; // controls boostValue to allow only unique boost values (equal boosts display only the first rank marker)
+	// from higuest to lowest rank
 	for (let i = 0; i < sliderCtrl.ranksCtrl.ranks.length; i++) {
 		let r = sliderCtrl.ranksCtrl.ranks[i];
-		if (rankMarkers.indexOf(r.rank) > -1) {
+		if (rankMarkers.indexOf(r.rank) > -1 && addedBoostValues.indexOf(r.boostValue) === -1) {
 			markers.push({
-				// value: diffPointsToRank(
-				// 	sliderCtrl.ranksCtrl.ranks,
-				// 	r.rank,
-				// 	sliderCtrl.content.CurrentBoost
-				// ),
 				value: r.boostValue,
 				label: '#' + r.rank
 			});
+			addedBoostValues.push(r.boostValue);
 		}
 	}
-	markers.push({ value: sliderCtrl.MinBoost, label: '#' + sliderCtrl.content.Rank.rank });
+	if (addedBoostValues.indexOf(sliderCtrl.MinBoost) === -1)
+		markers.push({ value: sliderCtrl.MinBoost, label: '#' + sliderCtrl.content.Rank.rank });
 	return markers;
 }
 
-export function NewContentSliderCtrl(CBV, ranksCtrl) {
+export function NewContentSliderCtrl(CBV, ranksCtrl, WidgetProps) {
 	// console.log('NewContentSliderCtrl', CBV, ranksCtrl);
 	let sliderSpace = NewSliderCtrl({
 		// CBV: CBV,
@@ -135,7 +145,7 @@ export function NewContentSliderCtrl(CBV, ranksCtrl) {
 	sliderSpace.ranksCtrl = ranksCtrl;
 	sliderSpace = MinSpaceSize(sliderSpace);
 	sliderSpace = RankSpaceSize(sliderSpace);
-	sliderSpace = MaxBoost(sliderSpace);
+	sliderSpace = MaxBoost(sliderSpace, ranksCtrl.empty ? WidgetProps.diff.max || 40 : null, WidgetProps.slider.maxDiffInc || 1.25);
 	sliderSpace = ExtendedSpaceSize(sliderSpace);
 	sliderSpace.content = {
 		CurrentBoost: CBV,
@@ -153,7 +163,7 @@ export function getMinBoost(sliderCtrl) {
 export function getAddedBoost(sliderCtrl, x) {
 	let min = getMinBoost(sliderCtrl);
 	if (min === 0) min = 1;
-	let val = ( x - ( min - 1 ) );
+	let val = x - (min - 1);
 	return val;
 }
 

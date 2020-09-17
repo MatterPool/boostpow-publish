@@ -22,10 +22,7 @@ const Home = () => {
 		}
 		// Fetches the API and rank calcs
 		const newProps = await BoostHelpers.prepareBoostProps(props);
-		if (!newProps.signals || newProps.signals.length == 0) {
-			return newProps;
-		}
-
+		
 		let contentBoosts = {};
 		// console.log('props', props);
 		// console.log('newProps', newProps);
@@ -37,7 +34,7 @@ const Home = () => {
 			props.contentBoosts = contentBoosts;
 
 			const ranksCtrl = LogSlider.GetTopNFromSignals(newProps.signals, CBV);
-			const newSliderCtrl = LogSlider.NewContentSliderCtrl(CBV, ranksCtrl);
+			const newSliderCtrl = LogSlider.NewContentSliderCtrl(CBV, ranksCtrl, newProps);
 			// console.log("newSliderCtrl",newSliderCtrl);
 			// TODO: Add new slider parameters to the current slider configuration object
 			// Overrides min, max and initial when they are explicitly defined by the user
@@ -78,11 +75,13 @@ const Home = () => {
 		try {
 			const parentHandshake = new Postmate.Model({
 				open: async userProps => {
+					// console.log("Before analyze props", Object.assign({},userProps));
 					let compatProps = ApiCompat.normalizeLegacyApi(userProps);
 					compatProps = await updateBoostsRank(compatProps);
 					// console.log('Props from USER:', userProps, 'Compatible props: ', compatProps);
 					compatProps.opening = true;
 					setOpened(true);
+					// console.log("Before open props", Object.assign({},compatProps));
 					setPaymentProps(compatProps);
 				},
 
