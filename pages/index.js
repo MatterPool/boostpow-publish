@@ -15,13 +15,26 @@ const Home = () => {
 	const [paymentProps, setPaymentProps] = useState();
 	const [parent, setParent] = useState(null);
 	const [opened, setOpened] = useState(true);
+
+	const sliderMarkerStepsInit = (newProps, props)=>{
+		// Overrides min, max and initial when they are explicitly defined by the user
+		newProps.diff.min = 1;
+		// if (props.diff.min > 0) newProps.diff.min = 1; // props.diff.min;
+		if (props.diff.max > 0) newProps.diff.max = props.diff.max;
+		if (props.diff.initial > 0) newProps.diff.initial = props.diff.initial;
+
+		// Ensures safe initial value
+		if (newProps.diff.initial > newProps.diff.max) newProps.diff.initial = newProps.diff.max;
+		return newProps;
+	};
+
 	const updateBoostsRank = async props => {
 		// console.log('updateBoostRank', props, original);
 		if (!props.boostRank) {
 			return props;
 		}
 		// Fetches the API and rank calcs
-		const newProps = await BoostHelpers.prepareBoostProps(props);
+		let newProps = await BoostHelpers.prepareBoostProps(props);
 		
 		let contentBoosts = {};
 		// console.log('props', props);
@@ -54,18 +67,13 @@ const Home = () => {
 					rm = newProps.slider.rankMarkers;
 				}
 				newProps.slider.sliderRankMarkers = LogSlider.sliderRankMarkers(newSliderCtrl, rm);
+			} else {
+				newProps = sliderMarkerStepsInit(newProps, props);
 			}
 			newProps.sliderCtrl = newSliderCtrl;
 			// console.log('newProps', newProps);
 		} else {
-			// Overrides min, max and initial when they are explicitly defined by the user
-			newProps.diff.min = 1;
-			// if (props.diff.min > 0) newProps.diff.min = 1; // props.diff.min;
-			if (props.diff.max > 0) newProps.diff.max = props.diff.max;
-			if (props.diff.initial > 0) newProps.diff.initial = props.diff.initial;
-
-			// Ensures safe initial value
-			if (newProps.diff.initial > newProps.diff.max) newProps.diff.initial = newProps.diff.max;
+			newProps = sliderMarkerStepsInit(newProps, props);
 		}
 		return newProps;
 	};

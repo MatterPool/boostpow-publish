@@ -29,9 +29,12 @@
         }
         
         #demos p {
-            text-align: center;
+            text-align: left;
         }
         
+        #demos p.button {
+            text-align: center;
+        }
         #demos p button {
             font-size: 1.2em;
             padding: 5px;
@@ -51,7 +54,7 @@
 
 <!--- REMOVE THIS -->
 
-        <p><button onclick="showBoostPublisher0()">OPEN DEMO 0</button></p>
+        <!-- <p class="button"><button onclick="showBoostPublisher0()">OPEN DEMO 0</button></p> -->
 
 <!--- REMOVE THIS -->
 
@@ -60,14 +63,21 @@
         <div>
             <h2>DEMO 1</h2>
             <h3>Open the widget with default options and no content hash loaded</h3>
+            
             <pre>
 const response = await boostPublish.open({
     onPayment: (payment, boostJob) => {
         console.log(payment, boostJob);
     }
 });
-			</pre>
-            <p><button onclick="showBoostPublisher1()">OPEN DEMO 1</button></p>
+            </pre>
+            <p>(*) Try loading one of the content hashes below by cutting and pasting into the input field after widget opens.</p>
+            <ul>
+                <li>2829b4df5152fb867128f0ea2cffdfe3b7134a98b356eb1a1813b68fd3b83519</li>
+                <li>1cbf1cb5b6c1b72600da298a9c116cb262649ae53db380853508ca2d0bc94b64</li>
+                <li>1e1c7c06786d4e7979aaaa0f6c9204910cba288741bfa8b95b43027d698e2f90</li>
+            </ul> 
+            <p class="button"><button onclick="showBoostPublisher1()">OPEN DEMO 1</button></p>
         </div>
         
 
@@ -85,7 +95,7 @@ const response = await boostPublish.open({
     }
 });
 			</pre>
-            <p><button onclick="showBoostPublisher2()">OPEN DEMO 2</button></p>
+            <p class="button"><button onclick="showBoostPublisher2()">OPEN DEMO 2</button></p>
         </div>
 
 
@@ -97,19 +107,19 @@ const response = await boostPublish.open({
             <h3>Image content with boost rank from the last 72 hours, and RelayX as initial wallet</h3>
             <pre>
 const response = await boostPublish.open({
-	content: "1cbf1cb5b6c1b72600da298a9c116cb262649ae53db380853508ca2d0bc94b64",
-	boostRank: {
-		hours: 72
-	},
-	wallets: { 
-		initial: 'relayx' 
-	},
-	onPayment: (payment, boostJob) => {
-		console.log(payment, boostJob);
-	}
+    content: "1cbf1cb5b6c1b72600da298a9c116cb262649ae53db380853508ca2d0bc94b64",
+    boostRank: {
+        hours: 72
+    },
+    wallets: { 
+        initial: 'relayx' 
+    },
+    onPayment: (payment, boostJob) => {
+        console.log(payment, boostJob);
+    }
 });
 			</pre>
-            <p><button onclick="showBoostPublisher3()">OPEN DEMO 3</button></p>
+            <p class="button"><button onclick="showBoostPublisher3()">OPEN DEMO 3</button></p>
         </div>
 
 
@@ -117,25 +127,22 @@ const response = await boostPublish.open({
 
         <div>
             <h2>DEMO 4</h2>
-            <h3>Video content without boost rank, using custom difficulty and slider configuration options</h3>
+            <h3>Video content with boost rank from the last 120 hours, using 5 step slider configuration</h3>
             <pre>
 const response = await boostPublish.open({
-	content: "1e1c7c06786d4e7979aaaa0f6c9204910cba288741bfa8b95b43027d698e2f90",
-	boostRank: false,
-	diff: {
-		min: 20,
-		max: 200,
-		initial: 40
-	},
-	slider: {
-		sliderStep: 5
-	},
-	onPayment: (payment, boostJob) => {
-		console.log(payment, boostJob);
-	}
+    content: "1e1c7c06786d4e7979aaaa0f6c9204910cba288741bfa8b95b43027d698e2f90",
+    boostRank: {
+        hours: 120
+    },
+    slider: {
+        sliderStep: 5
+    },
+    onPayment: (payment, boostJob) => {
+        console.log(payment, boostJob);
+    }
 });
 			</pre>
-            <p><button onclick="showBoostPublisher4()">OPEN DEMO 4</button></p>
+            <p class="button"><button onclick="showBoostPublisher4()">OPEN DEMO 4</button></p>
         </div>
 
 
@@ -143,49 +150,49 @@ const response = await boostPublish.open({
 
         <div>
             <h2>DEMO 5</h2>
-            <h3>Markdown content with boost rank from the last 10 days, using custom slider and marker configuration</h3>
-            <pre>
-const response = await boostPublish.open({
-	content: "a1ef1e13a09b1f58c5ce7e42f7e24c02c529baa4608652b9895d10b25bb30f5a",
-	boostRank: {
-		hours: 240
-	},
-	slider: {
-		sliderStep: 10,
-		markerStep: 20,
-		maxMarkers: 15
-	},
-	onPayment: (payment, boostJob) => {
-		console.log(payment, boostJob);
-	}
-});
-			</pre>
-            <p><button onclick="showBoostPublisher5()">OPEN DEMO 5</button></p>
-        </div>
-
-
-
-        <div>
-            <h2>DEMO 6</h2>
-            <h3>Markdown content with boost rank from the last 2 weeks, filtered by tag and category, and using a custom slider with TOP 1, 2 and 3 rank markers configuration.</h3>
+            <h3>Markdown content with boost rank from the last 10 days, using custom slider markers with regular steps and no rank markers</h3>
             <pre>
 const response = await boostPublish.open({
     content: "a1ef1e13a09b1f58c5ce7e42f7e24c02c529baa4608652b9895d10b25bb30f5a",
     boostRank: {
-        hours: 24 * 14,
-        tag: '$osg',
-        category: 'B'
+        hours: 240
     },
     slider: {
-        sliderStep: 5,
-        rankMarkers: [1, 2, 3]
+        rankMarkers: false,
+        sliderStep: 10,
+        markerStep: 20,
+        maxMarkers: 15
     },
     onPayment: (payment, boostJob) => {
         console.log(payment, boostJob);
     }
 });
 			</pre>
-            <p><button onclick="showBoostPublisher6()">OPEN DEMO 6</button></p>
+            <p class="button"><button onclick="showBoostPublisher5()">OPEN DEMO 5</button></p>
+        </div>
+
+
+
+        <div>
+            <h2>DEMO 6</h2>
+            <h3>Markdown content with boost rank from the last 15 days, filtered by category, using a custom slider with TOP 1, 2, 3 and 5 rank markers only.</h3>
+            <pre>
+const response = await boostPublish.open({
+    content: "a1ef1e13a09b1f58c5ce7e42f7e24c02c529baa4608652b9895d10b25bb30f5a",
+    boostRank: {
+        hours: 360,
+        category: 'B'
+    },
+    slider: {
+        sliderStep: 5,
+        rankMarkers: [1, 2, 3, 5]
+    },
+    onPayment: (payment, boostJob) => {
+        console.log(payment, boostJob);
+    }
+});
+			</pre>
+            <p class="button"><button onclick="showBoostPublisher6()">OPEN DEMO 6</button></p>
         </div>
 
 
@@ -205,7 +212,7 @@ const response = await boostPublish.open({
     }
 });
 			</pre>
-            <p><button onclick="showBoostPublisher7()">OPEN DEMO 7</button></p>
+            <p class="button"><button onclick="showBoostPublisher7()">OPEN DEMO 7</button></p>
         </div>
 
 
@@ -213,7 +220,7 @@ const response = await boostPublish.open({
 
         <div>
             <h2>DEMO 8</h2>
-            <h3>Display simple message, hides the content, display fixed tag and category fields</h3>
+            <h3>Display simple message, hides the content, display fixed tag and category fields, using a custom slider and difficulty range, without rank markers</h3>
             <pre>
 const response = await boostPublish.open({
     message: 'This is a custom message from the user!',
@@ -223,12 +230,20 @@ const response = await boostPublish.open({
     },
     tag: { value: '$', disabled: true },
     category: { value: 'B', disabled: true },
+    diff: {
+        min: 1,
+        max: 500,
+        initial: 250
+    },
+    slider: {
+        rankMarkers: false
+    },
     onPayment: (payment, boostJob) => {
         console.log(payment, boostJob);
     }
 });
 			</pre>
-            <p><button onclick="showBoostPublisher8()">OPEN DEMO 8</button></p>
+            <p class="button"><button onclick="showBoostPublisher8()">OPEN DEMO 8</button></p>
         </div>
 
 
@@ -250,7 +265,7 @@ const response = await boostPublish.open({
     }
 });
 			</pre>
-            <p><button onclick="showBoostPublisher9()">OPEN DEMO 9</button></p>
+            <p class="button"><button onclick="showBoostPublisher9()">OPEN DEMO 9</button></p>
         </div>
 
 
@@ -261,21 +276,29 @@ const response = await boostPublish.open({
 <script>
     // REMOVE THIS
 
-    async function showBoostPublisher0() {
-        console.log("DEMO 0 - All defaults");
-        const response = await boostPublish.open({
-            boostRank: {
-                hours: 480
-            },
-            slider: {
-                rankMarkers: true
-            },
-            content: "2e32cb1a861331173a257c1909772fc6e41cc64faa8c84b3bf13b958415fe348",
-            onPayment: (payment, boostJob) => {
-                console.log(payment, boostJob);
-            }
-        });
-    }
+    // async function showBoostPublisher0() {
+    //     console.log("DEMO 0 - All defaults");
+    //     const response = await boostPublish.open({
+    //         boostRank: {
+    //             hours: 480
+    //         },
+    //         slider: {
+    //             rankMarkers: true
+    //         },
+    //         // diff: {
+    //         //     min: 1,
+    //         //     max: 200,
+    //         //     initial: 40
+    //         // },
+    //         // slider: {
+    //         //     sliderStep: 50
+    //         // },
+    //         content: "2e32cb1a861331173a257c1909772fc6e41cc64faa8c84b3bf13b958415fe348",
+    //         onPayment: (payment, boostJob) => {
+    //             console.log(payment, boostJob);
+    //         }
+    //     });
+    // }
 
     // REMOVE THIS
 
@@ -318,11 +341,8 @@ const response = await boostPublish.open({
         console.log("DEMO 4 - Custom difficulty and slider sets");
         const response = await boostPublish.open({
             content: "1e1c7c06786d4e7979aaaa0f6c9204910cba288741bfa8b95b43027d698e2f90",
-            boostRank: false,
-            diff: {
-                min: 20,
-                max: 200,
-                initial: 40
+            boostRank: {
+                hours: 120
             },
             slider: {
                 sliderStep: 5
@@ -341,6 +361,7 @@ const response = await boostPublish.open({
                 hours: 240
             },
             slider: {
+                rankMarkers: false,
                 sliderStep: 10,
                 markerStep: 20,
                 maxMarkers: 15
@@ -356,13 +377,12 @@ const response = await boostPublish.open({
         const response = await boostPublish.open({
             content: "a1ef1e13a09b1f58c5ce7e42f7e24c02c529baa4608652b9895d10b25bb30f5a",
             boostRank: {
-                hours: 24 * 14,
-                tag: '$osg',
+                hours: 360,
                 category: 'B'
             },
             slider: {
                 sliderStep: 5,
-                rankMarkers: [1, 2, 3]
+                rankMarkers: [1, 2, 3, 5]
             },
             onPayment: (payment, boostJob) => {
                 console.log(payment, boostJob);
@@ -393,6 +413,14 @@ const response = await boostPublish.open({
             },
             tag: { value: '$tag', disabled: true },
             category: { value: 'B', disabled: true },
+            diff: {
+                min: 1,
+                max: 500,
+                initial: 250
+            },
+            slider: {
+                rankMarkers: false
+            },
             onPayment: (payment, boostJob) => {
                 console.log(payment, boostJob);
             }

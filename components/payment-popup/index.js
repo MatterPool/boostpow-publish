@@ -125,7 +125,6 @@ const PaymentPopup = compProps => {
 
 	const [displayRank, setDisplayRank] = useState(false);
 	const toggleDisplayRanks = () => {
-		console.log("payProps",payProps);
 		setDisplayRank(!displayRank);
 	}
 	if (payProps.opening && displayRank !== false) {
@@ -348,7 +347,7 @@ const PaymentPopup = compProps => {
 		return LogSlider.sliderScaleLabel(payProps.sliderCtrl, x);
 	};
 
-	
+	const hasRankSignals = Difficulty.hasRankSignals(payProps);
 
 	return (
 		<div className="boost-publisher-container" onClick={handleClose}>
@@ -527,7 +526,7 @@ const PaymentPopup = compProps => {
 											</select>
 										</div>
 									)}
-									{Difficulty.hasRankSignals(payProps) && (
+									{hasContent && hasRankSignals && (
 										<div className="boost-rank-display">
 											{/* This post will appear at{' '}*/}
 											Leads to {payProps.sliderCtrl &&
@@ -540,7 +539,7 @@ const PaymentPopup = compProps => {
 											<span>{payProps.boostRank.hours} hours</span>.
 										</div>
 									)}
-									{Difficulty.hasRankSignals(payProps) && displayRank && (
+									{hasContent && displayRank && hasRankSignals && (
 										<div>
 										<table className='display-ranks'>
 											<thead>
