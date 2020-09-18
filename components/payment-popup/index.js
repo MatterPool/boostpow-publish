@@ -123,6 +123,30 @@ const PaymentPopup = compProps => {
 		sliderMarkers = sliderRankMarkers;
 	}
 
+	const [displayRank, setDisplayRank] = useState(false);
+	const toggleDisplayRanks = () => {
+		console.log("payProps",payProps);
+		setDisplayRank(!displayRank);
+	}
+	if (payProps.opening && displayRank !== false) {
+		setDisplayRank(false);
+	}
+
+	const renderDisplayRanks = () => {
+		let html = [];
+		payProps.signals.forEach((v, k)=>{
+			html.push((
+				<tr key={'display-rank-'+k}>
+					<td>{k+1}</td>
+					<td> &lt;= {payProps.boostRank.hours}</td>
+					<td>{v.totalDifficulty_}</td>
+				</tr>
+			));
+		})
+		return html;
+	};
+	
+
 	// GENERAL HANDLERS
 	const handleTagChange = (evt, value) => {
 		setTag(evt.target.value);
@@ -324,6 +348,8 @@ const PaymentPopup = compProps => {
 		return LogSlider.sliderScaleLabel(payProps.sliderCtrl, x);
 	};
 
+	
+
 	return (
 		<div className="boost-publisher-container" onClick={handleClose}>
 			<div className="boost-publisher-wrapper">
@@ -510,8 +536,24 @@ const PaymentPopup = compProps => {
 											{!payProps.sliderCtrl &&
 											<span>Rank {Difficulty.getDiffRank(payProps.signals, difficulty)}</span>
 											}
-											&nbsp; of all Boosted content on the last{' '}
+											&nbsp; of <a onClick={toggleDisplayRanks} className={'display-ranks-toggle' + ((displayRank)?' opened': '')}>boosts ranked</a> on the last{' '}
 											<span>{payProps.boostRank.hours} hours</span>.
+										</div>
+									)}
+									{Difficulty.hasRankSignals(payProps) && displayRank && (
+										<div>
+										<table className='display-ranks'>
+											<thead>
+											<tr>
+												<th>RANK</th>
+												<th>RANK HOURS</th>
+												<th>TOTAL BOOST</th>
+											</tr>
+											</thead>
+											<tbody>
+											{renderDisplayRanks()}
+											</tbody>
+										</table>
 										</div>
 									)}
 								</div>

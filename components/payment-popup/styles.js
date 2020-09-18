@@ -255,6 +255,33 @@ const Styles = () => (
 			padding: 4px;
 		}
 
+		.display-ranks-toggle {
+			text-decoration: underline;
+			cursor: pointer;
+		}
+		.display-ranks-toggle:before {
+			content:'\\25B8'
+		}
+		.display-ranks-toggle.opened:before {
+			content:'\\25BE'
+		}
+
+		table.display-ranks {
+			width: 100%;
+			font-size: 0.8em;
+			margin-top: 15px;
+		}
+		table.display-ranks th, table.display-ranks td {
+			text-align: center;
+		}
+		table.display-ranks th {
+			font-weight: 600;
+			font-size: .9em;
+		}
+		table.display-ranks td {
+			border-bottom: 1px solid #eee;
+		}
+
 		#boostpow-tags,
 		#boostpow-categories {
 			display: block;
