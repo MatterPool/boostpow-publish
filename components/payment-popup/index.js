@@ -24,7 +24,6 @@ Example Files
 
 const PaymentPopup = compProps => {
 	const payProps = compProps.paymentProps;
-	// console.log('compProps', compProps);
 	const cParent = compProps.parent;
 
 	// Communicates parent to change the opening property to false
@@ -269,7 +268,6 @@ const PaymentPopup = compProps => {
 					o.push(latestOutputState);
 				}
 			} catch (ex) {
-				console.log('ex', ex);
 				return [];
 			}
 		}
@@ -285,22 +283,18 @@ const PaymentPopup = compProps => {
 			moneybuttonProps: {
 				...payProps.moneybuttonProps,
 				onCryptoOperations: cryptoOperations => {
-					// console.log('onCryptoOperations', cryptoOperations);
 					if (cParent) {
 						cParent.emit('cryptoOperations', { cryptoOperations });
 					}
 				}
 			},
 			onError: error => {
-				// console.log('onError', error);
 				if (cParent) {
 					cParent.emit('error', { error });
 				}
 			},
 			onPayment: async payment => {
-				// console.log('onPayment', payment);
 				const boostJobStatus = await boost.Graph().submitBoostJob(payment.rawtx);
-				// console.log('boostJobStatus', boostJobStatus);
 				const mergedPayment = Object.assign({}, payment, { boostJobStatus: boostJobStatus.result });
 				if (cParent) {
 					cParent.emit('payment', { payment: mergedPayment });
@@ -478,23 +472,19 @@ const PaymentPopup = compProps => {
 								)}
 
 								<div id="boostpow-slider" className="form-group input-diff-container">
-									{showSliderDiff && (
+									{hasContent && showSliderDiff && (
 										<div>
 											
-											{ payProps.sliderCtrl && 
+											{ payProps.sliderCtrl && (
 											<label className="label">Current boost of {payProps.sliderCtrl.content.CurrentBoost} <big><b>+</b></big> <select
 											value={difficulty}
 											className="inline-diff-selector"
 											onChange={handleDiffChange}
-											disabled={lockDiff}
-										>
+											disabled={lockDiff}>
 											{Difficulty.renderDiffOptions(minDiff, maxDiff, sliderDiffStep, "")}
 										</select> boosts =&nbsp;
 											{payProps.sliderCtrl.content.CurrentBoost + AddedBoost} total boost</label>
-											//  at Rank #{LogSlider.rankAfterAddedDiff(payProps.sliderCtrl.content.CurrentBoost, AddedBoost, payProps.sliderCtrl.ranksCtrl.ranks).rank}
-											// <label className="label">Adding +{AddedBoost} boost points to current boost of {payProps.sliderCtrl.content.CurrentBoost}</label>
-											// <label className="label">Current Boost {payProps.sliderCtrl.content.CurrentBoost}</label>
-											}
+											)}
 											
 											<Difficulty.DiffSlider
 											 	key='unique-slider'
@@ -512,6 +502,7 @@ const PaymentPopup = compProps => {
 											/>
 										</div>
 									)}
+									
 									{showInputDiff && (
 										<div>
 											<label className="label">Difficulty</label>
@@ -526,7 +517,10 @@ const PaymentPopup = compProps => {
 											</select>
 										</div>
 									)}
-									{hasContent && hasRankSignals && (
+									
+								</div>
+								<div className="form-group">
+								{hasContent && hasRankSignals && (
 										<div className="boost-rank-display">
 											{/* This post will appear at{' '}*/}
 											Leads to {payProps.sliderCtrl &&
@@ -539,14 +533,17 @@ const PaymentPopup = compProps => {
 											<span>{payProps.boostRank.hours} hours</span>.
 										</div>
 									)}
+								</div>
+								<div className="form-group">
 									{hasContent && displayRank && hasRankSignals && (
-										<div>
+										<div id="display-ranks-container">
 										<table className='display-ranks'>
 											<thead>
 											<tr>
 												<th>RANK</th>
 												<th>RANK HOURS</th>
 												<th>TOTAL BOOST</th>
+												<th><a onClick={toggleDisplayRanks} className='display-ranks-close' title="Close ranks table">X</a></th>
 											</tr>
 											</thead>
 											<tbody>
@@ -557,40 +554,45 @@ const PaymentPopup = compProps => {
 									)}
 								</div>
 							</form>
-							{payProps.wallets.available.length > 1 && (
-								<FormControl
-									variant="outlined"
-									margin="dense"
-									className="boost-publisher-form-control"
-								>
-									<Select
-										value={wallet}
-										onChange={handleChangeWallet}
-										className="boost-publisher-select"
-										MenuProps={{
-											MenuListProps: {
-												classes: {
-													root: 'boost-publisher-menu-list'
-												}
-											},
-											transformOrigin: {
-												vertical: 'top',
-												horizontal: 'left'
-											}
-										}}
-										classes={{
-											outlined: 'boost-publisher-select-outlined'
-										}}
-									>
-										{Wallets.renderWalletMenuItems(payProps.wallets.available)}
-									</Select>
-								</FormControl>
-							)}
+							
 						</div>
 					)}
-					<div className="boost-publisher-body">
+					<div className="boost-publisher-footer">
+					{payProps.wallets.available.length > 1 && (
+						<div className="wallet-selector">
+							<FormControl
+								variant="outlined"
+								margin="dense"
+								className="boost-publisher-form-control"
+							>
+								<Select
+									value={wallet}
+									onChange={handleChangeWallet}
+									className="boost-publisher-select"
+									MenuProps={{
+										MenuListProps: {
+											classes: {
+												root: 'boost-publisher-menu-list'
+											}
+										},
+										transformOrigin: {
+											vertical: 'top',
+											horizontal: 'left'
+										}
+									}}
+									classes={{
+										outlined: 'boost-publisher-select-outlined'
+									}}
+								>
+									{Wallets.renderWalletMenuItems(payProps.wallets.available)}
+								</Select>
+							</FormControl>
+						</div>
+					)}
 						{hasContent && Wallet && !paid && !!allOutputs() && !!allOutputs().length && (
-							<Wallet {...getWalletProps()} />
+							<div className="wallet-button">
+								<Wallet {...getWalletProps()} />
+							</div>
 						)}
 						{paid && (
 							<div className="payment-completed-section">

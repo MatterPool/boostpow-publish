@@ -5,8 +5,7 @@ const MoneyButton = props => {
 		currency: 'BSV',
 		...each
 	}));
-	// console.log('MoneyButton render', props, outputs);
-
+	
 	const showWallet = () => {
 		return ['moneybutton', undefined].indexOf(props.currentWallet) > -1;
 	};

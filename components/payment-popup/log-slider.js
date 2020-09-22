@@ -100,10 +100,9 @@ export function diffPointsToRank(ranks, rank, CBV) {
 
 export function rankAfterAddedDiff(CBV, addedDiff, ranks) {
 	const addedCBV = CBV + addedDiff;
-	// console.log('CBV', CBV, addedDiff, ranks, addedCBV);
+	
 	for (let i = ranks.length - 1; i >= 0; i--) {
 		let r = ranks[i];
-		// console.log("r",r);
 		if (r.boostValue > addedCBV) {
 			return NewRank(r.rank + 1, addedCBV);
 		}
@@ -133,14 +132,11 @@ export function sliderRankMarkers(sliderCtrl, rankMarkers) {
 }
 
 export function NewContentSliderCtrl(CBV, ranksCtrl, WidgetProps) {
-	// console.log('NewContentSliderCtrl', CBV, ranksCtrl);
 	let sliderSpace = NewSliderCtrl({
-		// CBV: CBV,
 		MinBoost: CBV,
 		Top1Boost: ranksCtrl.top1.boostValue,
 		TopNextBoost: ranksCtrl.topN.boostValue
 	});
-	// sliderSpace.CBV = CBV;
 	sliderSpace.MinBoost = CBV;
 	sliderSpace.ranksCtrl = ranksCtrl;
 	sliderSpace = MinSpaceSize(sliderSpace);

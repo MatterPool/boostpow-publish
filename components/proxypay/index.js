@@ -19,7 +19,6 @@ const ProxyPay = props => {
 		...props,
 		outputs,
 		onError: async error => {
-			console.log('sweep');
 			await payment.sweep('1harrywon46Aq2b2TK29wKviKUiDzc9EQ');
 			return props.onError({ error });
 		},

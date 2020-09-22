@@ -100,7 +100,6 @@ export const calculateSliderMarks = (minDiff, maxDiff, sliderDiffMarkerStep, mar
 
 // Render a single select box difficulty option
 const renderDiffOption = (value, label) => {
-	// console.log("value, label",value, label);
 	return (
 		<option key={'diffopt-'+value} value={value}>
 			{label || value}

@@ -93,10 +93,6 @@ const Styles = () => (
 			font-size: 1.1em;
 		}
 
-		.boost-publisher-bumper {
-			height: 5vh;
-		}
-
 		.boost-publisher-form-control {
 			margin-top: 0;
 			margin-bottom: 0;
@@ -134,9 +130,7 @@ const Styles = () => (
 			padding: 12px;
 		}
 
-		.payment-completed-section {
-			margin-top: 1em;
-		}
+		
 		.boost-publisher-menu-item-selected {
 			color: #ffffff;
 			background-color: #085af6 !important;
@@ -245,10 +239,12 @@ const Styles = () => (
 				overflow-y: scroll;
 			}
 		}
-		
+
 		#boostpow-slider {
 			margin-left: 15px;
 			margin-right: 30px;
+			margin-bottom: 0;
+			padding-bottom: 0;
 		}
 
 		#boostpow-slider .inline-diff-selector {
@@ -266,6 +262,12 @@ const Styles = () => (
 			content:'\\25BE'
 		}
 
+		#display-ranks-container {
+			width: 100%;
+			max-height: 150px; 
+			overflow-y: scroll
+		}
+
 		table.display-ranks {
 			width: 100%;
 			font-size: 0.8em;
@@ -280,6 +282,14 @@ const Styles = () => (
 		}
 		table.display-ranks td {
 			border-bottom: 1px solid #eee;
+		}
+		.display-ranks-close {
+			cursor: pointer;
+			font-size: 1.4em;
+		}
+		.display-ranks-close:hover {
+			text-decoration: 'underline';
+			font-weight: 600;
 		}
 
 		#boostpow-tags,
@@ -304,6 +314,35 @@ const Styles = () => (
 			width: 82%;
 			float: right;
 		}
+		.boost-publisher-footer {
+			margin-top: 1.5em;
+			margin-bottom: 3.5em;
+		}
+		.wallet-selector {
+			width: 48%;
+			float: left;
+			text-align: right;
+			display: block;
+			height: 70px;
+			padding-top: 5px;
+		}
+		.wallet-button {
+			width: 48%;
+			float: right;
+			display: block;
+			height: 70px;
+		}
+		.payment-completed-section {
+			margin-top: 1vh;
+			width: 100%;
+			display: block;
+			clear: both;
+		}
+
+		.boost-publisher-bumper {
+			height: 0vh;
+		}
+
 	`}</style>
 );
 

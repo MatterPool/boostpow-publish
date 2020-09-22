@@ -29,7 +29,6 @@ const Home = () => {
 	};
 
 	const updateBoostsRank = async props => {
-		// console.log('updateBoostRank', props, original);
 		if (!props.boostRank) {
 			return props;
 		}
@@ -37,30 +36,24 @@ const Home = () => {
 		let newProps = await BoostHelpers.prepareBoostProps(props);
 		
 		let contentBoosts = {};
-		// console.log('props', props);
-		// console.log('newProps', newProps);
-
+		
 		if (props.content.hash.length == 64) {
 			contentBoosts = await BoostHelpers.searchContentHex(props.content.hash, props);
 			const CBV = contentBoosts.totalDifficulty_;
-			// console.log('ContentBoost', props.content.hash, contentBoosts, CBV);
 			props.contentBoosts = contentBoosts;
 
 			const ranksCtrl = LogSlider.GetTopNFromSignals(newProps.signals, CBV);
 			const newSliderCtrl = LogSlider.NewContentSliderCtrl(CBV, ranksCtrl, newProps);
-			// console.log("newSliderCtrl",newSliderCtrl);
-			// TODO: Add new slider parameters to the current slider configuration object
 			// Overrides min, max and initial when they are explicitly defined by the user
 			newProps.diff.min = 1;
 			if (newSliderCtrl.MinBoost > 0) newProps.diff.min = newSliderCtrl.MinBoost;
 			if (newSliderCtrl.MaxBoost > 0) newProps.diff.max = newSliderCtrl.MaxBoost;
-			// const toTop1 = newSliderCtrl.diffPointsToTop1;
 			const toTop1 = newSliderCtrl.Top1Boost;
 			if (toTop1 > 0) newProps.diff.initial = toTop1;
 
 			// Ensures safe initial value
 			if (newProps.diff.initial > newProps.diff.max) newProps.diff.initial = newProps.diff.max;
-			// console.log("toTop1",toTop1, {...newProps});
+			
 			if (newProps.slider.rankMarkers === true || Array.isArray(newProps.slider.rankMarkers)) {
 				let rm = [1, 2, 3, 5, 10];
 				if (Array.isArray(newProps.slider.rankMarkers) && newProps.slider.rankMarkers.length > 0) {
@@ -71,7 +64,7 @@ const Home = () => {
 				newProps = sliderMarkerStepsInit(newProps, props);
 			}
 			newProps.sliderCtrl = newSliderCtrl;
-			// console.log('newProps', newProps);
+			
 		} else {
 			newProps = sliderMarkerStepsInit(newProps, props);
 		}
@@ -83,13 +76,10 @@ const Home = () => {
 		try {
 			const parentHandshake = new Postmate.Model({
 				open: async userProps => {
-					// console.log("Before analyze props", Object.assign({},userProps));
 					let compatProps = ApiCompat.normalizeLegacyApi(userProps);
 					compatProps = await updateBoostsRank(compatProps);
-					// console.log('Props from USER:', userProps, 'Compatible props: ', compatProps);
 					compatProps.opening = true;
 					setOpened(true);
-					// console.log("Before open props", Object.assign({},compatProps));
 					setPaymentProps(compatProps);
 				},
 
