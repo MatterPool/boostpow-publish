@@ -1,7 +1,7 @@
 // BoostPublish API Class
 const Postmate = require('postmate');
 const Helpers = require('../lib/helpers');
-const VERSION = '1.1.1';
+const VERSION = '1.1.2';
 
 class BoostPublish {
 	// Initializes the widget after page load
@@ -32,7 +32,6 @@ class BoostPublish {
 		// direct link to the iframe
 		this.iframe = this.child.frame;
 		this.didInit = true;
-		// console.log("BPow Initialized!")
 	}
 
 	displayIframe() {
@@ -45,8 +44,6 @@ class BoostPublish {
 
 	// Opens the widget using the props configuration object
 	async open(props) {
-		// console.log('BoostPublish open', props);
-
 		// If trying to open before init, keep trying each 200 miliseconds until the widget initializes
 		if (!this.didInit) {
 			await Helpers.sleep(200);

@@ -52,14 +52,6 @@
     <h1>BoostPOW Publish widget demo</h1>
     <div id="demos">
 
-<!--- REMOVE THIS -->
-
-        <!-- <p class="button"><button onclick="showBoostPublisher0()">OPEN DEMO 0</button></p> -->
-
-<!--- REMOVE THIS -->
-
-
-
         <div>
             <h2>DEMO 1</h2>
             <h3>Open the widget with default options and no content hash loaded</h3>
@@ -175,10 +167,10 @@ const response = await boostPublish.open({
 
         <div>
             <h2>DEMO 6</h2>
-            <h3>Markdown content with boost rank from the last 15 days, filtered by category, using a custom slider with TOP 1, 2, 3 and 5 rank markers only.</h3>
+            <h3>Content with boost rank from the last 15 days, filtered by category, using a custom slider with TOP 1, 2, 3 and 5 rank markers only.</h3>
             <pre>
 const response = await boostPublish.open({
-    content: "a1ef1e13a09b1f58c5ce7e42f7e24c02c529baa4608652b9895d10b25bb30f5a",
+    content: "2e32cb1a861331173a257c1909772fc6e41cc64faa8c84b3bf13b958415fe348",
     boostRank: {
         hours: 360,
         category: 'B'
@@ -274,33 +266,6 @@ const response = await boostPublish.open({
     </div>
 </body>
 <script>
-    // REMOVE THIS
-
-    // async function showBoostPublisher0() {
-    //     console.log("DEMO 0 - All defaults");
-    //     const response = await boostPublish.open({
-    //         boostRank: {
-    //             hours: 480
-    //         },
-    //         slider: {
-    //             rankMarkers: true
-    //         },
-    //         // diff: {
-    //         //     min: 1,
-    //         //     max: 200,
-    //         //     initial: 40
-    //         // },
-    //         // slider: {
-    //         //     sliderStep: 50
-    //         // },
-    //         content: "2e32cb1a861331173a257c1909772fc6e41cc64faa8c84b3bf13b958415fe348",
-    //         onPayment: (payment, boostJob) => {
-    //             console.log(payment, boostJob);
-    //         }
-    //     });
-    // }
-
-    // REMOVE THIS
 
     async function showBoostPublisher1() {
         console.log("DEMO 1 - All defaults");
@@ -375,7 +340,7 @@ const response = await boostPublish.open({
     async function showBoostPublisher6() {
         console.log("DEMO 6 - Custom slider rank markers, with tag and category filtering");
         const response = await boostPublish.open({
-            content: "a1ef1e13a09b1f58c5ce7e42f7e24c02c529baa4608652b9895d10b25bb30f5a",
+            content: "2e32cb1a861331173a257c1909772fc6e41cc64faa8c84b3bf13b958415fe348",
             boostRank: {
                 hours: 360,
                 category: 'B'
