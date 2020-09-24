@@ -36,7 +36,7 @@ const renderMenuItem = wKey => (
 			selected: 'boost-publisher-menu-item-selected'
 		}}
 		value={wKey}
-		key={wKey}
+		key={'walletkey-'+wKey}
 	>
 		{WALLETS[wKey].name}
 	</MenuItem>

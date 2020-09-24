@@ -8,6 +8,7 @@ import Styles from './styles';
 import * as Difficulty from './difficulty';
 import * as Wallets from './wallets';
 import { isValidWallet } from '../../lib/wallets';
+import * as LogSlider from './log-slider';
 
 /*
 
@@ -23,7 +24,6 @@ Example Files
 
 const PaymentPopup = compProps => {
 	const payProps = compProps.paymentProps;
-	// console.log('compProps', compProps);
 	const cParent = compProps.parent;
 
 	// Communicates parent to change the opening property to false
@@ -121,6 +121,29 @@ const PaymentPopup = compProps => {
 		// use rank markers
 		sliderMarkers = sliderRankMarkers;
 	}
+
+	const [displayRank, setDisplayRank] = useState(false);
+	const toggleDisplayRanks = () => {
+		setDisplayRank(!displayRank);
+	}
+	if (payProps.opening && displayRank !== false) {
+		setDisplayRank(false);
+	}
+
+	const renderDisplayRanks = () => {
+		let html = [];
+		payProps.signals.forEach((v, k)=>{
+			html.push((
+				<tr key={'display-rank-'+k}>
+					<td>{k+1}</td>
+					<td> &lt;= {payProps.boostRank.hours}</td>
+					<td>{v.totalDifficulty_}</td>
+				</tr>
+			));
+		})
+		return html;
+	};
+	
 
 	// GENERAL HANDLERS
 	const handleTagChange = (evt, value) => {
@@ -245,7 +268,6 @@ const PaymentPopup = compProps => {
 					o.push(latestOutputState);
 				}
 			} catch (ex) {
-				console.log('ex', ex);
 				return [];
 			}
 		}
@@ -261,22 +283,18 @@ const PaymentPopup = compProps => {
 			moneybuttonProps: {
 				...payProps.moneybuttonProps,
 				onCryptoOperations: cryptoOperations => {
-					// console.log('onCryptoOperations', cryptoOperations);
 					if (cParent) {
 						cParent.emit('cryptoOperations', { cryptoOperations });
 					}
 				}
 			},
 			onError: error => {
-				// console.log('onError', error);
 				if (cParent) {
 					cParent.emit('error', { error });
 				}
 			},
 			onPayment: async payment => {
-				// console.log('onPayment', payment);
 				const boostJobStatus = await boost.Graph().submitBoostJob(payment.rawtx);
-				// console.log('boostJobStatus', boostJobStatus);
 				const mergedPayment = Object.assign({}, payment, { boostJobStatus: boostJobStatus.result });
 				if (cParent) {
 					cParent.emit('payment', { payment: mergedPayment });
@@ -313,6 +331,17 @@ const PaymentPopup = compProps => {
 			} else setDifficulty(val);
 		}, 50);
 	};
+
+	let AddedBoost = 1;
+	if (payProps.sliderCtrl && payProps.sliderCtrl.content) {
+		AddedBoost = LogSlider.getAddedBoost(payProps.sliderCtrl, difficulty);
+	}
+
+	const sliderScaleLabel = (x) => {
+		return LogSlider.sliderScaleLabel(payProps.sliderCtrl, x);
+	};
+
+	const hasRankSignals = Difficulty.hasRankSignals(payProps);
 
 	return (
 		<div className="boost-publisher-container" onClick={handleClose}>
@@ -442,14 +471,27 @@ const PaymentPopup = compProps => {
 									</div>
 								)}
 
-								<div className="form-group input-diff-container">
-									{showSliderDiff && (
+								<div id="boostpow-slider" className="form-group input-diff-container">
+									{hasContent && showSliderDiff && (
 										<div>
-											<label className="label">Difficulty {difficulty}</label>
+											
+											{ payProps.sliderCtrl && (
+											<label className="label">Current boost of {payProps.sliderCtrl.content.CurrentBoost} <big><b>+</b></big> <select
+											value={difficulty}
+											className="inline-diff-selector"
+											onChange={handleDiffChange}
+											disabled={lockDiff}>
+											{Difficulty.renderDiffOptions(minDiff, maxDiff, sliderDiffStep, "")}
+										</select> boosts =&nbsp;
+											{payProps.sliderCtrl.content.CurrentBoost + AddedBoost} total boost</label>
+											)}
+											
 											<Difficulty.DiffSlider
+											 	key='unique-slider'
 												min={minDiff}
 												max={maxDiff}
 												value={difficulty}
+												scale={sliderScaleLabel}
 												aria-labelledby="discrete-slider-custom"
 												step={sliderDiffStep}
 												valueLabelDisplay="on"
@@ -460,10 +502,12 @@ const PaymentPopup = compProps => {
 											/>
 										</div>
 									)}
+									
 									{showInputDiff && (
 										<div>
 											<label className="label">Difficulty</label>
 											<select
+												key='unique-diff-selector'
 												value={difficulty}
 												className="input-diff"
 												onChange={handleDiffChange}
@@ -473,50 +517,82 @@ const PaymentPopup = compProps => {
 											</select>
 										</div>
 									)}
-									{Difficulty.hasRankSignals(payProps) && (
+									
+								</div>
+								<div className="form-group">
+								{hasContent && hasRankSignals && (
 										<div className="boost-rank-display">
-											This post will appear at{' '}
+											{/* This post will appear at{' '}*/}
+											Leads to {payProps.sliderCtrl &&
+											<span>Rank {LogSlider.rankAfterAddedDiff(payProps.sliderCtrl.content.CurrentBoost, AddedBoost, payProps.sliderCtrl.ranksCtrl.ranks).rank}</span>
+											}
+											{!payProps.sliderCtrl &&
 											<span>Rank {Difficulty.getDiffRank(payProps.signals, difficulty)}</span>
-											&nbsp; of all Boosted content on the last{' '}
+											}
+											&nbsp; of <a onClick={toggleDisplayRanks} className={'display-ranks-toggle' + ((displayRank)?' opened': '')}>boosts ranked</a> on the last{' '}
 											<span>{payProps.boostRank.hours} hours</span>.
 										</div>
 									)}
 								</div>
+								<div className="form-group">
+									{hasContent && displayRank && hasRankSignals && (
+										<div id="display-ranks-container">
+										<table className='display-ranks'>
+											<thead>
+											<tr>
+												<th>RANK</th>
+												<th>RANK HOURS</th>
+												<th>TOTAL BOOST</th>
+												<th><a onClick={toggleDisplayRanks} className='display-ranks-close' title="Close ranks table">X</a></th>
+											</tr>
+											</thead>
+											<tbody>
+											{renderDisplayRanks()}
+											</tbody>
+										</table>
+										</div>
+									)}
+								</div>
 							</form>
-							{payProps.wallets.available.length > 1 && (
-								<FormControl
-									variant="outlined"
-									margin="dense"
-									className="boost-publisher-form-control"
-								>
-									<Select
-										value={wallet}
-										onChange={handleChangeWallet}
-										className="boost-publisher-select"
-										MenuProps={{
-											MenuListProps: {
-												classes: {
-													root: 'boost-publisher-menu-list'
-												}
-											},
-											transformOrigin: {
-												vertical: 'top',
-												horizontal: 'left'
-											}
-										}}
-										classes={{
-											outlined: 'boost-publisher-select-outlined'
-										}}
-									>
-										{Wallets.renderWalletMenuItems(payProps.wallets.available)}
-									</Select>
-								</FormControl>
-							)}
+							
 						</div>
 					)}
-					<div className="boost-publisher-body">
+					<div className="boost-publisher-footer">
+					{payProps.wallets.available.length > 1 && (
+						<div className="wallet-selector">
+							<FormControl
+								variant="outlined"
+								margin="dense"
+								className="boost-publisher-form-control"
+							>
+								<Select
+									value={wallet}
+									onChange={handleChangeWallet}
+									className="boost-publisher-select"
+									MenuProps={{
+										MenuListProps: {
+											classes: {
+												root: 'boost-publisher-menu-list'
+											}
+										},
+										transformOrigin: {
+											vertical: 'top',
+											horizontal: 'left'
+										}
+									}}
+									classes={{
+										outlined: 'boost-publisher-select-outlined'
+									}}
+								>
+									{Wallets.renderWalletMenuItems(payProps.wallets.available)}
+								</Select>
+							</FormControl>
+						</div>
+					)}
 						{hasContent && Wallet && !paid && !!allOutputs() && !!allOutputs().length && (
-							<Wallet {...getWalletProps()} />
+							<div className="wallet-button">
+								<Wallet {...getWalletProps()} />
+							</div>
 						)}
 						{paid && (
 							<div className="payment-completed-section">

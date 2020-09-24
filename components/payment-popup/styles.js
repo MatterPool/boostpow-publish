@@ -93,10 +93,6 @@ const Styles = () => (
 			font-size: 1.1em;
 		}
 
-		.boost-publisher-bumper {
-			height: 5vh;
-		}
-
 		.boost-publisher-form-control {
 			margin-top: 0;
 			margin-bottom: 0;
@@ -134,9 +130,7 @@ const Styles = () => (
 			padding: 12px;
 		}
 
-		.payment-completed-section {
-			margin-top: 1em;
-		}
+		
 		.boost-publisher-menu-item-selected {
 			color: #ffffff;
 			background-color: #085af6 !important;
@@ -246,6 +240,58 @@ const Styles = () => (
 			}
 		}
 
+		#boostpow-slider {
+			margin-left: 15px;
+			margin-right: 30px;
+			margin-bottom: 0;
+			padding-bottom: 0;
+		}
+
+		#boostpow-slider .inline-diff-selector {
+			padding: 4px;
+		}
+
+		.display-ranks-toggle {
+			text-decoration: underline;
+			cursor: pointer;
+		}
+		.display-ranks-toggle:before {
+			content:'\\25B8'
+		}
+		.display-ranks-toggle.opened:before {
+			content:'\\25BE'
+		}
+
+		#display-ranks-container {
+			width: 100%;
+			max-height: 150px; 
+			overflow-y: scroll
+		}
+
+		table.display-ranks {
+			width: 100%;
+			font-size: 0.8em;
+			margin-top: 15px;
+		}
+		table.display-ranks th, table.display-ranks td {
+			text-align: center;
+		}
+		table.display-ranks th {
+			font-weight: 600;
+			font-size: .9em;
+		}
+		table.display-ranks td {
+			border-bottom: 1px solid #eee;
+		}
+		.display-ranks-close {
+			cursor: pointer;
+			font-size: 1.4em;
+		}
+		.display-ranks-close:hover {
+			text-decoration: 'underline';
+			font-weight: 600;
+		}
+
 		#boostpow-tags,
 		#boostpow-categories {
 			display: block;
@@ -268,6 +314,35 @@ const Styles = () => (
 			width: 82%;
 			float: right;
 		}
+		.boost-publisher-footer {
+			margin-top: 1.5em;
+			margin-bottom: 3.5em;
+		}
+		.wallet-selector {
+			width: 48%;
+			float: left;
+			text-align: right;
+			display: block;
+			height: 70px;
+			padding-top: 5px;
+		}
+		.wallet-button {
+			width: 48%;
+			float: right;
+			display: block;
+			height: 70px;
+		}
+		.payment-completed-section {
+			margin-top: 1vh;
+			width: 100%;
+			display: block;
+			clear: both;
+		}
+
+		.boost-publisher-bumper {
+			height: 0vh;
+		}
+
 	`}</style>
 );
 
