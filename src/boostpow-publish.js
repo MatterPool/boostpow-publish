@@ -1,7 +1,7 @@
 // BoostPublish API Class
 const Postmate = require('postmate');
 const Helpers = require('../lib/helpers');
-const VERSION = '1.1.2';
+const VERSION = '1.1.3';
 
 class BoostPublish {
 	// Initializes the widget after page load
