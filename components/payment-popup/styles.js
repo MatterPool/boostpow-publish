@@ -87,6 +87,7 @@ const Styles = () => (
 			padding: 16px;
 			border-top: 2px solid #f2f2f2;
 			min-height: 90px;
+			padding-bottom: 0;
 		}
 
 		p.lead {
@@ -143,6 +144,9 @@ const Styles = () => (
 		.MuiOutlinedInput-notchedOutline {
 			border-color: #f2f2f2 !important;
 			border-width: 1px !important;
+		}
+		.MuiSlider-marked {
+			margin-bottom: 8px;
 		}
 		.contentPreview {
 			text-align: center;
@@ -251,6 +255,10 @@ const Styles = () => (
 			padding: 4px;
 		}
 
+		#boostpow-slider .slider-message {
+			margin-bottom: 45px;
+		}
+
 		.display-ranks-toggle {
 			text-decoration: underline;
 			cursor: pointer;
@@ -304,14 +312,15 @@ const Styles = () => (
 		}
 		#boostpow-tags div:first-child,
 		#boostpow-categories div:first-child {
-			min-width: 80px;
+			min-width: 100px;
 			width: 15%;
 			padding-top: 5px;
 			font-weight: 500;
 		}
 		#boostpow-tags div:last-child,
 		#boostpow-categories div:last-child {
-			width: 82%;
+			width: 75%;
+			max-width: 80%;
 			float: right;
 		}
 		.boost-publisher-footer {
@@ -319,7 +328,7 @@ const Styles = () => (
 			margin-bottom: 3.5em;
 		}
 		.wallet-selector {
-			width: 48%;
+			width: 43%;
 			float: left;
 			text-align: right;
 			display: block;
@@ -327,7 +336,7 @@ const Styles = () => (
 			padding-top: 5px;
 		}
 		.wallet-button {
-			width: 48%;
+			width: 55%;
 			float: right;
 			display: block;
 			height: 70px;
@@ -340,7 +349,7 @@ const Styles = () => (
 		}
 
 		.boost-publisher-bumper {
-			height: 0vh;
+			height: 2vh;
 		}
 
 	`}</style>

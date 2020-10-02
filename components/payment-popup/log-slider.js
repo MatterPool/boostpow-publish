@@ -52,13 +52,13 @@ export function GetTopNFromSignals(signals, cbv) {
 
 export function MinSpaceSize(sliderCtrl) {
 	return Object.assign({}, sliderCtrl, {
-		MinSpaceSize: sliderCtrl.TopNextBoost - sliderCtrl.MinBoost
+		MinSpaceSize: sliderCtrl.TopNextBoost > 0 ? (sliderCtrl.TopNextBoost - sliderCtrl.MinBoost) : 0
 	});
 }
 
 export function RankSpaceSize(sliderCtrl) {
 	return Object.assign({}, sliderCtrl, {
-		RankSpaceSize: sliderCtrl.Top1Boost - sliderCtrl.TopNextBoost
+		RankSpaceSize: sliderCtrl.Top1Boost > 0 ? (sliderCtrl.Top1Boost - sliderCtrl.TopNextBoost) : 0
 	});
 }
 
@@ -82,13 +82,13 @@ export function NewSliderCtrl(sliderCtrl) {
 
 export function diffPointsToTopN(sliderCtrl) {
 	return Object.assign({}, sliderCtrl, {
-		diffPointsToTopN: sliderCtrl.TopNextBoost + 1 - sliderCtrl.content.CurrentBoost
+		diffPointsToTopN: sliderCtrl.TopNextBoost > 0 ? (sliderCtrl.TopNextBoost + 1 - sliderCtrl.content.CurrentBoost) : 0
 	});
 }
 
 export function diffPointsToTop1(sliderCtrl) {
 	return Object.assign({}, sliderCtrl, {
-		diffPointsToTop1: sliderCtrl.Top1Boost + 1 - sliderCtrl.content.CurrentBoost
+		diffPointsToTop1: sliderCtrl.Top1Boost > 0 ? (sliderCtrl.Top1Boost + 1 - sliderCtrl.content.CurrentBoost) : 0
 	});
 }
 
@@ -134,14 +134,18 @@ export function sliderRankMarkers(sliderCtrl, rankMarkers) {
 export function NewContentSliderCtrl(CBV, ranksCtrl, WidgetProps) {
 	let sliderSpace = NewSliderCtrl({
 		MinBoost: CBV,
-		Top1Boost: ranksCtrl.top1.boostValue,
-		TopNextBoost: ranksCtrl.topN.boostValue
+		Top1Boost: ranksCtrl.top1.boostValue || CBV,
+		TopNextBoost: ranksCtrl.topN.boostValue || CBV
 	});
 	sliderSpace.MinBoost = CBV;
 	sliderSpace.ranksCtrl = ranksCtrl;
 	sliderSpace = MinSpaceSize(sliderSpace);
 	sliderSpace = RankSpaceSize(sliderSpace);
-	sliderSpace = MaxBoost(sliderSpace, ranksCtrl.empty ? WidgetProps.diff.max || 40 : null, WidgetProps.slider.maxDiffInc || 1.25);
+	sliderSpace = MaxBoost(
+		sliderSpace, 
+		ranksCtrl.empty ? sliderSpace.MinBoost+40 : null, 
+		WidgetProps.slider.maxDiffInc || 1.25
+	);
 	sliderSpace = ExtendedSpaceSize(sliderSpace);
 	sliderSpace.content = {
 		CurrentBoost: CBV,
