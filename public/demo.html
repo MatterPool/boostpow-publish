@@ -11,12 +11,10 @@
         
         #demos div {
             margin-bottom: 40px;
-            /* border-bottom: 2px solid #bbb; */
             padding-bottom: 40px;
         }
         
         #demos div h2 {
-            /* background-color: rgb(38, 131, 194) */
             border-bottom: 1px solid #88c;
         }
         
@@ -39,11 +37,6 @@
             font-size: 1.2em;
             padding: 5px;
         }
-        /*         
-        p {
-            border-bottom: 1px solid #999;
-            padding: 0 0 15px
-        } */
     </style>
 </head>
 
@@ -261,6 +254,24 @@ const response = await boostPublish.open({
         </div>
 
 
+        <!-- <div>
+            <h2>DEMO 10</h2>
+            <h3>TOP 1 ranked content.</h3>
+            <pre>
+const response = await boostPublish.open({
+    content: "ba2d98538dfd63dbbfd31316d7bf5932632b2ccda0861a2e408bb106ab4563e3",
+    boostRank: {
+        hours: 24
+    },
+    onPayment: (payment, boostJob) => {
+        console.log(payment, boostJob);
+    }
+});
+			</pre>
+            <p class="button"><button onclick="showBoostPublisher10()">OPEN DEMO 10</button></p>
+        </div> -->
+
+
 
         
     </div>
@@ -406,6 +417,19 @@ const response = await boostPublish.open({
             }
         });
     }
+
+    // async function showBoostPublisher10() {
+    //     console.log("DEMO 10 - Ranked TOP 1 content");
+    //     const response = await boostPublish.open({
+    //         content: "ba2d98538dfd63dbbfd31316d7bf5932632b2ccda0861a2e408bb106ab4563e3",
+    //         boostRank: {
+    //             hours: 24
+    //         },
+    //         onPayment: (payment, boostJob) => {
+    //             console.log(payment, boostJob);
+    //         }
+    //     });
+    // }
 
     
 </script>

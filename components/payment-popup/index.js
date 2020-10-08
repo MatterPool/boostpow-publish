@@ -256,7 +256,7 @@ const PaymentPopup = compProps => {
 					content: content ? content : payProps.content.hash,
 					tag: tag ? Buffer.from(tag, 'utf8').toString('hex') : defaultTag,
 					category: category ? Buffer.from(category, 'utf8').toString('hex') : defaultCategory,
-					diff: difficulty
+					diff: AddedBoost
 				});
 
 				const latestOutputState = {
@@ -328,7 +328,9 @@ const PaymentPopup = compProps => {
 			// if using sliders and having larger steps, ensure the slider value will be set to a mod zero value
 			else if (showSliderDiff && sliderDiffStep > 1) {
 				setDifficulty(val % sliderDiffStep === 0 ? val : val - (val % sliderDiffStep));
-			} else setDifficulty(val);
+			} else {
+				setDifficulty(val);
+			}
 		}, 50);
 	};
 
@@ -474,7 +476,7 @@ const PaymentPopup = compProps => {
 								<div id="boostpow-slider" className="form-group input-diff-container">
 									{hasContent && showSliderDiff && (
 										<div>
-											
+											<div className="slider-message">
 											{ payProps.sliderCtrl && (
 											<label className="label">Current boost of {payProps.sliderCtrl.content.CurrentBoost} <big><b>+</b></big> <select
 											value={difficulty}
@@ -485,6 +487,7 @@ const PaymentPopup = compProps => {
 										</select> boosts =&nbsp;
 											{payProps.sliderCtrl.content.CurrentBoost + AddedBoost} total boost</label>
 											)}
+											</div>
 											
 											<Difficulty.DiffSlider
 											 	key='unique-slider'
