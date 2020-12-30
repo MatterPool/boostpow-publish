@@ -337,6 +337,8 @@ const PaymentPopup = compProps => {
 	let AddedBoost = 1;
 	if (payProps.sliderCtrl && payProps.sliderCtrl.content) {
 		AddedBoost = LogSlider.getAddedBoost(payProps.sliderCtrl, difficulty);
+	} else {
+		AddedBoost = difficulty;
 	}
 
 	const sliderScaleLabel = (x) => {
