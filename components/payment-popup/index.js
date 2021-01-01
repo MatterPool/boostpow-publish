@@ -9,6 +9,7 @@ import * as Difficulty from './difficulty';
 import * as Wallets from './wallets';
 import { isValidWallet } from '../../lib/wallets';
 import * as LogSlider from './log-slider';
+import * as BoostHelpers from '../../lib/boost-helpers';
 
 /*
 
@@ -173,11 +174,21 @@ const PaymentPopup = compProps => {
 		// Prevents multiple content reloads from the api if it did not changed
 		if (content == newContent && contentType > '') return;
 
-		setContent(newContent);
-		setHasContent(true);
-
 		// Do not query content if hash is not 64 bytes long
 		if (newContent.length == 64){
+
+			let newProps = await BoostHelpers.updateBoostsRank({ ...payProps, ...{ content: { hash: newContent }}});
+			payProps.diff = newProps.diff;
+			payProps.sliderCtrl = newProps.sliderCtrl;
+
+			// todo
+			// probably shouldn't modify payProps, need to make the setters like the other propertys
+			// setSliderCtrl
+			// setDiff
+
+			setContent(newContent);
+			setHasContent(true);
+
 			let resp = await fetch(`https://media.bitcoinfiles.org/${newContent}`, { method: 'HEAD' });
 			if (resp.status === 404) {
 				setContent('');
@@ -197,6 +208,9 @@ const PaymentPopup = compProps => {
 					setContentPreview(text);
 				}
 			}
+		} else {
+			setContent(newContent);
+			setHasContent(true);
 		}
 	};
 
