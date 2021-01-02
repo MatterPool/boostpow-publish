@@ -3,11 +3,9 @@ import Head from 'next/head';
 import { useEffect, useState } from 'react';
 import Postmate from 'postmate';
 import PaymentPopup from '../components/payment-popup';
-import * as BoostHelpers from '../lib/boost-helpers';
 import * as ApiCompat from '../lib/api-compatibility';
 
 const DEFAULT_PROPS = ApiCompat.normalizeLegacyApi();
-
 
 const Home = () => {
 	const initialProps = DEFAULT_PROPS;
@@ -22,7 +20,6 @@ const Home = () => {
 			const parentHandshake = new Postmate.Model({
 				open: async userProps => {
 					let compatProps = ApiCompat.normalizeLegacyApi(userProps);
-					compatProps = await BoostHelpers.updateBoostsRank(compatProps);
 					compatProps.opening = true;
 					setOpened(true);
 					setPaymentProps(compatProps);

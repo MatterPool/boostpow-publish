@@ -81,11 +81,14 @@ const PaymentPopup = compProps => {
 	}
 
 	// DIFFICULTY PROPS
+
 	const _diff = payProps.diff || {};
 	const showInputDiff = _diff && _diff.showInput === true ? true : false;
 	const lockDiff = _diff.disabled === true ? true : false;
-	const minDiff = _diff.min > 0 ? parseFloat(_diff.min) : 1;
-	const maxDiff = _diff.max > minDiff ? parseFloat(_diff.max) : 40;
+
+	const [minDiff, setMinDiff] = useState(_diff.min > 0 ? parseFloat(_diff.min) : 1);
+	const [maxDiff, setMaxDiff] = useState(_diff.max > minDiff ? parseFloat(_diff.max) : 40);
+
 	const initialDiff =
 		_diff.initial > 0 ? Difficulty.safeDiffValue(_diff.initial, minDiff, maxDiff) : 1;
 	const [difficulty, setDifficulty] = useState(initialDiff);
@@ -94,6 +97,7 @@ const PaymentPopup = compProps => {
 	if (payProps.opening && initialDiff !== difficulty) {
 		setDifficulty(initialDiff);
 	}
+
 	const _slider = payProps.slider || {};
 	const showSliderDiff = _slider.show === false ? false : true;
 	const sliderDiffStep = _slider.sliderStep > 0 ? parseInt(_slider.sliderStep, 10) : 1;
@@ -101,6 +105,7 @@ const PaymentPopup = compProps => {
 		_slider.markerStep == 0 || _slider.markerStep == false
 			? 0
 			: parseInt(_slider.markerStep, 10) || 10;
+
 	let sliderRankMarkers =
 		Array.isArray(_slider.sliderRankMarkers) && _slider.sliderRankMarkers.length > 0
 			? _slider.sliderRankMarkers
@@ -123,6 +128,9 @@ const PaymentPopup = compProps => {
 		sliderMarkers = sliderRankMarkers;
 	}
 
+	// signals
+	const [signals, setSignals] = useState(payProps.signals);
+
 	const [displayRank, setDisplayRank] = useState(false);
 	const toggleDisplayRanks = () => {
 		setDisplayRank(!displayRank);
@@ -133,7 +141,7 @@ const PaymentPopup = compProps => {
 
 	const renderDisplayRanks = () => {
 		let html = [];
-		payProps.signals.forEach((v, k)=>{
+		signals.forEach((v, k)=>{
 			html.push((
 				<tr key={'display-rank-'+k}>
 					<td>{k+1}</td>
@@ -178,13 +186,21 @@ const PaymentPopup = compProps => {
 		if (newContent.length == 64){
 
 			let newProps = await BoostHelpers.updateBoostsRank({ ...payProps, ...{ content: { hash: newContent }}});
-			payProps.diff = newProps.diff;
-			payProps.sliderCtrl = newProps.sliderCtrl;
-
-			// todo
-			// probably shouldn't modify payProps, need to make the setters like the other propertys
-			// setSliderCtrl
-			// setDiff
+			//payProps.diff = newProps.diff;
+			//payProps.sliderCtrl = newProps.sliderCtrl;
+			if (newProps.diff) {
+				setMinDiff(newProps.diff.min);
+				setMaxDiff(newProps.diff.max);
+				setDifficulty(newProps.diff.initial);
+			}
+			if (newProps.sliderCtrl) {
+				let addedBoost = LogSlider.getAddedBoost(newProps.sliderCtrl, difficulty);
+				setSliderCtrl(newProps.sliderCtrl);
+				setDifficulty(addedBoost);
+			}
+			if (newProps.signals) {
+				setSignals(newProps.signals);
+			}
 
 			setContent(newContent);
 			setHasContent(true);
@@ -270,7 +286,7 @@ const PaymentPopup = compProps => {
 					content: content ? content : payProps.content.hash,
 					tag: tag ? Buffer.from(tag, 'utf8').toString('hex') : defaultTag,
 					category: category ? Buffer.from(category, 'utf8').toString('hex') : defaultCategory,
-					diff: AddedBoost
+					diff: difficulty
 				});
 
 				const latestOutputState = {
@@ -348,18 +364,13 @@ const PaymentPopup = compProps => {
 		}, 50);
 	};
 
-	let AddedBoost = 1;
-	if (payProps.sliderCtrl && payProps.sliderCtrl.content) {
-		AddedBoost = LogSlider.getAddedBoost(payProps.sliderCtrl, difficulty);
-	} else {
-		AddedBoost = difficulty;
-	}
+	let [sliderCtrl, setSliderCtrl] = useState();
 
 	const sliderScaleLabel = (x) => {
-		return LogSlider.sliderScaleLabel(payProps.sliderCtrl, x);
+		return LogSlider.sliderScaleLabel(sliderCtrl, x);
 	};
 
-	const hasRankSignals = Difficulty.hasRankSignals(payProps);
+	const hasRankSignals = Difficulty.hasRankSignals({ signals });
 
 	return (
 		<div className="boost-publisher-container" onClick={handleClose}>
@@ -493,15 +504,15 @@ const PaymentPopup = compProps => {
 									{hasContent && showSliderDiff && (
 										<div>
 											<div className="slider-message">
-											{ payProps.sliderCtrl && (
-											<label className="label">Current boost of {payProps.sliderCtrl.content.CurrentBoost} <big><b>+</b></big> <select
+											{ sliderCtrl && (
+											<label className="label">Current boost of {sliderCtrl.content.CurrentBoost} <big><b>+</b></big> <select
 											value={difficulty}
 											className="inline-diff-selector"
 											onChange={handleDiffChange}
 											disabled={lockDiff}>
 											{Difficulty.renderDiffOptions(minDiff, maxDiff, sliderDiffStep, "")}
 										</select> boosts =&nbsp;
-											{payProps.sliderCtrl.content.CurrentBoost + AddedBoost} total boost</label>
+											{sliderCtrl.content.CurrentBoost + difficulty} total boost</label>
 											)}
 											</div>
 											
@@ -542,11 +553,11 @@ const PaymentPopup = compProps => {
 								{hasContent && hasRankSignals && (
 										<div className="boost-rank-display">
 											{/* This post will appear at{' '}*/}
-											Leads to {payProps.sliderCtrl &&
-											<span>Rank {LogSlider.rankAfterAddedDiff(payProps.sliderCtrl.content.CurrentBoost, AddedBoost, payProps.sliderCtrl.ranksCtrl.ranks).rank}</span>
+											Leads to {sliderCtrl &&
+											<span>Rank {LogSlider.rankAfterAddedDiff(sliderCtrl.content.CurrentBoost, difficulty, sliderCtrl.ranksCtrl.ranks).rank}</span>
 											}
-											{!payProps.sliderCtrl &&
-											<span>Rank {Difficulty.getDiffRank(payProps.signals, difficulty)}</span>
+											{!sliderCtrl &&
+											<span>Rank {Difficulty.getDiffRank(signals, difficulty)}</span>
 											}
 											&nbsp; of <a onClick={toggleDisplayRanks} className={'display-ranks-toggle' + ((displayRank)?' opened': '')}>boosts ranked</a> on the last{' '}
 											<span>{payProps.boostRank.hours} hours</span>.
