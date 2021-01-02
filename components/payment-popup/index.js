@@ -106,10 +106,13 @@ const PaymentPopup = compProps => {
 			? 0
 			: parseInt(_slider.markerStep, 10) || 10;
 
-	let sliderRankMarkers =
+	let initSliderRankMarkers =
 		Array.isArray(_slider.sliderRankMarkers) && _slider.sliderRankMarkers.length > 0
 			? _slider.sliderRankMarkers
 			: [];
+
+	const [sliderRankMarkers, setSliderRankMarkers] = useState(initSliderRankMarkers);
+	
 	const sliderMarkersMaxCount =
 		_slider.maxMarkers == 0 || _slider.maxMarkers == false
 			? 15
@@ -200,6 +203,9 @@ const PaymentPopup = compProps => {
 			}
 			if (newProps.signals) {
 				setSignals(newProps.signals);
+			}
+			if (newProps.slider.sliderRankMarkers) {
+				setSliderRankMarkers(newProps.slider.sliderRankMarkers);
 			}
 
 			setContent(newContent);
