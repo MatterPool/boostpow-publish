@@ -144,7 +144,7 @@ export function NewContentSliderCtrl(CBV, ranksCtrl, WidgetProps) {
 	sliderSpace = MaxBoost(
 		sliderSpace, 
 		ranksCtrl.empty ? sliderSpace.MinBoost+40 : null, 
-		WidgetProps.slider.maxDiffInc || 1.25
+		WidgetProps.slider.maxDiffInc
 	);
 	sliderSpace = ExtendedSpaceSize(sliderSpace);
 	sliderSpace.content = {
