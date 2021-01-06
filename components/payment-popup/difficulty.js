@@ -109,14 +109,18 @@ const renderDiffOption = (value, label) => {
 
 // Renders all difficulty options available for the selection box
 export const renderDiffOptions = (minDiff, maxDiff, sliderDiffStep, labelPrefix) => {
+
 	const lbl = (labelPrefix || '');
 	// always push the boost minDiff option
 	let rows = [renderDiffOption(minDiff, lbl+"1")];
-	for (let i = minDiff; i < maxDiff; i++) {
-		if (i > minDiff) {
-			if (i % sliderDiffStep == 0) rows.push(renderDiffOption(i, lbl+(i-minDiff+1)));
-		}
+	let i = 1 + sliderDiffStep; 
+	let d = minDiff + sliderDiffStep;
+	while (d < maxDiff) {
+		rows.push(renderDiffOption(d, lbl+(i.toString())));
+		i += sliderDiffStep;
+		d += sliderDiffStep;
 	}
+
 	// always push the boost maxDiff option
 	rows.push(renderDiffOption(maxDiff, lbl+(maxDiff-minDiff+1)));
 	return rows;
