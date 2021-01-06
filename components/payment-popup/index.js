@@ -189,25 +189,22 @@ const PaymentPopup = compProps => {
 		if (newContent.length == 64){
 
 			let newProps = await BoostHelpers.updateBoostsRank({ ...payProps, ...{ content: { hash: newContent }}});
-			//payProps.diff = newProps.diff;
-			//payProps.sliderCtrl = newProps.sliderCtrl;
+
 			if (newProps.diff) {
 				setMinDiff(newProps.diff.min);
 				setMaxDiff(newProps.diff.max);
 				setDifficulty(newProps.diff.initial);
 			}
 			if (newProps.sliderCtrl) {
-				let addedBoost = LogSlider.getAddedBoost(newProps.sliderCtrl, difficulty);
 				setSliderCtrl(newProps.sliderCtrl);
-				setDifficulty(addedBoost);
-			}
+			} 
 			if (newProps.signals) {
 				setSignals(newProps.signals);
 			}
 			if (newProps.slider.sliderRankMarkers) {
 				setSliderRankMarkers(newProps.slider.sliderRankMarkers);
 			}
-
+			
 			setContent(newContent);
 			setHasContent(true);
 
@@ -292,7 +289,7 @@ const PaymentPopup = compProps => {
 					content: content ? content : payProps.content.hash,
 					tag: tag ? Buffer.from(tag, 'utf8').toString('hex') : defaultTag,
 					category: category ? Buffer.from(category, 'utf8').toString('hex') : defaultCategory,
-					diff: difficulty
+					diff: addedBoost > 0 ? addedBoost : difficulty
 				});
 
 				const latestOutputState = {
@@ -370,14 +367,16 @@ const PaymentPopup = compProps => {
 		}, 50);
 	};
 
-	let [sliderCtrl, setSliderCtrl] = useState();
+	const [sliderCtrl, setSliderCtrl] = useState();
+
+	let addedBoost = sliderCtrl ? LogSlider.getAddedBoost(sliderCtrl,difficulty) : 0;
 
 	const sliderScaleLabel = (x) => {
 		return LogSlider.sliderScaleLabel(sliderCtrl, x);
 	};
 
 	const hasRankSignals = Difficulty.hasRankSignals({ signals });
-
+	
 	return (
 		<div className="boost-publisher-container" onClick={handleClose}>
 			<div className="boost-publisher-wrapper">
@@ -518,7 +517,7 @@ const PaymentPopup = compProps => {
 											disabled={lockDiff}>
 											{Difficulty.renderDiffOptions(minDiff, maxDiff, sliderDiffStep, "")}
 										</select> boosts =&nbsp;
-											{sliderCtrl.content.CurrentBoost + difficulty} total boost</label>
+											{sliderCtrl.content.CurrentBoost + addedBoost} total boost</label>
 											)}
 											</div>
 											
@@ -560,7 +559,7 @@ const PaymentPopup = compProps => {
 										<div className="boost-rank-display">
 											{/* This post will appear at{' '}*/}
 											Leads to {sliderCtrl &&
-											<span>Rank {LogSlider.rankAfterAddedDiff(sliderCtrl.content.CurrentBoost, difficulty, sliderCtrl.ranksCtrl.ranks).rank}</span>
+											<span>Rank {LogSlider.rankAfterAddedDiff(sliderCtrl.content.CurrentBoost, addedBoost, sliderCtrl.ranksCtrl.ranks).rank}</span>
 											}
 											{!sliderCtrl &&
 											<span>Rank {Difficulty.getDiffRank(signals, difficulty)}</span>

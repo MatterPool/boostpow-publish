@@ -64,9 +64,9 @@ export function RankSpaceSize(sliderCtrl) {
 
 export function MaxBoost(sliderCtrl, Top1Boost, ExtendedSpaceRate) {
 	return Object.assign({}, sliderCtrl, {
-		MaxBoost:
-			(Top1Boost || sliderCtrl.Top1Boost || 1) *
-			(ExtendedSpaceRate || sliderCtrl.ExtendedSpaceRate || 1.25)
+		MaxBoost: 
+		sliderCtrl.ranksCtrl.empty? Top1Boost + 40 :
+		Math.floor((Top1Boost || sliderCtrl.Top1Boost || 1)) * (ExtendedSpaceRate || sliderCtrl.ExtendedSpaceRate)
 	});
 }
 
@@ -118,7 +118,7 @@ export function sliderRankMarkers(sliderCtrl, rankMarkers) {
 	// from higuest to lowest rank
 	for (let i = 0; i < sliderCtrl.ranksCtrl.ranks.length; i++) {
 		let r = sliderCtrl.ranksCtrl.ranks[i];
-		if (rankMarkers.indexOf(r.rank) > -1 && addedBoostValues.indexOf(r.boostValue) === -1) {
+		if (r.boostValue > 0 && rankMarkers.indexOf(r.rank) > -1 && addedBoostValues.indexOf(r.boostValue) === -1) {
 			markers.push({
 				value: r.boostValue,
 				label: '#' + r.rank
@@ -126,30 +126,30 @@ export function sliderRankMarkers(sliderCtrl, rankMarkers) {
 			addedBoostValues.push(r.boostValue);
 		}
 	}
-	if (addedBoostValues.indexOf(sliderCtrl.MinBoost) === -1)
+	if (addedBoostValues.indexOf(sliderCtrl.content.CurrentBoost) === -1)
 		markers.push({ value: sliderCtrl.MinBoost, label: '#' + sliderCtrl.content.Rank.rank });
 	return markers;
 }
 
 export function NewContentSliderCtrl(CBV, ranksCtrl, WidgetProps) {
 	let sliderSpace = NewSliderCtrl({
-		MinBoost: CBV,
+		MinBoost: CBV + 1,
 		Top1Boost: ranksCtrl.top1.boostValue || CBV,
 		TopNextBoost: ranksCtrl.topN.boostValue || CBV
 	});
-	sliderSpace.MinBoost = CBV;
+	sliderSpace.MinBoost = CBV + 1;
 	sliderSpace.ranksCtrl = ranksCtrl;
 	sliderSpace = MinSpaceSize(sliderSpace);
 	sliderSpace = RankSpaceSize(sliderSpace);
 	sliderSpace = MaxBoost(
 		sliderSpace, 
-		ranksCtrl.empty ? sliderSpace.MinBoost+40 : null, 
-		WidgetProps.slider.maxDiffInc || 1.25
+		sliderSpace.Top1Boost, 
+		WidgetProps.slider.maxDiffInc
 	);
 	sliderSpace = ExtendedSpaceSize(sliderSpace);
 	sliderSpace.content = {
 		CurrentBoost: CBV,
-		Rank: NewRank(ranksCtrl.topN.rank + 1, CBV)
+		Rank: NewRank(ranksCtrl.empty ? 1 : ranksCtrl.topN.rank + 1, CBV)
 	};
 	sliderSpace = diffPointsToTopN(sliderSpace);
 	sliderSpace = diffPointsToTop1(sliderSpace);
@@ -164,7 +164,7 @@ export function getAddedBoost(sliderCtrl, x) {
 	let min = getMinBoost(sliderCtrl);
 	if (min === 0) min = 1;
 	let val = x - (min - 1);
-	return val;
+	return Math.floor(val);
 }
 
 export function sliderScaleLabel(sliderCtrl, x) {
