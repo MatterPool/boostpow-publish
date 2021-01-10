@@ -62,11 +62,9 @@ export function RankSpaceSize(sliderCtrl) {
 	});
 }
 
-export function MaxBoost(sliderCtrl, Top1Boost, ExtendedSpaceRate) {
+export function MaxBoost(sliderCtrl, maxDiffInc) {
 	return Object.assign({}, sliderCtrl, {
-		MaxBoost: 
-		sliderCtrl.ranksCtrl.empty? Top1Boost + 40 :
-		Math.floor((Top1Boost || sliderCtrl.Top1Boost || 1)) * (ExtendedSpaceRate || sliderCtrl.ExtendedSpaceRate)
+		MaxBoost: sliderCtrl.ranksCtrl.empty ? sliderCtrl.Top1Boost + 40 : sliderCtrl.Top1Boost * maxDiffInc
 	});
 }
 
@@ -131,7 +129,7 @@ export function sliderRankMarkers(sliderCtrl, rankMarkers) {
 	return markers;
 }
 
-export function NewContentSliderCtrl(CBV, ranksCtrl, WidgetProps) {
+export function NewContentSliderCtrl(CBV, ranksCtrl, maxDiffInc) {
 	let sliderSpace = NewSliderCtrl({
 		MinBoost: CBV + 1,
 		Top1Boost: ranksCtrl.top1.boostValue || CBV,
@@ -141,11 +139,7 @@ export function NewContentSliderCtrl(CBV, ranksCtrl, WidgetProps) {
 	sliderSpace.ranksCtrl = ranksCtrl;
 	sliderSpace = MinSpaceSize(sliderSpace);
 	sliderSpace = RankSpaceSize(sliderSpace);
-	sliderSpace = MaxBoost(
-		sliderSpace, 
-		sliderSpace.Top1Boost, 
-		WidgetProps.slider.maxDiffInc
-	);
+	sliderSpace = MaxBoost(sliderSpace, maxDiffInc);
 	sliderSpace = ExtendedSpaceSize(sliderSpace);
 	sliderSpace.content = {
 		CurrentBoost: CBV,

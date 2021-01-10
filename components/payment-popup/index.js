@@ -23,9 +23,181 @@ Example Files
 }
 */
 
+function isHash(value) {
+	return typeof(value) === 'string' && value.length == 64 && /[a-f0-9]/.test(value);
+}
+
+function parseContentInput (inputValue) {
+
+	if (typeof inputValue !== 'string' || inputValue.length === 0) {
+		return undefined;
+	}
+
+	if (inputValue.startsWith('https://bitcoinfiles.org/t/')){
+		let hash = inputValue.slice(27).slice(0,64).toLowerCase();
+		if (isHash(hash)) return hash;
+	} 
+
+	if (inputValue.startsWith('https://bitcoinfiles.org/tx/')){
+		let hash = inputValue.slice(28).slice(0,64).toLowerCase();
+		if (isHash(hash)) return hash;
+	} 
+
+	if (inputValue.startsWith('https://twetch.app/t/')){
+		let hash = inputValue.slice(21).slice(0,64).toLowerCase();
+		if (isHash(hash)) return hash;
+	} 
+
+	let hash = inputValue.trim().toLowerCase();
+	if (isHash(hash)) return hash;
+
+	if (inputValue.length <= 32) {
+		return inputValue;
+	}
+
+	return undefined;
+}
+
+function parseTopicInput (topic) {
+	if (typeof topic === 'string' && topic.length > 0) {
+		return topic;
+	}
+	return undefined;
+}
+
+function parseCategoryInput (category) {
+	if (typeof category === 'string' && category.length > 0) {
+		return category;
+	}
+	return undefined;
+}
+
+function parsePriceInput (price) {
+	let price_ = parseFloat(price);
+	if (price_ > 0) {
+		return price_;
+	}
+}
+
+function timeframeToTimestamp (timeframe) {
+	if (timeframe === 'hour') {
+		return parseInt(new Date().getTime() / 1000, 10) - 3600;
+	}
+	if (timeframe === 'day') {
+		return parseInt(new Date().getTime() / 1000, 10) - 3600 * 24;
+	}
+	if (timeframe === 'fortnight') {
+		return parseInt(new Date().getTime() / 1000, 10) - 3600 * 24 * 14;
+	}
+	if (timeframe === 'year') {
+		return parseInt(new Date().getTime() / 1000, 10) - 3600 * 24 * 365;
+	}
+	if (timeframe === 'decade') {
+		return parseInt(new Date().getTime() / 1000, 10) - 3600 * 24 * 365 * 10;
+	}
+	return undefined;
+}
+
+async function fetchContentPreview (newContent) {
+	let resp = await fetch(`https://media.bitcoinfiles.org/${newContent}`, { method: 'HEAD' });
+			
+	if (resp.status === 404) {
+		return { value: newContent, message: 'NOT_FOUND' };
+	}
+
+	let type = resp.headers.get('Content-Type');
+	let preview;
+
+	if (type.match(/^text/)) {
+		resp = await fetch(`https://media.bitcoinfiles.org/${newContent}`);
+		let text = await resp.text();
+		if (type === 'text/markdown; charset=utf-8') {
+			preview = snarkdown(text);
+		} else {
+			preview = text;
+		}
+	}
+
+	return { value: newContent, type, preview };
+}
+
+function BoostCalculator (signals, contentBoosts, maxDiffInc) {
+
+	const signalsList = signals && signals.list ? signals.list : [];
+	const currentBoostValue = contentBoosts.totalDifficulty_ || 0;
+
+	const ranksCtrl = LogSlider.GetTopNFromSignals(signalsList, currentBoostValue);
+	const sliderCtrl = LogSlider.NewContentSliderCtrl(currentBoostValue, ranksCtrl, maxDiffInc);
+
+	const currentRank = Difficulty.getDiffRank(signalsList, currentBoostValue);
+
+	const range = {};
+	range.min = sliderCtrl.MinBoost || 1;
+	range.max = sliderCtrl.MaxBoost;
+	range.initial = Math.min(Math.max(sliderCtrl.Top1Boost+1, range.min), range.max);
+
+	function sliderProps (userConfig, sliderValue) {
+
+		// calculates sliderProps for rendering
+		// user config is the payProps.slider
+
+		if (sliderValue < range.min || sliderValue > range.max) {
+			sliderValue = range.initial;
+		}
+
+		let rankMarkers;
+		if (userConfig.rankMarkers === true) {
+			rankMarkers = [1, 5, 10, 25, 50, 100];
+		} else if (Array.isArray(userConfig.rankMarkers) && userConfig.rankMarkers.length > 0) {
+			rankMarkers = userConfig.rankMarkers;
+		}
+
+		const markers = LogSlider.sliderRankMarkers(sliderCtrl, rankMarkers);
+		const diffStep = userConfig.sliderStep > 0 ? parseInt(userConfig.sliderStep, 10) : 1;
+
+		return {
+			min: range.min, 
+			max: range.max, 
+			value: sliderValue, 
+			diffStep, 
+			markers
+		}
+	}
+
+	function addedBoost (sliderValue) {
+		return sliderValue - (range.min-1);
+	}
+
+	function newTotalBoost (sliderValue) {
+		return currentBoostValue + addedBoost(sliderValue);
+	}
+	
+	function newRank (sliderValue) {
+		return LogSlider.rankAfterAddedDiff(currentBoostValue, addedBoost(sliderValue), ranksCtrl.ranks).rank;
+	}
+
+	return {
+		currentBoostValue,
+		currentRank,
+		signals: signalsList,
+		contentBoosts,
+		sliderCtrl,
+		ranksCtrl,
+		range,
+		sliderProps,
+		addedBoost,
+		newTotalBoost,
+		newRank
+	}
+
+}
+
 const PaymentPopup = compProps => {
 	const payProps = compProps.paymentProps;
 	const cParent = compProps.parent;
+
+	payProps.category = { show: true };
+	payProps.topic = { show: true };
 
 	// Communicates parent to change the opening property to false
 	// simulates an "opening phase", to be able to set initial diff, and other initial properties while fetching the api
@@ -33,286 +205,286 @@ const PaymentPopup = compProps => {
 		cParent.emit('opened', { ...payProps });
 	}
 
-	// GENERAL PROPS
-	const [paid, setPaid] = useState(false);
-
-	const tagMaxLength = 20;
-	const hasTag = payProps.tag && typeof payProps.tag.value === 'string';
-	const showTag = hasTag && payProps.tag.show === true ? true : false;
-	const disabledTag = hasTag && showTag && payProps.tag.disabled === true ? true : false;
-	const initialTagValue = payProps.tag && payProps.tag.value ? payProps.tag.value.substr(0, tagMaxLength) : '';
-	const [tag, setTag] = useState(initialTagValue);
-	if (payProps.opening && initialTagValue !== tag) {
-		setTag(initialTagValue);
-	}
-
+	const topicMaxLength = 20;
 	const categoryMaxLength = 4;
-	const hasCategory = payProps.category && typeof payProps.category.value === 'string';
-	const showCategory = hasCategory && payProps.category.show === true ? true : false;
-	const disabledCategory = hasCategory && showCategory && payProps.category.disabled === true ? true : false;
-	const initialCategoryValue = payProps.category && payProps.category.value ? payProps.category.value.substr(0, categoryMaxLength) : '';
-	const [category, setCategory] = useState(initialCategoryValue);
-	if (payProps.opening && initialCategoryValue !== category) {
-		setCategory(initialCategoryValue);
-	}
+
+	// Initial props (the rendered values)
+	const emptyContent = { value: '', type: undefined, preview: undefined };
+	const emptySlider = { min: 1, max: 40, value: 1, diffStep: 1, markers: [] };
+	const emptyBoostCalc = BoostCalculator([], { totalDifficulty_: 0 }, payProps.slider.maxDiffInc);
 	
-	// WALLET PROPS
-	const initialWallet = isValidWallet(payProps.wallets.initial) ? payProps.wallets.initial : '';
-	const [wallet, setWallet] = useState(initialWallet);
-	// If is opening, adjust initialWallet
-	if (payProps.opening && initialWallet !== wallet) {
-		setWallet(initialWallet);
+	const initProps = { 
+		content: {...emptyContent}, 
+		slider: { ...emptySlider }, 
+		boostCalc: emptyBoostCalc 
+	};
+
+	initProps.topic = payProps.topic && payProps.topic.value ? payProps.topic.value.substr(0, topicMaxLength) : '';
+	initProps.category = payProps.category && payProps.category.value ? payProps.category.value.substr(0, categoryMaxLength) : '';
+	initProps.price = payProps.diff && payProps.diff.multiplier ? payProps.diff.multiplier : 0.0002;
+	
+	// PROPS
+
+	const [contentInput, setContentInput] = useState('');
+	const [sliderInput, setSliderInput] = useState(emptySlider.value);
+	const [categoryInput, setCategoryInput] = useState('');
+	const [topicInput, setTopicInput] = useState('');
+	const [timeframeInput, setTimeframeInput] = useState('day');
+	const [priceInput, setPriceInput] = useState(initProps.price.toString());
+
+	const [props, setProps] = useState(initProps);
+
+	async function fieldsUpdated () {
+		
+		let newProps = { ...props };
+
+		// read input field values, check differences
+		let newContentValue = parseContentInput(contentInput);
+		let newCategoryValue = parseCategoryInput(categoryInput);
+		let newSliderValue = parseFloat(sliderInput);
+		let newTopicValue = parseTopicInput(topicInput);
+		let newTimeframeValue = timeframeInput;
+
+		// if empty string use the default price, if invalid number don't render
+		let newPrice = priceInput === '' ? initProps.price : parseFloat(priceInput) || undefined;
+	
+		newProps.price = newPrice;
+
+		let contentChanged = props.content.value !== newContentValue;
+		
+		let searchChanged = props.category !== newCategoryValue
+			|| props.topic !== newTopicValue
+			|| props.timeframe !== newTimeframeValue
+			|| contentChanged;
+
+		let sliderChanged = props.slider.value !== newSliderValue;
+
+		// content value is not valid, that means you can't rank or boost it
+		if (newContentValue === undefined) {
+			// clear everything
+			newProps.content = {...emptyContent};
+			newProps.slider = {...emptySlider};
+			newProps.boostCalc = emptyBoostCalc;
+			setProps(newProps);
+			return;
+		}
+
+		//	
+		// content
+		//   ==> content preview
+		//
+		// content value changed to valid value, that means update the content preview
+
+		if (contentChanged) {
+			if (isHash(newContentValue)) {
+				newProps.content = await fetchContentPreview(newContentValue);
+			} else {
+				newProps.content = { value: newContentValue };
+			}
+		}
+
+		//
+		// content
+		// category
+		// topic (tag)
+		// timeframe
+		//   ==> ranking
+		//
+		// search parameters changed, that means query for boost rank
+
+		if (searchChanged) {
+
+			let options = {
+				minedTimeFrom: timeframeToTimestamp(newTimeframeValue),
+				categoryutf8: newCategoryValue,
+				topicutf8: newTopicValue
+			};
+
+			let contenthex = isHash(newContentValue) ? newContentValue : Buffer.from(newContentValue, 'utf8').toString('hex');
+			let signals = await boost.Graph({}).search(options);
+			let contentBoosts = await boost.Graph({}).search({ ...options, contenthex });
+			let boostCalc = BoostCalculator(signals, contentBoosts, payProps.slider.maxDiffInc);
+			
+			newProps.boostCalc = boostCalc;
+			newProps.slider = boostCalc.sliderProps(payProps.slider, newSliderValue);
+			newProps.timeframe = newTimeframeValue;
+			newProps.category = newCategoryValue;
+			newProps.topic = newTopicValue;
+		}
+
+		if (sliderChanged) {
+			newProps.slider = newProps.boostCalc.sliderProps(payProps.slider, newSliderValue);
+		}
+
+		// content
+		// category
+		// topic (tag)
+		// timeframe	
+		// difficulty slider
+		// price
+		// wallet
+		//   ==> outputs
+		//
+		// content, search, or difficulty changed, that means update the payment button
+		// it will happen on render after setting props
+		
+		setProps(newProps);
 	}
 
-	// MESSAGE
+	// when the user stops changing fields for a sec call the update function to get newProps
+	useEffect(function () {
+		const timer = setTimeout(function () {
+			fieldsUpdated().catch(error => console.log(error));
+		}, 1000);
+	  
+		return function () { clearTimeout(timer); }
+	}, [ contentInput, categoryInput, topicInput, timeframeInput, priceInput ]);
+
+	useEffect(function () {
+		fieldsUpdated().catch(error => console.log(error));
+	}, [ sliderInput ])
+
+	function handleContentInputChange (evt) {
+		setContentInput(evt.target.value);
+	}
+	function handleSliderInputChange (evt, value) {
+		// unifies the value when coming from slider or from input field
+		setSliderInput(value > 0 ? value : evt.target.value);
+	}
+	function handleCategoryInputChange (evt) {
+		setCategoryInput(evt.target.value);
+	}
+	function handleTopicInputChange (evt) {
+		setTopicInput(evt.target.value);
+	}
+	function handleTimeframeInputChange (evt) {
+		setTimeframeInput(evt.target.value);
+	}
+	function handlePriceInputChange(evt){
+		setPriceInput(evt.target.value)
+	}
+
+	function stopEvent(evt) {
+		evt.preventDefault();
+		evt.stopPropagation();
+	}
+
 	const hasMessage =
 		payProps.message &&
 		typeof payProps.message.text === 'string' &&
 		payProps.message.text.length > 0;
 
-	// CONTENT PROPS
-	const [content, setContent] = useState(payProps.content.hash.length > 0 ? payProps.content.hash : '');
-	const [hasContent, setHasContent] = useState(content && content.length > 0);
-	const [contentType, setContentType] = useState(null);
-	const [contentPreview, setContentPreview] = useState();
-	var showContent = payProps.content.show === false ? false : true;
-	if (payProps.opening && content !== payProps.content.hash) {
-		setContent(payProps.content.hash);
-	}
+	const showContent = payProps.content.show === false ? false : true;
+	const content = props.content.value;
+	const contentType = props.content.type;
+	const hasContent = props.content.value !== undefined && props.content.value.length > 0;
+	const contentPreview = props.content.preview;
 
-	// DIFFICULTY PROPS
-
-	const _diff = payProps.diff || {};
-	const showInputDiff = _diff && _diff.showInput === true ? true : false;
-	const lockDiff = _diff.disabled === true ? true : false;
-
-	const [minDiff, setMinDiff] = useState(_diff.min > 0 ? parseFloat(_diff.min) : 1);
-	const [maxDiff, setMaxDiff] = useState(_diff.max > minDiff ? parseFloat(_diff.max) : 40);
-
-	const initialDiff =
-		_diff.initial > 0 ? Difficulty.safeDiffValue(_diff.initial, minDiff, maxDiff) : 1;
-	const [difficulty, setDifficulty] = useState(initialDiff);
-
-	// If is opening, adjust initialDiff
-	if (payProps.opening && initialDiff !== difficulty) {
-		setDifficulty(initialDiff);
-	}
-
-	const _slider = payProps.slider || {};
-	const showSliderDiff = _slider.show === false ? false : true;
-	const sliderDiffStep = _slider.sliderStep > 0 ? parseInt(_slider.sliderStep, 10) : 1;
-	let sliderDiffMarkerStep =
-		_slider.markerStep == 0 || _slider.markerStep == false
-			? 0
-			: parseInt(_slider.markerStep, 10) || 10;
-
-	let initSliderRankMarkers =
-		Array.isArray(_slider.sliderRankMarkers) && _slider.sliderRankMarkers.length > 0
-			? _slider.sliderRankMarkers
-			: [];
-
-	const [sliderRankMarkers, setSliderRankMarkers] = useState(initSliderRankMarkers);
+	const showTopic = payProps.topic && payProps.topic.show === true ? true : false;
+	const disabledTopic = showTopic && payProps.topic.disabled === true ? true : false;
 	
-	const sliderMarkersMaxCount =
-		_slider.maxMarkers == 0 || _slider.maxMarkers == false
-			? 15
-			: parseInt(_slider.maxMarkers, 10) || 15;
+	const showCategory = payProps.category && payProps.category.show === true ? true : false;
+	const disabledCategory = showCategory && payProps.category.disabled === true ? true : false;
 
-	// Force slider markers to respect their maximum count limits
-	const countMarkers = Math.floor(maxDiff / sliderDiffMarkerStep);
-	if (countMarkers > sliderMarkersMaxCount) {
-		sliderDiffMarkerStep = Math.round(maxDiff / sliderMarkersMaxCount);
-	}
+	const showSliderDiff = payProps.slider.show === false ? false : true;
+	const sliderMin = props.slider.min;
+	const sliderMax = props.slider.max;
+	const sliderValue = props.slider.value;
+	const sliderDiffStep = props.slider.diffStep;
+	const sliderMarkers = props.slider.markers;
 
-	// Shows slider markers
-	let sliderMarkers = Difficulty.calculateSliderMarks(minDiff, maxDiff, sliderDiffMarkerStep);
-	if (payProps.boostRank && sliderRankMarkers.length > 0) {
-		// use rank markers
-		sliderMarkers = sliderRankMarkers;
-	}
+	const currentBoost = props.boostCalc.currentBoostValue;
+	const currentRank = props.boostCalc.currentRank;
+	const addedBoost = props.boostCalc.addedBoost(sliderValue); 
+	const newTotalBoost = props.boostCalc.newTotalBoost(sliderValue);
+	const newRank = props.boostCalc.newRank(sliderValue);
+	
+	const sliderScaleLabel = () => '+' + addedBoost.toString();
 
-	// signals
-	const [signals, setSignals] = useState(payProps.signals);
-
+	const lockDiff = payProps.diff.disabled === true ? true : false;
+	
+	const hasRankSignals = props.boostCalc.signals.length > 0;
 	const [displayRank, setDisplayRank] = useState(false);
-	const toggleDisplayRanks = () => {
-		setDisplayRank(!displayRank);
-	}
-	if (payProps.opening && displayRank !== false) {
-		setDisplayRank(false);
-	}
-
+	const toggleDisplayRanks = () => setDisplayRank(!displayRank);
+	
 	const renderDisplayRanks = () => {
 		let html = [];
-		signals.forEach((v, k)=>{
+		props.boostCalc.signals.forEach((v, k)=>{
 			html.push((
 				<tr key={'display-rank-'+k}>
 					<td>{k+1}</td>
-					<td> &lt;= {payProps.boostRank.hours}</td>
+					<td> &lt;= {timeframeInput}</td>
 					<td>{v.totalDifficulty_}</td>
 				</tr>
 			));
-		})
+		});
 		return html;
 	};
-	
 
-	// GENERAL HANDLERS
-	const handleTagChange = (evt, value) => {
-		setTag(evt.target.value);
-	};
+	// WALLET PROPS
+	const initialWallet = isValidWallet(payProps.wallets.initial) ? payProps.wallets.initial : '';
+	const [wallet, setWallet] = useState(initialWallet);
+	const [paid, setPaid] = useState(false);
+	const [walletProps, setWalletProps] = useState();
 
-	const handleCategoryChange = (evt, value) => {
-		setCategory(evt.target.value);
-	};
-
-
-	const handleClose = () => {
-		if (cParent) {
-			cParent.emit('close');
-		}
-	};
-
-	// CONTENT HANDLERS
-
-	// Fetch and update the content
-	const handleContentChange = async (evt, value) => {
-		let newContent = evt.target.value;
-		if (typeof newContent === 'string' && newContent.length == 0) {
-			setContent('');
-			return;
-		}
-		// Prevents multiple content reloads from the api if it did not changed
-		if (content == newContent && contentType > '') return;
-
-		// Do not query content if hash is not 64 bytes long
-		if (newContent.length == 64){
-
-			let newProps = await BoostHelpers.updateBoostsRank({ ...payProps, ...{ content: { hash: newContent }}});
-
-			if (newProps.diff) {
-				setMinDiff(newProps.diff.min);
-				setMaxDiff(newProps.diff.max);
-				setDifficulty(newProps.diff.initial);
-			}
-			if (newProps.sliderCtrl) {
-				setSliderCtrl(newProps.sliderCtrl);
-			} 
-			if (newProps.signals) {
-				setSignals(newProps.signals);
-			}
-			if (newProps.slider.sliderRankMarkers) {
-				setSliderRankMarkers(newProps.slider.sliderRankMarkers);
-			}
-			
-			setContent(newContent);
-			setHasContent(true);
-
-			let resp = await fetch(`https://media.bitcoinfiles.org/${newContent}`, { method: 'HEAD' });
-			if (resp.status === 404) {
-				setContent('');
-				setContentType(null);
-				return;
-			}
-
-			let type = resp.headers.get('Content-Type');
-			setContentType(type);
-
-			if (type.match(/^text/)) {
-				resp = await fetch(`https://media.bitcoinfiles.org/${newContent}`);
-				let text = await resp.text();
-				if (type === 'text/markdown; charset=utf-8') {
-					setContentPreview(snarkdown(text));
-				} else {
-					setContentPreview(text);
-				}
-			}
-		} else {
-			setContent(newContent);
-			setHasContent(true);
-		}
-	};
-
-	// Trigger content rendering when content changes
-	useEffect(() => {
-		if (payProps.content && payProps.content.hash) {
-			handleContentChange(
-				{
-					target: {
-						value: payProps.content.hash
-					}
-				},
-				null
-			);
-		}
-	}, [ content ]); // only handle this if content changes
-
-	// WALLET HANDLERS
-	let Wallet;
+	let WalletElem = Wallets.getWalletElem(wallet);
 	// Avoid rendering wallet while still opening
-	if (!payProps.opening && typeof wallet === 'string' && wallet.length > 0)
-		Wallet = Wallets.getWalletElem(wallet);
+	if (!payProps.opening && typeof wallet === 'string' && wallet.length > 0){
+		WalletElem = Wallets.getWalletElem(wallet);
+	}
 
-	const handleChangeWallet = (evt, value) => {
+	function handleChangeWallet(evt, value) {
 		setPaid(false);
 		setWallet(evt.target.value);
-	};
+	}
 
 	// Calculates the value of the outputs to configure the wallet
-	const allOutputs = from => {
-		const o = [];
-		let defaultFeeMultiplier = 0.00002;
-		let defaultTag = undefined;
-		let defaultCategory = Buffer.from('B', 'utf8').toString('hex');
+	function allOutputs () {
+		const o = [...(payProps.outputs||[])];
+		
+		let defaultTopic = initProps.topic || undefined;
+		let defaultCategory = initProps.category || Buffer.from('B', 'utf8').toString('hex');
 
-		if (payProps.diff.multiplier) {
-			defaultFeeMultiplier = payProps.diff.multiplier;
-		}
-		if (payProps.tag && payProps.tag.value) {
-			defaultTag = Buffer.from(payProps.tag.value.substr(0, tagMaxLength), 'utf8').toString('hex');
-		}
-		if (payProps.category && payProps.category.value) {
-			defaultCategory = Buffer.from(payProps.category.value.substr(0, categoryMaxLength), 'utf8').toString('hex');
-		}
+		const boostContent = isHash(content) ? content : Buffer.from(content, 'utf8').toString('hex');
 
-		if (payProps.outputs && payProps.outputs.length) {
-			payProps.outputs.forEach(out => {
-				o.push(out);
+		try {
+			const boostJob = boost.BoostPowJob.fromObject({
+				content: boostContent,
+				tag: topicInput ? Buffer.from(topicInput, 'utf8').toString('hex') : defaultTopic,
+				category: categoryInput ? Buffer.from(categoryInput, 'utf8').toString('hex') : defaultCategory,
+				diff: addedBoost
 			});
-		}
 
-		const boostContent = content ? content : payProps.content.hash;
-		// Only prepare boost jobs for content string with even length numbers, otherwise it is an invalid hex string
-		if (boostContent.length > 0 && boostContent.length % 2 == 0){
-			try {
-				const boostJob = boost.BoostPowJob.fromObject({
-					content: content ? content : payProps.content.hash,
-					tag: tag ? Buffer.from(tag, 'utf8').toString('hex') : defaultTag,
-					category: category ? Buffer.from(category, 'utf8').toString('hex') : defaultCategory,
-					diff: addedBoost > 0 ? addedBoost : difficulty
-				});
+			const latestOutputState = {
+				script: boostJob.toASM(),
+				amount: Math.max(boostJob.getDiff() * props.price, 0.00000546),
+				currency: 'BSV'
+			};
 
-				const latestOutputState = {
-					script: boostJob.toASM(),
-					amount: Math.max(boostJob.getDiff() * defaultFeeMultiplier, 0.00000546),
-					currency: 'BSV'
-				};
-				if (latestOutputState) {
-					o.push(latestOutputState);
-				}
-			} catch (ex) {
-				return [];
+			if (latestOutputState) {
+				o.push(latestOutputState);
 			}
+		} catch (ex) {
+			return [];
 		}
+		
 		return o;
-	};
+	}
 
 	// Prepare wallet configuration object
-	const getWalletProps = () => {
+	function getWalletProps () {
+		//console.log('rendering wallet');
+
+		let outputs = allOutputs();
+
+		if (outputs.length === 0) {
+			return undefined;
+		}
+
 		const walletProps = {
 			...payProps,
 			currentWallet: wallet || '',
-			outputs: allOutputs(),
+			outputs: outputs,
 			moneybuttonProps: {
 				...payProps.moneybuttonProps,
 				onCryptoOperations: cryptoOperations => {
@@ -340,63 +512,31 @@ const PaymentPopup = compProps => {
 			}
 		};
 		return walletProps;
-	};
+	}
 
-	// DIFFICULTY HANDLERS
+	useEffect(function () {
+		setWalletProps(undefined);
+		const timer = setTimeout(function () {
+			setWalletProps(getWalletProps());
+		}, 1000);
+	  
+		return function () { clearTimeout(timer); }
+	}, [ props ]);
 
-	// This timeout controls a minimum time between changes to avoid money button multiple renders
-	let diffTimeout = null;
-	const handleDiffChange = (evt, value) => {
-		// unifies the value when comming from slider or from input field
-		const val = value > 0 ? parseFloat(value) : parseFloat(evt.target.value);
-		if (val === difficulty) return;
-		// I think it would be better to put this timeout on the money button render function itself
-		// because this timeout causes a little lag when dragging the slider marker
-		clearTimeout(diffTimeout);
-		diffTimeout = setTimeout(() => {
-			// ensure minimun difficulty
-			if (val <= minDiff) setDifficulty(minDiff);
-			// ensure maximum difficulty
-			else if (val >= maxDiff) setDifficulty(maxDiff);
-			// if using sliders and having larger steps, ensure the slider value will be set to a mod zero value
-			else if (showSliderDiff && sliderDiffStep > 1) {
-				setDifficulty(val % sliderDiffStep === 0 ? val : val - (val % sliderDiffStep));
-			} else {
-				setDifficulty(val);
-			}
-		}, 50);
-	};
-
-	const [sliderCtrl, setSliderCtrl] = useState();
-
-	let addedBoost = sliderCtrl ? LogSlider.getAddedBoost(sliderCtrl,difficulty) : 0;
-
-	const sliderScaleLabel = (x) => {
-		return LogSlider.sliderScaleLabel(sliderCtrl, x);
-	};
-
-	const hasRankSignals = Difficulty.hasRankSignals({ signals });
-	
 	return (
-		<div className="boost-publisher-container" onClick={handleClose}>
+		<div className="boost-publisher-container">
 			<div className="boost-publisher-wrapper">
 				<div className="boost-publisher-grow" />
-				<div
-					className="boost-publisher"
-					onClick={evt => {
-						evt.preventDefault();
-						evt.stopPropagation();
-					}}
-				>
+				<div className="boost-publisher" onClick={stopEvent}>
 					<div className="boost-publisher-header">
 						<img src="boost.svg" className="boost-publisher-logo" />
 						<span className="boost-logo-text">Boost</span>
 						<div className="boost-publisher-grow" />
-						<p className="boost-publisher-close" onClick={handleClose}>
+						<p className="boost-publisher-close">
 							Close
 						</p>
 					</div>
-					{payProps.wallets.available.length >= 1 && !paid && (
+					{(
 						<div className="boost-publisher-body">
 							<form>
 								<div className="form-group">
@@ -417,13 +557,14 @@ const PaymentPopup = compProps => {
 									)}
 									{!payProps.content.hash && !hasMessage && (
 										<input
-											onChange={handleContentChange}
-											value={content || ''}
+											onChange={handleContentInputChange}
+											value={contentInput}
 											type="text"
 											className="input-content"
 											placeholder="Transaction ID, Bitcoin File, Text, Hash, etc.."
 										></input>
 									)}
+									
 									{showContent && hasContent && content && (
 										<div className="contentPreview">
 											{contentType === 'video/mp4' && (
@@ -470,20 +611,20 @@ const PaymentPopup = compProps => {
 											)}
 										</div>
 									)}
+								
 								</div>
-
-								{showTag && (
-									<div id="boostpow-tags" className="form-group">
-										<div className="lead">Tag (optional)</div>
+								{showTopic && (
+									<div id="boostpow-topic" className="form-group">
+										<div className="lead">Topic (optional)</div>
 										<div>
 											<input
 												maxLength="20"
-												onChange={handleTagChange}
-												value={tag}
+												onChange={handleTopicInputChange}
+												value={topicInput}
 												type="text"
 												className="input-content"
-												placeholder="Ex: tag name"
-												disabled={disabledTag}
+												placeholder="Ex: topic name"
+												disabled={disabledTopic}
 											></input>
 										</div>
 									</div>
@@ -494,8 +635,8 @@ const PaymentPopup = compProps => {
 										<div>
 											<input
 												maxLength="4"
-												onChange={handleCategoryChange}
-												value={category}
+												onChange={handleCategoryInputChange}
+												value={categoryInput}
 												type="text"
 												className="input-content"
 												placeholder="Ex: category name"
@@ -504,71 +645,56 @@ const PaymentPopup = compProps => {
 										</div>
 									</div>
 								)}
-
-								<div id="boostpow-slider" className="form-group input-diff-container">
-									{hasContent && showSliderDiff && (
-										<div>
-											<div className="slider-message">
-											{ sliderCtrl && (
-											<label className="label">Current boost of {sliderCtrl.content.CurrentBoost} <big><b>+</b></big> <select
-											value={difficulty}
-											className="inline-diff-selector"
-											onChange={handleDiffChange}
-											disabled={lockDiff}>
-											{Difficulty.renderDiffOptions(minDiff, maxDiff, sliderDiffStep, "")}
-										</select> boosts =&nbsp;
-											{sliderCtrl.content.CurrentBoost + addedBoost} total boost</label>
-											)}
-											</div>
-											
-											<Difficulty.DiffSlider
-											 	key='unique-slider'
-												min={minDiff}
-												max={maxDiff}
-												value={difficulty}
-												scale={sliderScaleLabel}
-												aria-labelledby="discrete-slider-custom"
-												step={sliderDiffStep}
-												valueLabelDisplay="on"
-												ValueLabelComponent={Difficulty.DiffValueLabel}
-												marks={sliderMarkers}
-												onChange={handleDiffChange}
-												disabled={lockDiff}
-											/>
-										</div>
-									)}
-									
-									{showInputDiff && (
-										<div>
-											<label className="label">Difficulty</label>
+								
+								{hasContent && showSliderDiff && (
+									<div>
+										<div className="rank-message">
+										{(
+										<label className="label">
+											In the last&nbsp;
 											<select
-												key='unique-diff-selector'
-												value={difficulty}
-												className="input-diff"
-												onChange={handleDiffChange}
-												disabled={lockDiff}
+												key='unique-timeframe-selector'
+												value={timeframeInput}
+												className="input-timeframe"
+												onChange={handleTimeframeInputChange}
 											>
-												{Difficulty.renderDiffOptions(minDiff, maxDiff, sliderDiffStep)}
+											<option>hour</option>
+											<option>day</option>
+											<option>fortnight</option>
+											<option>year</option>
+											<option>decade</option>
 											</select>
+											, this content has been boosted {currentBoost} and has achieved rank {currentRank}.
+										</label>
+										)}
 										</div>
-									)}
-									
-								</div>
-								<div className="form-group">
-								{hasContent && hasRankSignals && (
-										<div className="boost-rank-display">
-											{/* This post will appear at{' '}*/}
-											Leads to {sliderCtrl &&
-											<span>Rank {LogSlider.rankAfterAddedDiff(sliderCtrl.content.CurrentBoost, addedBoost, sliderCtrl.ranksCtrl.ranks).rank}</span>
-											}
-											{!sliderCtrl &&
-											<span>Rank {Difficulty.getDiffRank(signals, difficulty)}</span>
-											}
-											&nbsp; of <a onClick={toggleDisplayRanks} className={'display-ranks-toggle' + ((displayRank)?' opened': '')}>boosts ranked</a> on the last{' '}
-											<span>{payProps.boostRank.hours} hours</span>.
+										<div id="boostpow-slider" className="form-group input-diff-container">
+										<Difficulty.DiffSlider
+											key='unique-slider'
+											min={sliderMin}
+											max={sliderMax}
+											value={sliderValue}
+											scale={sliderScaleLabel}
+											aria-labelledby="discrete-slider-custom"
+											step={sliderDiffStep}
+											valueLabelDisplay="on"
+											ValueLabelComponent={Difficulty.DiffValueLabel}
+											marks={sliderMarkers}
+											onChange={handleSliderInputChange}
+											disabled={lockDiff}
+										/>
 										</div>
-									)}
-								</div>
+										<div className="boost-message">
+										{(
+										<label className="label">
+											Boost by {addedBoost} for a total of {newTotalBoost} to achieve rank {newRank}. 
+											&nbsp;<a onClick={toggleDisplayRanks} className={'display-ranks-toggle' + ((displayRank)?' opened': '')}>Show Ranks</a>
+										</label>
+										)}
+										</div>
+									</div>
+								)}
+								
 								<div className="form-group">
 									{hasContent && displayRank && hasRankSignals && (
 										<div id="display-ranks-container">
@@ -588,12 +714,26 @@ const PaymentPopup = compProps => {
 										</div>
 									)}
 								</div>
+								{showCategory && (
+									<div id="boostpow-price" className="form-group">
+										<div className="lead">Price</div>
+										<div>
+											<input
+												onChange={handlePriceInputChange}
+												value={priceInput}
+												type="text"
+												className="input-content"
+												placeholder="sats/difficulty"
+											></input>
+										</div>
+									</div>
+								)}
 							</form>
-							
 						</div>
 					)}
 					<div className="boost-publisher-footer">
-					{payProps.wallets.available.length > 1 && (
+						
+						{payProps.wallets.available.length > 1 && (
 						<div className="wallet-selector">
 							<FormControl
 								variant="outlined"
@@ -623,10 +763,10 @@ const PaymentPopup = compProps => {
 								</Select>
 							</FormControl>
 						</div>
-					)}
-						{hasContent && Wallet && !paid && !!allOutputs() && !!allOutputs().length && (
+						)}
+						{hasContent && walletProps && props.price && WalletElem && !paid && (
 							<div className="wallet-button">
-								<Wallet {...getWalletProps()} />
+								<WalletElem {...walletProps} />
 							</div>
 						)}
 						{paid && (
