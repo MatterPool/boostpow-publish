@@ -9,7 +9,7 @@ import * as Difficulty from './difficulty';
 import * as Wallets from './wallets';
 import { isValidWallet } from '../../lib/wallets';
 import * as LogSlider from './log-slider';
-import * as BoostHelpers from '../../lib/boost-helpers';
+//import * as BoostHelpers from '../../lib/boost-helpers';
 
 /*
 
@@ -70,13 +70,6 @@ function parseCategoryInput (category) {
 		return category;
 	}
 	return undefined;
-}
-
-function parsePriceInput (price) {
-	let price_ = parseFloat(price);
-	if (price_ > 0) {
-		return price_;
-	}
 }
 
 function timeframeToTimestamp (timeframe) {
@@ -196,9 +189,6 @@ const PaymentPopup = compProps => {
 	const payProps = compProps.paymentProps;
 	const cParent = compProps.parent;
 
-	payProps.category = { show: true };
-	payProps.topic = { show: true };
-
 	// Communicates parent to change the opening property to false
 	// simulates an "opening phase", to be able to set initial diff, and other initial properties while fetching the api
 	if (payProps.opening && cParent) {
@@ -210,7 +200,7 @@ const PaymentPopup = compProps => {
 
 	// Initial props (the rendered values)
 	const emptyContent = { value: '', type: undefined, preview: undefined };
-	const emptySlider = { min: 1, max: 40, value: 1, diffStep: 1, markers: [] };
+	const emptySlider = { min: 1, max: 40, value: 1, diffStep: payProps.slider.sliderStep, markers: [] };
 	const emptyBoostCalc = BoostCalculator([], { totalDifficulty_: 0 }, payProps.slider.maxDiffInc);
 	
 	const initProps = { 
@@ -219,23 +209,27 @@ const PaymentPopup = compProps => {
 		boostCalc: emptyBoostCalc 
 	};
 
+	if (isHash(payProps.content.hash)) {
+		initProps.content.value = payProps.content.hash;
+	}
 	initProps.topic = payProps.topic && payProps.topic.value ? payProps.topic.value.substr(0, topicMaxLength) : '';
 	initProps.category = payProps.category && payProps.category.value ? payProps.category.value.substr(0, categoryMaxLength) : '';
-	initProps.price = payProps.diff && payProps.diff.multiplier ? payProps.diff.multiplier : 0.0002;
+	initProps.price = payProps.diff.multiplier;
+	initProps.opening = true;
 	
 	// PROPS
 
-	const [contentInput, setContentInput] = useState('');
+	const [contentInput, setContentInput] = useState(initProps.content.value);
 	const [sliderInput, setSliderInput] = useState(emptySlider.value);
-	const [categoryInput, setCategoryInput] = useState('');
-	const [topicInput, setTopicInput] = useState('');
+	const [categoryInput, setCategoryInput] = useState(initProps.category);
+	const [topicInput, setTopicInput] = useState(initProps.topic);
 	const [timeframeInput, setTimeframeInput] = useState('day');
 	const [priceInput, setPriceInput] = useState(initProps.price.toString());
 
 	const [props, setProps] = useState(initProps);
 
 	async function fieldsUpdated () {
-		
+
 		let newProps = { ...props };
 
 		// read input field values, check differences
@@ -247,17 +241,20 @@ const PaymentPopup = compProps => {
 
 		// if empty string use the default price, if invalid number don't render
 		let newPrice = priceInput === '' ? initProps.price : parseFloat(priceInput) || undefined;
-	
 		newProps.price = newPrice;
 
-		let contentChanged = props.content.value !== newContentValue;
-		
+		let contentChanged = props.content.value !== newContentValue || newProps.opening;
+
 		let searchChanged = props.category !== newCategoryValue
 			|| props.topic !== newTopicValue
 			|| props.timeframe !== newTimeframeValue
 			|| contentChanged;
 
 		let sliderChanged = props.slider.value !== newSliderValue;
+
+		// first time through, nothing has loaded, but content has not changed.
+		// so this will force update even though nothing changed.
+		newProps.opening = false;
 
 		// content value is not valid, that means you can't rank or boost it
 		if (newContentValue === undefined) {
@@ -297,7 +294,7 @@ const PaymentPopup = compProps => {
 			let options = {
 				minedTimeFrom: timeframeToTimestamp(newTimeframeValue),
 				categoryutf8: newCategoryValue,
-				topicutf8: newTopicValue
+				tagutf8: newTopicValue
 			};
 
 			let contenthex = isHash(newContentValue) ? newContentValue : Buffer.from(newContentValue, 'utf8').toString('hex');
@@ -327,7 +324,7 @@ const PaymentPopup = compProps => {
 		//
 		// content, search, or difficulty changed, that means update the payment button
 		// it will happen on render after setting props
-		
+
 		setProps(newProps);
 	}
 
@@ -385,6 +382,7 @@ const PaymentPopup = compProps => {
 	
 	const showCategory = payProps.category && payProps.category.show === true ? true : false;
 	const disabledCategory = showCategory && payProps.category.disabled === true ? true : false;
+	const showPrice = true && hasContent;
 
 	const showSliderDiff = payProps.slider.show === false ? false : true;
 	const sliderMin = props.slider.min;
@@ -399,7 +397,7 @@ const PaymentPopup = compProps => {
 	const newTotalBoost = props.boostCalc.newTotalBoost(sliderValue);
 	const newRank = props.boostCalc.newRank(sliderValue);
 	
-	const sliderScaleLabel = () => '+' + addedBoost.toString();
+	const sliderScaleLabel = () => '+' + Math.floor(addedBoost).toString();
 
 	const lockDiff = payProps.diff.disabled === true ? true : false;
 	
@@ -427,7 +425,7 @@ const PaymentPopup = compProps => {
 	const [paid, setPaid] = useState(false);
 	const [walletProps, setWalletProps] = useState();
 
-	let WalletElem = Wallets.getWalletElem(wallet);
+	let WalletElem;
 	// Avoid rendering wallet while still opening
 	if (!payProps.opening && typeof wallet === 'string' && wallet.length > 0){
 		WalletElem = Wallets.getWalletElem(wallet);
@@ -442,16 +440,15 @@ const PaymentPopup = compProps => {
 	function allOutputs () {
 		const o = [...(payProps.outputs||[])];
 		
-		let defaultTopic = initProps.topic || undefined;
-		let defaultCategory = initProps.category || Buffer.from('B', 'utf8').toString('hex');
-
+		const boostTopic = Buffer.from(topicInput || '', 'utf8').toString('hex');
+		const boostCategory = Buffer.from(categoryInput || 'B', 'utf8').toString('hex');
 		const boostContent = isHash(content) ? content : Buffer.from(content, 'utf8').toString('hex');
 
 		try {
 			const boostJob = boost.BoostPowJob.fromObject({
 				content: boostContent,
-				tag: topicInput ? Buffer.from(topicInput, 'utf8').toString('hex') : defaultTopic,
-				category: categoryInput ? Buffer.from(categoryInput, 'utf8').toString('hex') : defaultCategory,
+				tag: boostTopic,
+				category: boostCategory,
 				diff: addedBoost
 			});
 
@@ -522,6 +519,12 @@ const PaymentPopup = compProps => {
 	  
 		return function () { clearTimeout(timer); }
 	}, [ props ]);
+
+	const handleClose = () => {
+		if (cParent) {
+			cParent.emit('close');
+		}
+	};
 
 	return (
 		<div className="boost-publisher-container">
@@ -714,7 +717,7 @@ const PaymentPopup = compProps => {
 										</div>
 									)}
 								</div>
-								{showCategory && (
+								{showPrice && (
 									<div id="boostpow-price" className="form-group">
 										<div className="lead">Price</div>
 										<div>
