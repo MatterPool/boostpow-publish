@@ -24,7 +24,7 @@ Example Files
 */
 
 function isHash(value) {
-	return typeof(value) === 'string' && value.length == 64 && /[a-f0-9]/.test(value);
+	return typeof(value) === 'string' && value.length == 64 && /^[a-f0-9]+$/.test(value);
 }
 
 function parseContentInput (inputValue) {
