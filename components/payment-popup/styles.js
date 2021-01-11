@@ -37,10 +37,12 @@ const Styles = () => (
 			padding-bottom: 1em;
 		}
 		.input-diff-container {
-			padding-top: 1em;
+			
 			padding-bottom: 1em;
 		}
-
+		.rank-message {
+			padding-top: 1em;
+		}
 		.label {
 			font-size: 1.1em;
 		}
@@ -147,6 +149,9 @@ const Styles = () => (
 		}
 		.MuiSlider-marked {
 			margin-bottom: 8px;
+		}
+		.MuiSlider-root {
+			margin-top: 3em;
 		}
 		.contentPreview {
 			text-align: center;
@@ -300,28 +305,35 @@ const Styles = () => (
 			font-weight: 600;
 		}
 
-		#boostpow-tags,
-		#boostpow-categories {
+		#boostpow-topic,
+		#boostpow-categories,
+		#boostpow-price {
 			display: block;
 			height: 50px;
 			margin-top: 5px;
 		}
-		#boostpow-tags div,
-		#boostpow-categories div {
+		#boostpow-topic div,
+		#boostpow-categories div,
+		#boostpow-price div {
 			float: left;
 		}
-		#boostpow-tags div:first-child,
-		#boostpow-categories div:first-child {
+		#boostpow-topic div:first-child,
+		#boostpow-categories div:first-child,
+		#boostpow-price div:first-child {
 			min-width: 100px;
 			width: 15%;
 			padding-top: 5px;
 			font-weight: 500;
 		}
-		#boostpow-tags div:last-child,
-		#boostpow-categories div:last-child {
+		#boostpow-topic div:last-child,
+		#boostpow-categories div:last-child,
+		#boostpow-price div:last-child {
 			width: 75%;
 			max-width: 80%;
 			float: right;
+		}
+		#boostpow-price {
+			margin-top: 1em;
 		}
 		.boost-publisher-footer {
 			margin-top: 1.5em;
