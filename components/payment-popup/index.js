@@ -228,8 +228,24 @@ const PaymentPopup = compProps => {
 
 	const [props, setProps] = useState(initProps);
 
-	async function fieldsUpdated () {
+	// parent page reopened widget with new configuration
+	if (payProps.opening) {
+		if (contentInput !== initProps.content.value) {
+			setContentInput(initProps.content.value);
+		}
+		if (categoryInput !== initProps.category) {
+			setCategoryInput(initProps.category);
+		}
+		if (topicInput !== initProps.topic) {
+			setTopicInput(initProps.topic);
+		}
+		if (priceInput !== initProps.price) {
+			setPriceInput(initProps.price);
+		}
+	}
 
+	async function fieldsUpdated () {
+		
 		let newProps = { ...props };
 
 		// read input field values, check differences
@@ -242,7 +258,7 @@ const PaymentPopup = compProps => {
 		// if empty string use the default price, if invalid number don't render
 		let newPrice = priceInput === '' ? initProps.price : parseFloat(priceInput) || undefined;
 		newProps.price = newPrice;
-
+		
 		let contentChanged = props.content.value !== newContentValue || newProps.opening;
 
 		let searchChanged = props.category !== newCategoryValue
