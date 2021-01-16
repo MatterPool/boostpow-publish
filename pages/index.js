@@ -47,7 +47,7 @@ const Home = () => {
 			parentHandshake.emit('init', true);
 		} catch (err) {
 			// If error, set initial properties
-			//setPaymentProps(initialProps);
+			setPaymentProps(initialProps);
 		}
 	};
 
