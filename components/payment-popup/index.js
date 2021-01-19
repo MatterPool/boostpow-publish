@@ -551,7 +551,7 @@ const PaymentPopup = compProps => {
 						<img src="boost.svg" className="boost-publisher-logo" />
 						<span className="boost-logo-text">Boost</span>
 						<div className="boost-publisher-grow" />
-						<p className="boost-publisher-close">
+						<p className="boost-publisher-close" onClick={handleClose}>
 							Close
 						</p>
 					</div>
