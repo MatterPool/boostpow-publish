@@ -81,8 +81,18 @@ const Styles = () => (
 			line-height: 21px;
 			color: #bdbdbd;
 			margin: 0;
+			padding: 4px 8px;
+			border: none;
+			border-radius: 2px;
+			background-color: transparent;
 			font-weight: normal;
 			cursor: pointer;
+		}
+		.boost-publisher-close:focus {
+			outline: none;
+		}
+		.boost-publisher-close:hover {
+			background-color: #eee;
 		}
 
 		.boost-publisher-body {
