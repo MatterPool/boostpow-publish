@@ -580,7 +580,7 @@ const PaymentPopup = compProps => {
 											value={contentInput}
 											type="text"
 											className="input-content"
-											placeholder="Transaction ID, Bitcoin File, Text, Hash, etc.."
+											placeholder="Transaction ID, Twetch, or BitcoinFiles.org link"
 										></input>
 									)}
 									
