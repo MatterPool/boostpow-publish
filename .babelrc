@@ -1,0 +1,32 @@
+{
+  "presets": [
+    "next/babel",
+  ],
+  "plugins": [
+    [
+      "module-resolver",
+      {
+        "root": [
+          "./"
+        ],
+        "alias": {
+          "app-components": "./components",
+          "app-configs": "./configs",
+          "app-consts": "./consts",
+          "app-icons": "./icons",
+          "app-layouts": "./layouts",
+          "app-modules": "./modules",
+          "app-mutations": "./mutations",
+          "app-styles": "./styles",
+          "app-utils": "./utils",
+        }
+      }
+    ],
+    [
+      "inline-dotenv",
+      {
+        "path": "./.env"
+      }
+    ]
+  ]
+}

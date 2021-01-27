@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import snarkdown from 'snarkdown';
 import * as boost from 'boostpow-js';
 import FormControl from '@material-ui/core/FormControl';
 import Select from '@material-ui/core/Select';
@@ -7,9 +6,18 @@ import Select from '@material-ui/core/Select';
 import Styles from './styles';
 import * as Difficulty from './difficulty';
 import * as Wallets from './wallets';
-import { isValidWallet } from '../../lib/wallets';
-import * as LogSlider from './log-slider';
-//import * as BoostHelpers from '../../lib/boost-helpers';
+import { isValidWallet } from 'app-utils/wallets';
+
+import isHash from 'app-utils/isHash';
+import parseContentInput from 'app-utils/parseContentInput';
+import parseCategoryInput from 'app-utils/parseCategoryInput';
+import parseTopicInput from 'app-utils/parseCategoryInput';
+import timeframeToTimestamp from 'app-utils/timeframeToTimestamp';
+
+import fetchContentPreview from 'app-utils/fetchContentPreview';
+import BoostCalculator from 'app-utils/boostCalculator';
+
+//import * as BoostHelpers from 'app-utils/boost-helpers';
 
 /*
 
@@ -22,168 +30,6 @@ Example Files
   "textContent": "2829b4df5152fb867128f0ea2cffdfe3b7134a98b356eb1a1813b68fd3b83519"
 }
 */
-
-function isHash(value) {
-	return typeof(value) === 'string' && value.length == 64 && /^[a-f0-9]+$/.test(value);
-}
-
-function parseContentInput (inputValue) {
-
-	if (typeof inputValue !== 'string' || inputValue.length === 0) {
-		return undefined;
-	}
-
-	if (inputValue.startsWith('https://bitcoinfiles.org/t/')){
-		let hash = inputValue.slice(27).slice(0,64).toLowerCase();
-		if (isHash(hash)) return hash;
-	} 
-
-	if (inputValue.startsWith('https://bitcoinfiles.org/tx/')){
-		let hash = inputValue.slice(28).slice(0,64).toLowerCase();
-		if (isHash(hash)) return hash;
-	} 
-
-	if (inputValue.startsWith('https://twetch.app/t/')){
-		let hash = inputValue.slice(21).slice(0,64).toLowerCase();
-		if (isHash(hash)) return hash;
-	} 
-
-	let hash = inputValue.trim().toLowerCase();
-	if (isHash(hash)) return hash;
-
-	if (inputValue.length <= 32) {
-		return inputValue;
-	}
-
-	return undefined;
-}
-
-function parseTopicInput (topic) {
-	if (typeof topic === 'string' && topic.length > 0) {
-		return topic;
-	}
-	return undefined;
-}
-
-function parseCategoryInput (category) {
-	if (typeof category === 'string' && category.length > 0) {
-		return category;
-	}
-	return undefined;
-}
-
-function timeframeToTimestamp (timeframe) {
-	if (timeframe === 'hour') {
-		return parseInt(new Date().getTime() / 1000, 10) - 3600;
-	}
-	if (timeframe === 'day') {
-		return parseInt(new Date().getTime() / 1000, 10) - 3600 * 24;
-	}
-	if (timeframe === 'fortnight') {
-		return parseInt(new Date().getTime() / 1000, 10) - 3600 * 24 * 14;
-	}
-	if (timeframe === 'year') {
-		return parseInt(new Date().getTime() / 1000, 10) - 3600 * 24 * 365;
-	}
-	if (timeframe === 'decade') {
-		return parseInt(new Date().getTime() / 1000, 10) - 3600 * 24 * 365 * 10;
-	}
-	return undefined;
-}
-
-async function fetchContentPreview (newContent) {
-	let resp = await fetch(`https://media.bitcoinfiles.org/${newContent}`, { method: 'HEAD' });
-			
-	if (resp.status === 404) {
-		return { value: newContent, message: 'NOT_FOUND' };
-	}
-
-	let type = resp.headers.get('Content-Type');
-	let preview;
-
-	if (type.match(/^text/)) {
-		resp = await fetch(`https://media.bitcoinfiles.org/${newContent}`);
-		let text = await resp.text();
-		if (type === 'text/markdown; charset=utf-8') {
-			preview = snarkdown(text);
-		} else {
-			preview = text;
-		}
-	}
-
-	return { value: newContent, type, preview };
-}
-
-function BoostCalculator (signals, contentBoosts, maxDiffInc) {
-
-	const signalsList = signals && signals.list ? signals.list : [];
-	const currentBoostValue = contentBoosts.totalDifficulty_ || 0;
-
-	const ranksCtrl = LogSlider.GetTopNFromSignals(signalsList, currentBoostValue);
-	const sliderCtrl = LogSlider.NewContentSliderCtrl(currentBoostValue, ranksCtrl, maxDiffInc);
-
-	const currentRank = Difficulty.getDiffRank(signalsList, currentBoostValue);
-
-	const range = {};
-	range.min = sliderCtrl.MinBoost || 1;
-	range.max = sliderCtrl.MaxBoost;
-	range.initial = Math.min(Math.max(sliderCtrl.Top1Boost+1, range.min), range.max);
-
-	function sliderProps (userConfig, sliderValue) {
-
-		// calculates sliderProps for rendering
-		// user config is the payProps.slider
-
-		if (sliderValue < range.min || sliderValue > range.max) {
-			sliderValue = range.initial;
-		}
-
-		let rankMarkers;
-		if (userConfig.rankMarkers === true) {
-			rankMarkers = [1, 5, 10, 25, 50, 100];
-		} else if (Array.isArray(userConfig.rankMarkers) && userConfig.rankMarkers.length > 0) {
-			rankMarkers = userConfig.rankMarkers;
-		}
-
-		const markers = LogSlider.sliderRankMarkers(sliderCtrl, rankMarkers);
-		const diffStep = userConfig.sliderStep > 0 ? parseInt(userConfig.sliderStep, 10) : 1;
-
-		return {
-			min: range.min, 
-			max: range.max, 
-			value: sliderValue, 
-			diffStep, 
-			markers
-		}
-	}
-
-	function addedBoost (sliderValue) {
-		return sliderValue - (range.min-1);
-	}
-
-	function newTotalBoost (sliderValue) {
-		return currentBoostValue + addedBoost(sliderValue);
-	}
-	
-	function newRank (sliderValue) {
-		return LogSlider.rankAfterAddedDiff(currentBoostValue, addedBoost(sliderValue), ranksCtrl.ranks).rank;
-	}
-
-	return {
-		currentBoostValue,
-		currentRank,
-		signals: signalsList,
-		contentBoosts,
-		sliderCtrl,
-		ranksCtrl,
-		range,
-		sliderProps,
-		addedBoost,
-		newTotalBoost,
-		newRank
-	}
-
-}
 
 const PaymentPopup = compProps => {
 	const payProps = compProps.paymentProps;

@@ -2,8 +2,8 @@
 import Head from 'next/head';
 import { useEffect, useState } from 'react';
 import Postmate from 'postmate';
-import PaymentPopup from '../components/payment-popup';
-import * as ApiCompat from '../lib/api-compatibility';
+import PaymentPopup from 'app-components/payment-popup';
+import * as ApiCompat from 'app-utils/api-compatibility';
 
 const DEFAULT_PROPS = ApiCompat.normalizeLegacyApi();
 
