@@ -46,30 +46,35 @@ const PaymentPopup = compProps => {
 
 	// Initial props (the rendered values)
 	const emptyContent = { value: '', type: undefined, preview: undefined };
-	const emptySlider = { min: 1, max: 40, value: 1, diffStep: payProps.slider.sliderStep, markers: [] };
+	const emptySlider = { min: 0, max: 1, value: 0, markers: [] };
 	const emptyBoostCalc = BoostCalculator([], { totalDifficulty_: 0 }, payProps.slider.maxDiffInc);
-	
-	const initProps = { 
-		content: {...emptyContent}, 
-		slider: { ...emptySlider }, 
-		boostCalc: emptyBoostCalc 
+
+	const initProps = {
+		content: { ...emptyContent },
+		slider: { ...emptySlider },
+		boostCalc: emptyBoostCalc
 	};
 
 	if (isHash(payProps.content.hash)) {
 		initProps.content.value = payProps.content.hash;
 	}
-	initProps.topic = payProps.topic && payProps.topic.value ? payProps.topic.value.substr(0, topicMaxLength) : '';
-	initProps.category = payProps.category && payProps.category.value ? payProps.category.value.substr(0, categoryMaxLength) : '';
+
+	initProps.topic =
+		payProps.topic && payProps.topic.value ? payProps.topic.value.substr(0, topicMaxLength) : '';
+	initProps.category =
+		payProps.category && payProps.category.value
+			? payProps.category.value.substr(0, categoryMaxLength)
+			: '';
 	initProps.price = payProps.diff.multiplier;
 	initProps.opening = true;
-	
+
 	// PROPS
 
 	const [contentInput, setContentInput] = useState(initProps.content.value);
 	const [sliderInput, setSliderInput] = useState(emptySlider.value);
 	const [categoryInput, setCategoryInput] = useState(initProps.category);
 	const [topicInput, setTopicInput] = useState(initProps.topic);
-	const [timeframeInput, setTimeframeInput] = useState('day');
+	const [timeframeInput, setTimeframeInput] = useState('fortnight');
 	const [priceInput, setPriceInput] = useState(initProps.price.toString());
 
 	const [props, setProps] = useState(initProps);
@@ -90,8 +95,7 @@ const PaymentPopup = compProps => {
 		}
 	}
 
-	async function fieldsUpdated () {
-		
+	async function fieldsUpdated() {
 		let newProps = { ...props };
 
 		// read input field values, check differences
@@ -104,13 +108,14 @@ const PaymentPopup = compProps => {
 		// if empty string use the default price, if invalid number don't render
 		let newPrice = priceInput === '' ? initProps.price : parseFloat(priceInput) || undefined;
 		newProps.price = newPrice;
-		
+
 		let contentChanged = props.content.value !== newContentValue || newProps.opening;
 
-		let searchChanged = props.category !== newCategoryValue
-			|| props.topic !== newTopicValue
-			|| props.timeframe !== newTimeframeValue
-			|| contentChanged;
+		let searchChanged =
+			props.category !== newCategoryValue ||
+			props.topic !== newTopicValue ||
+			props.timeframe !== newTimeframeValue ||
+			contentChanged;
 
 		let sliderChanged = props.slider.value !== newSliderValue;
 
@@ -121,14 +126,14 @@ const PaymentPopup = compProps => {
 		// content value is not valid, that means you can't rank or boost it
 		if (newContentValue === undefined) {
 			// clear everything
-			newProps.content = {...emptyContent};
-			newProps.slider = {...emptySlider};
+			newProps.content = { ...emptyContent };
+			newProps.slider = { ...emptySlider };
 			newProps.boostCalc = emptyBoostCalc;
 			setProps(newProps);
 			return;
 		}
 
-		//	
+		//
 		// content
 		//   ==> content preview
 		//
@@ -152,18 +157,19 @@ const PaymentPopup = compProps => {
 		// search parameters changed, that means query for boost rank
 
 		if (searchChanged) {
-
 			let options = {
 				minedTimeFrom: timeframeToTimestamp(newTimeframeValue),
 				categoryutf8: newCategoryValue,
 				tagutf8: newTopicValue
 			};
 
-			let contenthex = isHash(newContentValue) ? newContentValue : Buffer.from(newContentValue, 'utf8').toString('hex');
+			let contenthex = isHash(newContentValue)
+				? newContentValue
+				: Buffer.from(newContentValue, 'utf8').toString('hex');
 			let signals = await boost.Graph({}).search(options);
 			let contentBoosts = await boost.Graph({}).search({ ...options, contenthex });
 			let boostCalc = BoostCalculator(signals, contentBoosts, payProps.slider.maxDiffInc);
-			
+
 			newProps.boostCalc = boostCalc;
 			newProps.slider = boostCalc.sliderProps(payProps.slider, newSliderValue);
 			newProps.timeframe = newTimeframeValue;
@@ -178,7 +184,7 @@ const PaymentPopup = compProps => {
 		// content
 		// category
 		// topic (tag)
-		// timeframe	
+		// timeframe
 		// difficulty slider
 		// price
 		// wallet
@@ -191,36 +197,44 @@ const PaymentPopup = compProps => {
 	}
 
 	// when the user stops changing fields for a sec call the update function to get newProps
-	useEffect(function () {
-		const timer = setTimeout(function () {
+	useEffect(
+		function() {
+			const timer = setTimeout(function() {
+				fieldsUpdated().catch(error => console.log(error));
+			}, 1000);
+
+			return function() {
+				clearTimeout(timer);
+			};
+		},
+		[contentInput, categoryInput, topicInput, timeframeInput, priceInput, fieldsUpdated]
+	);
+
+	useEffect(
+		function() {
 			fieldsUpdated().catch(error => console.log(error));
-		}, 1000);
-	  
-		return function () { clearTimeout(timer); }
-	}, [ contentInput, categoryInput, topicInput, timeframeInput, priceInput ]);
+		},
+		[fieldsUpdated, sliderInput]
+	);
 
-	useEffect(function () {
-		fieldsUpdated().catch(error => console.log(error));
-	}, [ sliderInput ])
-
-	function handleContentInputChange (evt) {
+	function handleContentInputChange(evt) {
 		setContentInput(evt.target.value);
 	}
-	function handleSliderInputChange (evt, value) {
+	function handleSliderInputChange(evt, value) {
 		// unifies the value when coming from slider or from input field
-		setSliderInput(value > 0 ? value : evt.target.value);
+		setSliderInput(value >= 0 ? value : evt.target.value);
 	}
-	function handleCategoryInputChange (evt) {
+	function handleCategoryInputChange(evt) {
 		setCategoryInput(evt.target.value);
 	}
-	function handleTopicInputChange (evt) {
+	function handleTopicInputChange(evt) {
 		setTopicInput(evt.target.value);
 	}
-	function handleTimeframeInputChange (evt) {
+	function handleTimeframeInputChange(evt) {
 		setTimeframeInput(evt.target.value);
 	}
-	function handlePriceInputChange(evt){
-		setPriceInput(evt.target.value)
+	function handlePriceInputChange(evt) {
+		setPriceInput(evt.target.value);
 	}
 
 	function stopEvent(evt) {
@@ -241,7 +255,7 @@ const PaymentPopup = compProps => {
 
 	const showTopic = payProps.topic && payProps.topic.show === true ? true : false;
 	const disabledTopic = showTopic && payProps.topic.disabled === true ? true : false;
-	
+
 	const showCategory = payProps.category && payProps.category.show === true ? true : false;
 	const disabledCategory = showCategory && payProps.category.disabled === true ? true : false;
 	const showPrice = true && hasContent;
@@ -250,36 +264,18 @@ const PaymentPopup = compProps => {
 	const sliderMin = props.slider.min;
 	const sliderMax = props.slider.max;
 	const sliderValue = props.slider.value;
-	const sliderDiffStep = props.slider.diffStep;
 	const sliderMarkers = props.slider.markers;
 
 	const currentBoost = props.boostCalc.currentBoostValue;
 	const currentRank = props.boostCalc.currentRank;
-	const addedBoost = props.boostCalc.addedBoost(sliderValue); 
-	const newTotalBoost = props.boostCalc.newTotalBoost(sliderValue);
-	const newRank = props.boostCalc.newRank(sliderValue);
-	
+
+	const addedBoost = props.boostCalc.sliderToAddedBoost(sliderValue);
+	const newTotalBoost = props.boostCalc.newTotalBoost(addedBoost);
+	const newRank = props.boostCalc.newRank(addedBoost);
+
 	const sliderScaleLabel = () => '+' + Math.floor(addedBoost).toString();
 
 	const lockDiff = payProps.diff.disabled === true ? true : false;
-	
-	const hasRankSignals = props.boostCalc.signals.length > 0;
-	const [displayRank, setDisplayRank] = useState(false);
-	const toggleDisplayRanks = () => setDisplayRank(!displayRank);
-	
-	const renderDisplayRanks = () => {
-		let html = [];
-		props.boostCalc.signals.forEach((v, k)=>{
-			html.push((
-				<tr key={'display-rank-'+k}>
-					<td>{k+1}</td>
-					<td> &lt;= {timeframeInput}</td>
-					<td>{v.totalDifficulty_}</td>
-				</tr>
-			));
-		});
-		return html;
-	};
 
 	// WALLET PROPS
 	const initialWallet = isValidWallet(payProps.wallets.initial) ? payProps.wallets.initial : '';
@@ -289,7 +285,7 @@ const PaymentPopup = compProps => {
 
 	let WalletElem;
 	// Avoid rendering wallet while still opening
-	if (!payProps.opening && typeof wallet === 'string' && wallet.length > 0){
+	if (!payProps.opening && typeof wallet === 'string' && wallet.length > 0) {
 		WalletElem = Wallets.getWalletElem(wallet);
 	}
 
@@ -299,9 +295,9 @@ const PaymentPopup = compProps => {
 	}
 
 	// Calculates the value of the outputs to configure the wallet
-	function allOutputs () {
-		const o = [...(payProps.outputs||[])];
-		
+	function allOutputs() {
+		const o = [...(payProps.outputs || [])];
+
 		const boostTopic = Buffer.from(topicInput || '', 'utf8').toString('hex');
 		const boostCategory = Buffer.from(categoryInput || 'B', 'utf8').toString('hex');
 		const boostContent = isHash(content) ? content : Buffer.from(content, 'utf8').toString('hex');
@@ -326,12 +322,12 @@ const PaymentPopup = compProps => {
 		} catch (ex) {
 			return [];
 		}
-		
+
 		return o;
 	}
 
 	// Prepare wallet configuration object
-	function getWalletProps () {
+	function getWalletProps() {
 		//console.log('rendering wallet');
 
 		let outputs = allOutputs();
@@ -373,14 +369,19 @@ const PaymentPopup = compProps => {
 		return walletProps;
 	}
 
-	useEffect(function () {
-		setWalletProps(undefined);
-		const timer = setTimeout(function () {
-			setWalletProps(getWalletProps());
-		}, 1000);
-	  
-		return function () { clearTimeout(timer); }
-	}, [ props ]);
+	useEffect(
+		function() {
+			setWalletProps(undefined);
+			const timer = setTimeout(function() {
+				setWalletProps(getWalletProps());
+			}, 1000);
+
+			return function() {
+				clearTimeout(timer);
+			};
+		},
+		[getWalletProps, props]
+	);
 
 	const handleClose = () => {
 		if (cParent) {
@@ -401,7 +402,7 @@ const PaymentPopup = compProps => {
 							Close
 						</button>
 					</div>
-					{(
+					{
 						<div className="boost-publisher-body">
 							<form>
 								<div className="form-group">
@@ -409,7 +410,7 @@ const PaymentPopup = compProps => {
 										<p className="lead">
 											What would you like to Boost?{' '}
 											<a href="https://boostpow.com" className="pow-help-text" target="_blank">
-												What's Boost?
+												What&apos;s Boost?
 											</a>
 										</p>
 									)}
@@ -429,7 +430,7 @@ const PaymentPopup = compProps => {
 											placeholder="Transaction ID, Twetch, or BitcoinFiles.org link"
 										></input>
 									)}
-									
+
 									{showContent && hasContent && content && (
 										<div className="contentPreview">
 											{contentType === 'video/mp4' && (
@@ -446,7 +447,7 @@ const PaymentPopup = compProps => {
 												</audio>
 											)}
 											{contentType === 'video/ogg' && (
-												<video width="320" height="240" controls playsinline autoplay muted loop>
+												<video width="320" height="240" controls playsinline autoPlay muted loop>
 													<source
 														src={`https://media.bitcoinfiles.org/${content}`}
 														type="video/ogg"
@@ -476,7 +477,6 @@ const PaymentPopup = compProps => {
 											)}
 										</div>
 									)}
-								
 								</div>
 								{showTopic && (
 									<div id="boostpow-topic" className="form-group">
@@ -510,75 +510,59 @@ const PaymentPopup = compProps => {
 										</div>
 									</div>
 								)}
-								
+
 								{hasContent && showSliderDiff && (
 									<div>
 										<div className="rank-message">
-										{(
-										<label className="label">
-											In the last&nbsp;
-											<select
-												key='unique-timeframe-selector'
-												value={timeframeInput}
-												className="input-timeframe"
-												onChange={handleTimeframeInputChange}
-											>
-											<option>hour</option>
-											<option>day</option>
-											<option>fortnight</option>
-											<option>year</option>
-											<option>decade</option>
-											</select>
-											, this content has been boosted {currentBoost} and has achieved rank {currentRank}.
-										</label>
-										)}
+											{
+												<label className="label">
+													In the last&nbsp;
+													<select
+														key="unique-timeframe-selector"
+														value={timeframeInput}
+														className="input-timeframe"
+														onChange={handleTimeframeInputChange}
+													>
+														<option>hour</option>
+														<option>day</option>
+														<option>fortnight</option>
+														<option>year</option>
+														<option>decade</option>
+													</select>
+													, this content has been boosted {currentBoost} and has achieved rank{' '}
+													{currentRank}.
+													<br />
+													{sliderValue}
+												</label>
+											}
 										</div>
 										<div id="boostpow-slider" className="form-group input-diff-container">
-										<Difficulty.DiffSlider
-											key='unique-slider'
-											min={sliderMin}
-											max={sliderMax}
-											value={sliderValue}
-											scale={sliderScaleLabel}
-											aria-labelledby="discrete-slider-custom"
-											step={sliderDiffStep}
-											valueLabelDisplay="on"
-											ValueLabelComponent={Difficulty.DiffValueLabel}
-											marks={sliderMarkers}
-											onChange={handleSliderInputChange}
-											disabled={lockDiff}
-										/>
+											<Difficulty.DiffSlider
+												key="unique-slider"
+												min={sliderMin}
+												max={sliderMax}
+												value={sliderValue}
+												step={0.001}
+												scale={sliderScaleLabel}
+												aria-labelledby="discrete-slider-custom"
+												valueLabelDisplay="on"
+												ValueLabelComponent={Difficulty.DiffValueLabel}
+												marks={sliderMarkers}
+												onChange={handleSliderInputChange}
+												disabled={lockDiff}
+											/>
 										</div>
 										<div className="boost-message">
-										{(
-										<label className="label">
-											Boost by {addedBoost} for a total of {newTotalBoost} to achieve rank {newRank}. 
-											&nbsp;<a onClick={toggleDisplayRanks} className={'display-ranks-toggle' + ((displayRank)?' opened': '')}>Show Ranks</a>
-										</label>
-										)}
+											{
+												<label className="label">
+													Boost by {addedBoost} for a total of {newTotalBoost} to achieve rank{' '}
+													{newRank}.
+												</label>
+											}
 										</div>
 									</div>
 								)}
-								
-								<div className="form-group">
-									{hasContent && displayRank && hasRankSignals && (
-										<div id="display-ranks-container">
-										<table className='display-ranks'>
-											<thead>
-											<tr>
-												<th>RANK</th>
-												<th>RANK HOURS</th>
-												<th>TOTAL BOOST</th>
-												<th><a onClick={toggleDisplayRanks} className='display-ranks-close' title="Close ranks table">X</a></th>
-											</tr>
-											</thead>
-											<tbody>
-											{renderDisplayRanks()}
-											</tbody>
-										</table>
-										</div>
-									)}
-								</div>
+
 								{showPrice && (
 									<div id="boostpow-price" className="form-group">
 										<div className="lead">Price</div>
@@ -595,39 +579,38 @@ const PaymentPopup = compProps => {
 								)}
 							</form>
 						</div>
-					)}
+					}
 					<div className="boost-publisher-footer">
-						
 						{payProps.wallets.available.length > 1 && (
-						<div className="wallet-selector">
-							<FormControl
-								variant="outlined"
-								margin="dense"
-								className="boost-publisher-form-control"
-							>
-								<Select
-									value={wallet}
-									onChange={handleChangeWallet}
-									className="boost-publisher-select"
-									MenuProps={{
-										MenuListProps: {
-											classes: {
-												root: 'boost-publisher-menu-list'
-											}
-										},
-										transformOrigin: {
-											vertical: 'top',
-											horizontal: 'left'
-										}
-									}}
-									classes={{
-										outlined: 'boost-publisher-select-outlined'
-									}}
+							<div className="wallet-selector">
+								<FormControl
+									variant="outlined"
+									margin="dense"
+									className="boost-publisher-form-control"
 								>
-									{Wallets.renderWalletMenuItems(payProps.wallets.available)}
-								</Select>
-							</FormControl>
-						</div>
+									<Select
+										value={wallet}
+										onChange={handleChangeWallet}
+										className="boost-publisher-select"
+										MenuProps={{
+											MenuListProps: {
+												classes: {
+													root: 'boost-publisher-menu-list'
+												}
+											},
+											transformOrigin: {
+												vertical: 'top',
+												horizontal: 'left'
+											}
+										}}
+										classes={{
+											outlined: 'boost-publisher-select-outlined'
+										}}
+									>
+										{Wallets.renderWalletMenuItems(payProps.wallets.available)}
+									</Select>
+								</FormControl>
+							</div>
 						)}
 						{hasContent && walletProps && props.price && WalletElem && !paid && (
 							<div className="wallet-button">
