@@ -51,7 +51,7 @@
     "**/*.js": [
       "prettier --write",
       "./node_modules/.bin/eslint --fix",
-      "npm run build-browser"
+      "npm run build-browser-full"
     ]
   },
   "husky": {
