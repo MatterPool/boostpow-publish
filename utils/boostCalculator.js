@@ -11,9 +11,58 @@ function BoostCalculator(signals, contentBoosts, maxDiffInc) {
 	const currentRank = Difficulty.getDiffRank(signalsList, currentBoostValue);
 
 	const range = {};
-	range.min = sliderCtrl.MinBoost || 1;
-	range.max = sliderCtrl.MaxBoost;
-	range.initial = Math.min(Math.max(sliderCtrl.Top1Boost + 1, range.min), range.max);
+	range.min = 0;
+	range.max = 1;
+	range.initial = 0;
+
+	// these functions determine the relationship between values on the
+	// slider bar and boosted values.
+	let sliderToAddedBoost;
+	let boostToSlider;
+
+	if (ranksCtrl.ranks.length === 1) {
+		if (currentBoostValue === 0) {
+			// we arbitrarily allow a top value of 40 in this case.
+			sliderToAddedBoost = function(x) {
+				return 1 + 39 * x;
+			};
+			boostToSlider = function(z) {
+				return (z - currentBoostValue - 1) / 39;
+			};
+		} else {
+			// we allow the user to boost up to twice the current value.
+			sliderToAddedBoost = function(x) {
+				return 1 + (currentBoostValue - 1) * x;
+			};
+			boostToSlider = function(z) {
+				return (z - currentBoostValue - 1) / (currentBoostValue - 1);
+			};
+		}
+	} else if (ranksCtrl.ranks.length === 2) {
+		const top = ranksCtrl.ranks[0].boostValue;
+
+		// we allow the user to boost up to twice the top boosted value
+		sliderToAddedBoost = function(x) {
+			return (2 * top - currentBoostValue - 1) * x + 1;
+		};
+		boostToSlider = function(z) {
+			return (z - currentBoostValue - 1) / (2 * top - currentBoostValue - 1);
+		};
+	} else {
+		const max = 2 * ranksCtrl.ranks[0].boostValue;
+
+		const normalization = currentBoostValue + 1;
+
+		const slope = Math.log(max / normalization);
+
+		sliderToAddedBoost = function(x) {
+			return normalization * Math.exp(slope * x) - currentBoostValue;
+		};
+
+		boostToSlider = function(z) {
+			return Math.log(z / normalization) / slope;
+		};
+	}
 
 	function sliderProps(userConfig, sliderValue) {
 		// calculates sliderProps for rendering
@@ -25,33 +74,27 @@ function BoostCalculator(signals, contentBoosts, maxDiffInc) {
 
 		let rankMarkers;
 		if (userConfig.rankMarkers === true) {
-			rankMarkers = [1, 5, 10, 25, 50, 100];
+			rankMarkers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
 		} else if (Array.isArray(userConfig.rankMarkers) && userConfig.rankMarkers.length > 0) {
 			rankMarkers = userConfig.rankMarkers;
 		}
 
-		const markers = LogSlider.sliderRankMarkers(sliderCtrl, rankMarkers);
-		const diffStep = userConfig.sliderStep > 0 ? parseInt(userConfig.sliderStep, 10) : 1;
+		const markers = LogSlider.sliderRankMarkers(sliderCtrl, rankMarkers, boostToSlider);
 
 		return {
 			min: range.min,
 			max: range.max,
 			value: sliderValue,
-			diffStep,
 			markers
 		};
 	}
 
-	function addedBoost(sliderValue) {
-		return sliderValue - (range.min - 1);
+	function newTotalBoost(addedBoost) {
+		return currentBoostValue + addedBoost;
 	}
 
-	function newTotalBoost(sliderValue) {
-		return currentBoostValue + addedBoost(sliderValue);
-	}
-
-	function newRank(sliderValue) {
-		return LogSlider.rankAfterAddedDiff(currentBoostValue, addedBoost(sliderValue), ranksCtrl.ranks)
+	function newRank(addedBoost) {
+		return LogSlider.rankAfterAddedDiff(currentBoostValue, addedBoost, ranksCtrl.ranks)
 			.rank;
 	}
 
@@ -63,8 +106,9 @@ function BoostCalculator(signals, contentBoosts, maxDiffInc) {
 		sliderCtrl,
 		ranksCtrl,
 		range,
+		sliderToAddedBoost,
+		boostToSlider,
 		sliderProps,
-		addedBoost,
 		newTotalBoost,
 		newRank
 	};

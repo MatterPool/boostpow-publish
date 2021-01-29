@@ -52,19 +52,21 @@ export function GetTopNFromSignals(signals, cbv) {
 
 export function MinSpaceSize(sliderCtrl) {
 	return Object.assign({}, sliderCtrl, {
-		MinSpaceSize: sliderCtrl.TopNextBoost > 0 ? (sliderCtrl.TopNextBoost - sliderCtrl.MinBoost) : 0
+		MinSpaceSize: sliderCtrl.TopNextBoost > 0 ? sliderCtrl.TopNextBoost - sliderCtrl.MinBoost : 0
 	});
 }
 
 export function RankSpaceSize(sliderCtrl) {
 	return Object.assign({}, sliderCtrl, {
-		RankSpaceSize: sliderCtrl.Top1Boost > 0 ? (sliderCtrl.Top1Boost - sliderCtrl.TopNextBoost) : 0
+		RankSpaceSize: sliderCtrl.Top1Boost > 0 ? sliderCtrl.Top1Boost - sliderCtrl.TopNextBoost : 0
 	});
 }
 
 export function MaxBoost(sliderCtrl, maxDiffInc) {
 	return Object.assign({}, sliderCtrl, {
-		MaxBoost: sliderCtrl.ranksCtrl.empty ? sliderCtrl.Top1Boost + 40 : sliderCtrl.Top1Boost * maxDiffInc
+		MaxBoost: sliderCtrl.ranksCtrl.empty
+			? sliderCtrl.Top1Boost + 40
+			: sliderCtrl.Top1Boost * maxDiffInc
 	});
 }
 
@@ -80,13 +82,17 @@ export function NewSliderCtrl(sliderCtrl) {
 
 export function diffPointsToTopN(sliderCtrl) {
 	return Object.assign({}, sliderCtrl, {
-		diffPointsToTopN: sliderCtrl.TopNextBoost > 0 ? (sliderCtrl.TopNextBoost + 1 - sliderCtrl.content.CurrentBoost) : 0
+		diffPointsToTopN:
+			sliderCtrl.TopNextBoost > 0
+				? sliderCtrl.TopNextBoost + 1 - sliderCtrl.content.CurrentBoost
+				: 0
 	});
 }
 
 export function diffPointsToTop1(sliderCtrl) {
 	return Object.assign({}, sliderCtrl, {
-		diffPointsToTop1: sliderCtrl.Top1Boost > 0 ? (sliderCtrl.Top1Boost + 1 - sliderCtrl.content.CurrentBoost) : 0
+		diffPointsToTop1:
+			sliderCtrl.Top1Boost > 0 ? sliderCtrl.Top1Boost + 1 - sliderCtrl.content.CurrentBoost : 0
 	});
 }
 
@@ -108,24 +114,22 @@ export function rankAfterAddedDiff(CBV, addedDiff, ranks) {
 	return NewRank(1, addedCBV);
 }
 
-export function sliderRankMarkers(sliderCtrl, rankMarkers) {
-	if (!rankMarkers) rankMarkers = [1, 2, 3, 5, 10];
-	// const markers = [{ value: sliderCtrl.MaxBoost, label: '' + sliderCtrl.MaxBoost }];
-	const markers = [{ value: sliderCtrl.MaxBoost, label: '#LEAD' }];
+export function sliderRankMarkers(sliderCtrl, rankMarkers, inverseFunction) {
+	const markers = [];
 	const addedBoostValues = []; // controls boostValue to allow only unique boost values (equal boosts display only the first rank marker)
 	// from higuest to lowest rank
 	for (let i = 0; i < sliderCtrl.ranksCtrl.ranks.length; i++) {
 		let r = sliderCtrl.ranksCtrl.ranks[i];
 		if (r.boostValue > 0 && rankMarkers.indexOf(r.rank) > -1 && addedBoostValues.indexOf(r.boostValue) === -1) {
 			markers.push({
-				value: r.boostValue,
+				value: inverseFunction(r.boostValue),
 				label: '#' + r.rank
 			});
 			addedBoostValues.push(r.boostValue);
 		}
 	}
 	if (addedBoostValues.indexOf(sliderCtrl.content.CurrentBoost) === -1)
-		markers.push({ value: sliderCtrl.MinBoost, label: '#' + sliderCtrl.content.Rank.rank });
+		markers.push({ value: 0, label: '#' + sliderCtrl.content.Rank.rank });
 	return markers;
 }
 
@@ -163,51 +167,4 @@ export function getAddedBoost(sliderCtrl, x) {
 
 export function sliderScaleLabel(sliderCtrl, x) {
 	return '+' + getAddedBoost(sliderCtrl, x);
-}
-
-/**
-Let b be the amount of boost that some content already has. 
-
-Let x ∈ [0, 1] be a variable representing the state of the slider bar. 0 means all the way to the left, whereas 1 means all the way to the right. 
-
-Let f : [0, 1] → ℝ be a function that maps the state of the slider bar to boost values. f(0) is always 1. 
-
-Let g : [0, 1] → ℝ be a function that maps the state of the slider bar to the amount of boost the content will have if the amount f(x). Thus, 
- */
-
-// f(b, x) => f(x) = (b - 1) x + 1
-export function sliderStateToBoostValue(boostTotalAmount, sliderState) {
-	return (boostTotalAmount - 1) * sliderState + 1;
-}
-// fInverse(z, b) => f-1(z) = (z - 1) / (b - 1)
-export function boostValueToSliderState(boostAmount, boostTotalAmount) {
-	return (boostAmount - 1) / (boostTotalAmount - 1);
-}
-
-// g(x, b) => g(x) = f(x) + b + 1
-export function totalBoostAfterSliderState(sliderState, boostTotalAmount) {
-	return sliderStateToBoostValue(boostTotalAmount, sliderState) + boostTotalAmount + 1;
-}
-
-// gInverse(z, b) => g-1(z) = f-1(z - b - 1)
-export function boostAmountToSliderState(boostAmount, boostTotalAmount) {
-	return boostValueToSliderState(boostAmount - boostTotalAmount - 1, boostTotalAmount);
-}
-
-// fCompared(b, x, c) => f(x) = (2 c - b - 1) x + 1
-export function sliderStateToBoostValueCompared(
-	boostTotalAmount,
-	sliderState,
-	topContentBoostAmount
-) {
-	return sliderStateToBoostValue(2 * topContentBoostAmount - boostTotalAmount, sliderState);
-}
-
-// fComparedInverse(b, x, c) => f-1(z) = (z - 1) / (2 c - b - 1)
-export function boostValueToSliderStateCompared(
-	boostAmount,
-	boostTotalAmount,
-	topContentBoostAmount
-) {
-	return boostValueToSliderState(boostAmount, 2 * topContentBoostAmount - boostTotalAmount);
 }
