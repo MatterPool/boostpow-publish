@@ -64,7 +64,7 @@ const PaymentPopup = compProps => {
 		payProps.category && payProps.category.value
 			? payProps.category.value.substr(0, categoryMaxLength)
 			: '';
-	initProps.price = payProps.diff.multiplier;
+	initProps.price = 100000000 * payProps.diff.multiplier;
 	initProps.opening = true;
 
 	// PROPS
@@ -74,7 +74,7 @@ const PaymentPopup = compProps => {
 	const [categoryInput, setCategoryInput] = useState(initProps.category);
 	const [topicInput, setTopicInput] = useState(initProps.topic);
 	const [timeframeInput, setTimeframeInput] = useState('fortnight');
-	const [priceInput, setPriceInput] = useState(initProps.price.toString());
+	const [priceInput, setPriceInput] = useState(Math.round(initProps.price).toString());
 
 	const [props, setProps] = useState(initProps);
 
@@ -212,19 +212,24 @@ const PaymentPopup = compProps => {
 	function handleContentInputChange(evt) {
 		setContentInput(evt.target.value);
 	}
+
 	function handleSliderInputChange(evt, value) {
 		// unifies the value when coming from slider or from input field
 		setSliderInput(value >= 0 ? value : evt.target.value);
 	}
+
 	function handleCategoryInputChange(evt) {
 		setCategoryInput(evt.target.value);
 	}
+
 	function handleTopicInputChange(evt) {
 		setTopicInput(evt.target.value);
 	}
+
 	function handleTimeframeInputChange(evt) {
 		setTimeframeInput(evt.target.value);
 	}
+
 	function handlePriceInputChange(evt) {
 		setPriceInput(evt.target.value);
 	}
@@ -304,7 +309,7 @@ const PaymentPopup = compProps => {
 
 			const latestOutputState = {
 				script: boostJob.toASM(),
-				amount: Math.max(boostJob.getDiff() * props.price, 0.00000546),
+				amount: Math.max(boostJob.getDiff() * props.price * 0.00000001, 0.00000546),
 				currency: 'BSV'
 			};
 
@@ -549,7 +554,7 @@ const PaymentPopup = compProps => {
 								)}
 								{showPrice && (
 									<div id="boostpow-price" className="form-group">
-										<div className="lead">Price</div>
+										<div className="lead">Price (sats/difficulty): </div>
 										<div>
 											<input
 												onChange={handlePriceInputChange}
