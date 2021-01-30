@@ -31,6 +31,12 @@ Example Files
 }
 */
 
+function formatBoostNumber(number) {
+	const num = Math.round(number);
+	if (num > 9999) return number.toExponential(1);
+	return num;
+}
+
 const PaymentPopup = compProps => {
 	const payProps = compProps.paymentProps;
 	const cParent = compProps.parent;
@@ -521,8 +527,9 @@ const PaymentPopup = compProps => {
 													<option>fortnight</option>
 													<option>year</option>
 													<option>decade</option>
-													</select>, this content has been boosted {currentBoost} and 
-													has achieved rank {currentRank}.
+													</select>, 
+													this content has been boosted {formatBoostNumber(currentBoost)} and 
+													has achieved rank {formatBoostNumber(currentRank)}.
 												</label>
 											}
 										</div>
@@ -545,8 +552,8 @@ const PaymentPopup = compProps => {
 										<div className="boost-message">
 											{
 												<label className="label">
-													Boost by {addedBoost} for a total of
-													{newTotalBoost} to achieve rank {newRank}. 
+													Boost by {formatBoostNumber(addedBoost)} for a total
+													of {formatBoostNumber(newTotalBoost)} to achieve rank {newRank}. 
 												</label>
 											}
 										</div>
