@@ -388,7 +388,7 @@ const PaymentPopup = compProps => {
 	};
 
 	return (
-		<div className="boost-publisher-container">
+		<div className="boost-publisher-container" style="z-index:10000">
 			<div className="boost-publisher-wrapper">
 				<div className="boost-publisher-grow" />
 				<div className="boost-publisher" onClick={stopEvent}>
