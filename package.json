@@ -22,7 +22,7 @@
     "boostpow-js": "^1.2.22",
     "bsv": "1.3.0",
     "copy-to-clipboard": "3.3.1",
-    "next": "^10.0.5",
+    "next": "^11.1.1",
     "postmate": "1.5.2",
     "proxypay": "0.0.6",
     "qrcode.react": "1.0.0",
